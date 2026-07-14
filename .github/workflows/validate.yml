@@ -1,0 +1,14 @@
+name: validate
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: validate
+    uses: ./.github/workflows/dotnet-validate.yml
+    with:
+      solution: Legacy.Maliev.Workflows.slnx

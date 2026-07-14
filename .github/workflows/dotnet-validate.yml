@@ -1,0 +1,77 @@
+name: validate
+
+on:
+  workflow_call:
+    inputs:
+      solution:
+        description: Path to the solution or solution filter to validate.
+        required: true
+        type: string
+      working-directory:
+        description: Directory from which validation commands run.
+        required: false
+        type: string
+        default: .
+      dotnet-version:
+        description: .NET SDK version installed for validation.
+        required: false
+        type: string
+        default: 10.0.x
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Check out caller repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj', '**/*.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Install Gitleaks
+        run: |
+          go install github.com/zricethezav/gitleaks/v8@6eaad039603a4de39fddd1cf5f727391efe9974e # v8.30.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Scan repository for leaked secrets
+        run: gitleaks git --redact --exit-code 1
+
+      - name: Restore
+        run: dotnet restore "${{ inputs.solution }}"
+
+      - name: Build
+        run: dotnet build "${{ inputs.solution }}" --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test "${{ inputs.solution }}" --configuration Release --no-build --no-restore
+
+      - name: Verify formatting
+        run: dotnet format "${{ inputs.solution }}" --verify-no-changes --no-restore
+
+      - name: Audit vulnerable packages
+        run: dotnet list "${{ inputs.solution }}" package --vulnerable --include-transitive --no-restore

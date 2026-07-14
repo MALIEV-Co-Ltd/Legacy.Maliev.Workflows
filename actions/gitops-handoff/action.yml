@@ -1,0 +1,176 @@
+name: GitOps handoff
+description: Open or update one validated immutable legacy image digest pull request.
+
+inputs:
+  service:
+    description: Allowlisted Legacy.Maliev.* service name.
+    required: true
+  image:
+    description: Full image name without a tag or digest.
+    required: true
+  digest:
+    description: Published sha256 image digest.
+    required: true
+  gitops-path:
+    description: Allowlisted legacy Kustomize manifest path.
+    required: true
+  contract-version:
+    description: Version of the explicit service-to-GitOps allowlist.
+    required: false
+    default: v1
+  token:
+    description: Token supplied by the caller's protected deployment environment.
+    required: true
+
+outputs:
+  changed:
+    description: Whether the allowlisted manifest changed.
+    value: ${{ steps.update.outputs.changed }}
+  status:
+    description: Either updated or no-op.
+    value: ${{ steps.update.outputs.status }}
+  branch:
+    description: Deterministic GitOps branch for the allowlisted service.
+    value: ${{ steps.update.outputs.branch }}
+
+runs:
+  using: composite
+  steps:
+    - name: Require a trusted protected-main caller context
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "$GITHUB_REF" != "refs/heads/main" || "$GITHUB_REF_PROTECTED" != "true" ]]; then
+          echo "GitOps handoff requires protected main" >&2
+          exit 1
+        fi
+        if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]]; then
+          echo "GitOps handoff requires a trusted push or authorized dispatch" >&2
+          exit 1
+        fi
+
+    - name: Check out GitOps main with the caller-supplied token
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+        repository: MALIEV-Co-Ltd/maliev-gitops
+        ref: main
+        path: .gitops-handoff
+        fetch-depth: 0
+        persist-credentials: false
+        token: ${{ inputs.token }}
+
+    - name: Update the allowlisted image digest
+      id: update
+      shell: pwsh
+      env:
+        SERVICE: ${{ inputs.service }}
+        IMAGE: ${{ inputs.image }}
+        DIGEST: ${{ inputs.digest }}
+        GITOPS_PATH: ${{ inputs.gitops-path }}
+        CONTRACT_VERSION: ${{ inputs.contract-version }}
+      run: |
+        $script = Join-Path $env:GITHUB_ACTION_PATH '../../scripts/Set-GitOpsImageDigest.ps1'
+        & $script `
+          -GitOpsRoot (Join-Path $env:GITHUB_WORKSPACE '.gitops-handoff') `
+          -Service $env:SERVICE `
+          -Image $env:IMAGE `
+          -Digest $env:DIGEST `
+          -GitOpsPath $env:GITOPS_PATH `
+          -ContractVersion $env:CONTRACT_VERSION `
+          -GitHubOutput $env:GITHUB_OUTPUT
+
+    - name: Prepare the deterministic branch
+      if: steps.update.outputs.changed == 'true'
+      shell: bash
+      working-directory: .gitops-handoff
+      env:
+        BRANCH: ${{ steps.update.outputs.branch }}
+      run: git checkout -B "$BRANCH"
+
+    - name: Set up pinned Kustomize
+      if: steps.update.outputs.changed == 'true'
+      uses: imranismail/setup-kustomize@53f941b41dca13ed61874bbc6b4b6e1562877530 # v3.0.0
+
+    - name: Validate the changed GitOps overlay
+      if: steps.update.outputs.changed == 'true'
+      shell: bash
+      working-directory: .gitops-handoff
+      env:
+        GITOPS_PATH: ${{ inputs.gitops-path }}
+      run: |
+        set -euo pipefail
+        kustomize build "$(dirname "$GITOPS_PATH")" > /dev/null
+        git diff --check
+
+    - name: Commit the deterministic branch
+      if: steps.update.outputs.changed == 'true'
+      shell: bash
+      working-directory: .gitops-handoff
+      env:
+        BRANCH: ${{ steps.update.outputs.branch }}
+        GITOPS_PATH: ${{ inputs.gitops-path }}
+        SERVICE: ${{ inputs.service }}
+      run: |
+        set -euo pipefail
+        git config user.name "maliev-gitops-handoff"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add -- "$GITOPS_PATH"
+        git diff --cached --quiet && {
+          echo "Updater reported a change but the Git index is unchanged" >&2
+          exit 1
+        }
+        git commit -m "deploy(legacy): update $SERVICE image digest"
+
+    - name: Push with an ephemeral authenticated header
+      if: steps.update.outputs.changed == 'true'
+      shell: bash
+      working-directory: .gitops-handoff
+      env:
+        BRANCH: ${{ steps.update.outputs.branch }}
+        TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        auth_header="$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\r\n')"
+        echo "::add-mask::$auth_header"
+        git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $auth_header" \
+          push --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+
+    - name: Open or update the GitOps pull request
+      if: steps.update.outputs.changed == 'true'
+      shell: bash
+      working-directory: .gitops-handoff
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        BRANCH: ${{ steps.update.outputs.branch }}
+        DIGEST: ${{ inputs.digest }}
+        SERVICE: ${{ inputs.service }}
+      run: |
+        set -euo pipefail
+        title="deploy(legacy): update $SERVICE image digest"
+        body="Automated immutable image handoff for \`$SERVICE\` at \`$DIGEST\`. This pull request does not apply or promote the manifest."
+        number="$(gh pr list --repo MALIEV-Co-Ltd/maliev-gitops --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+        if [[ -n "$number" ]]; then
+          gh pr edit "$number" --repo MALIEV-Co-Ltd/maliev-gitops --title "$title" --body "$body"
+        else
+          gh pr create --repo MALIEV-Co-Ltd/maliev-gitops --base main --head "$BRANCH" --title "$title" --body "$body"
+        fi
+
+    - name: Verify no credential remains in Git configuration
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        checkout="$GITHUB_WORKSPACE/.gitops-handoff"
+        if [[ ! -d "$checkout/.git" ]]; then
+          exit 0
+        fi
+        cd "$checkout"
+        if git config --local --get-regexp '(^credential\.|^http\..*extraheader)' > /dev/null; then
+          echo "GitOps checkout retained credential configuration" >&2
+          exit 1
+        fi
+        remote="$(git remote get-url origin)"
+        if [[ "$remote" == *"@"* ]]; then
+          echo "GitOps remote URL contains user information" >&2
+          exit 1
+        fi
