@@ -40,6 +40,7 @@ jobs:
   publish:
     if: >-
       github.ref == 'refs/heads/main' &&
+      github.ref_protected == true &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-24.04

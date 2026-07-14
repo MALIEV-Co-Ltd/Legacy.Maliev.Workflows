@@ -55,15 +55,7 @@ public sealed class RepositoryContractTests
             Assert.DoesNotContain("kubectl", source, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("argocd", source, StringComparison.OrdinalIgnoreCase);
 
-            string[] actionLines = source
-                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-                .Where(line => Regex.IsMatch(line, @"^\s*(?:-\s*)?uses:\s*", RegexOptions.IgnoreCase))
-                .ToArray();
-
-            foreach (string actionLine in actionLines)
-            {
-                Assert.Matches(@"uses:\s+[^\s@]+@[0-9a-f]{40}(?:\s|$)", actionLine);
-            }
+            AssertActionUsesAreShaPinned(source);
         }
     }
 
@@ -132,6 +124,7 @@ public sealed class RepositoryContractTests
         Assert.Contains("permissions:\n  contents: read\n  id-token: write", normalizedSource, StringComparison.Ordinal);
         Assert.Contains("environment: ${{ inputs.environment }}", source, StringComparison.Ordinal);
         Assert.Contains("github.ref == 'refs/heads/main'", source, StringComparison.Ordinal);
+        Assert.Contains("github.ref_protected == true", source, StringComparison.Ordinal);
         Assert.Contains("github.event_name == 'push'", source, StringComparison.Ordinal);
         Assert.Contains("github.event_name == 'workflow_dispatch'", source, StringComparison.Ordinal);
 
@@ -153,6 +146,7 @@ public sealed class RepositoryContractTests
     {
         string source = ReadRequiredSource(".github/workflows/publish-image.yml");
 
+        AssertActionUsesAreShaPinned(source);
         Assert.Single(Regex.Matches(source, @"docker/build-push-action@[0-9a-f]{40}"));
         Assert.Contains("google-github-actions/auth@", source, StringComparison.Ordinal);
         Assert.Contains("workload_identity_provider: ${{ inputs.workload-identity-provider }}", source, StringComparison.Ordinal);
@@ -240,6 +234,20 @@ public sealed class RepositoryContractTests
             int commandIndex = source.IndexOf(command, StringComparison.Ordinal);
             Assert.True(commandIndex > previousIndex, $"Expected validation command in order: {command}");
             previousIndex = commandIndex;
+        }
+    }
+
+    private static void AssertActionUsesAreShaPinned(string source)
+    {
+        string[] actionLines = source
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Where(line => Regex.IsMatch(line, @"^\s*(?:-\s*)?uses:\s*", RegexOptions.IgnoreCase))
+            .ToArray();
+
+        Assert.NotEmpty(actionLines);
+        foreach (string actionLine in actionLines)
+        {
+            Assert.Matches(@"uses:\s+[^\s@]+@[0-9a-f]{40}(?:\s|$)", actionLine);
         }
     }
 
