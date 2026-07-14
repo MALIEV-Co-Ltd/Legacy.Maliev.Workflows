@@ -1,0 +1,140 @@
+name: gitops-handoff
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        description: Legacy.Maliev.* service repository name
+        required: true
+        type: string
+      image:
+        description: Full immutable image name without a tag or digest
+        required: true
+        type: string
+      digest:
+        description: Published sha256 image digest
+        required: true
+        type: string
+      gitops-path:
+        description: Established legacy Kustomize manifest path
+        required: true
+        type: string
+    secrets:
+      gitops-token:
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitops-${{ inputs.service }}
+  cancel-in-progress: false
+
+jobs:
+  handoff:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.ref_protected == true &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the trusted workflow implementation
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: MALIEV-Co-Ltd/Legacy.Maliev.Workflows
+          ref: ${{ github.workflow_sha }}
+          path: trusted-workflow
+          persist-credentials: false
+
+      - name: Check out GitOps main with the protected credential
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: MALIEV-Co-Ltd/maliev-gitops
+          ref: main
+          path: gitops
+          fetch-depth: 0
+          token: ${{ secrets.gitops-token }}
+
+      - name: Prepare the deterministic handoff branch
+        id: branch
+        shell: pwsh
+        env:
+          SERVICE: ${{ inputs.service }}
+        run: |
+          $suffix = $env:SERVICE.Substring('Legacy.Maliev.'.Length)
+          $slug = [regex]::Replace($suffix, '(?<=[a-z0-9])(?=[A-Z])', '-').ToLowerInvariant()
+          $branch = "gitops/legacy-$slug"
+          "branch=$branch" >> $env:GITHUB_OUTPUT
+          git -C gitops checkout -B $branch
+
+      - name: Update only the established legacy image digest
+        shell: pwsh
+        env:
+          SERVICE: ${{ inputs.service }}
+          IMAGE: ${{ inputs.image }}
+          DIGEST: ${{ inputs.digest }}
+          GITOPS_PATH: ${{ inputs.gitops-path }}
+        run: |
+          ./trusted-workflow/scripts/Set-GitOpsImageDigest.ps1 `
+            -GitOpsRoot ./gitops `
+            -Service $env:SERVICE `
+            -Image $env:IMAGE `
+            -Digest $env:DIGEST `
+            -GitOpsPath $env:GITOPS_PATH
+
+      - name: Set up pinned Kustomize
+        uses: imranismail/setup-kustomize@53f941b41dca13ed61874bbc6b4b6e1562877530 # v3.0.0
+
+      - name: Validate the changed GitOps overlay
+        shell: bash
+        working-directory: gitops
+        env:
+          GITOPS_PATH: ${{ inputs.gitops-path }}
+        run: |
+          set -euo pipefail
+          kustomize build "$(dirname "$GITOPS_PATH")" > /dev/null
+          git diff --check
+
+      - name: Commit and push the deterministic branch
+        id: commit
+        shell: bash
+        working-directory: gitops
+        env:
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          DIGEST: ${{ inputs.digest }}
+          GITOPS_PATH: ${{ inputs.gitops-path }}
+          SERVICE: ${{ inputs.service }}
+        run: |
+          set -euo pipefail
+          git config user.name "maliev-gitops-handoff"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$GITOPS_PATH"
+          git diff --cached --quiet && {
+            echo "GitOps already contains $DIGEST"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+          git commit -m "deploy(legacy): update $SERVICE image digest"
+          git push --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the GitOps pull request
+        if: steps.commit.outputs.changed == 'true'
+        shell: bash
+        working-directory: gitops
+        env:
+          GH_TOKEN: ${{ secrets.gitops-token }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          DIGEST: ${{ inputs.digest }}
+          SERVICE: ${{ inputs.service }}
+        run: |
+          set -euo pipefail
+          title="deploy(legacy): update $SERVICE image digest"
+          body="Automated immutable image handoff for \`$SERVICE\` at \`$DIGEST\`. This pull request does not apply or promote the manifest."
+          number="$(gh pr list --repo MALIEV-Co-Ltd/maliev-gitops --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [[ -n "$number" ]]; then
+            gh pr edit "$number" --repo MALIEV-Co-Ltd/maliev-gitops --title "$title" --body "$body"
+          else
+            gh pr create --repo MALIEV-Co-Ltd/maliev-gitops --base main --head "$BRANCH" --title "$title" --body "$body"
+          fi

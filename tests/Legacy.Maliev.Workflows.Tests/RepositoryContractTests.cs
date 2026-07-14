@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Xunit;
 
@@ -173,6 +174,133 @@ public sealed class RepositoryContractTests
     }
 
     [Fact]
+    public void GitOpsDigestUpdater_WhenFixtureIsValid_ChangesOnlyTheLegacyImageToTheDigest()
+    {
+        using GitOpsFixture fixture = GitOpsFixture.Create();
+
+        ProcessResult result = fixture.RunUpdater();
+
+        Assert.True(result.ExitCode == 0, result.Output);
+        string manifest = File.ReadAllText(fixture.ManifestPath);
+        Assert.Contains($"    digest: {GitOpsFixture.ValidDigest}", manifest, StringComparison.Ordinal);
+        Assert.DoesNotContain("newTag:", manifest, StringComparison.Ordinal);
+        Assert.Equal(fixture.RelativeManifestPath, fixture.RunGit("diff", "--name-only").Trim());
+    }
+
+    [Theory]
+    [InlineData("NotLegacy.CountryService", GitOpsFixture.ValidDigest, "service must match Legacy.Maliev.*")]
+    [InlineData("Legacy.Maliev.CountryService", "sha256:not-a-digest", "digest must be sha256 followed by 64 lowercase hexadecimal characters")]
+    public void GitOpsDigestUpdater_WhenIdentityInputIsInvalid_FailsClosed(
+        string service,
+        string digest,
+        string expectedError)
+    {
+        using GitOpsFixture fixture = GitOpsFixture.Create();
+
+        ProcessResult result = fixture.RunUpdater(service: service, digest: digest);
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains(expectedError, result.Output, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(fixture.RunGit("diff", "--name-only"));
+    }
+
+    [Fact]
+    public void GitOpsDigestUpdater_WhenPathEscapesCheckout_FailsClosed()
+    {
+        using GitOpsFixture fixture = GitOpsFixture.Create();
+        string outsidePath = Path.Combine(fixture.ContainerPath, "outside.yaml");
+        File.WriteAllText(outsidePath, GitOpsFixture.ValidManifest);
+
+        ProcessResult result = fixture.RunUpdater(gitOpsPath: outsidePath);
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("gitops-path must stay within gitops-root", result.Output, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(fixture.RunGit("diff", "--name-only"));
+    }
+
+    [Theory]
+    [InlineData("namespace: maliev-prod", "namespace must remain maliev-legacy")]
+    [InlineData("nodeSelector:\n  cloud.google.com/gke-nodepool: paid-pool", "node selectors are prohibited")]
+    [InlineData("  - name: another-image\n    newName: registry.example/another-image\n    newTag: latest", "manifest must contain exactly one image entry")]
+    public void GitOpsDigestUpdater_WhenManifestContractIsUnsafe_FailsClosed(
+        string replacement,
+        string expectedError)
+    {
+        string manifest = replacement.StartsWith("namespace:", StringComparison.Ordinal)
+            ? GitOpsFixture.ValidManifest.Replace("namespace: maliev-legacy", replacement, StringComparison.Ordinal)
+            : $"{GitOpsFixture.ValidManifest.TrimEnd()}\n{replacement}\n";
+        using GitOpsFixture fixture = GitOpsFixture.Create(manifest);
+
+        ProcessResult result = fixture.RunUpdater();
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains(expectedError, result.Output, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(fixture.RunGit("diff", "--name-only"));
+    }
+
+    [Fact]
+    public void GitOpsDigestUpdater_WhenAnotherFileIsChanged_FailsClosed()
+    {
+        using GitOpsFixture fixture = GitOpsFixture.Create();
+        File.AppendAllText(Path.Combine(fixture.RepositoryPath, "README.md"), "unexpected\n");
+
+        ProcessResult result = fixture.RunUpdater();
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("git diff may contain only the target manifest", result.Output, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("digest:", File.ReadAllText(fixture.ManifestPath), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TrustedGitOpsHandoffWorkflow_WhenContractIsEvaluated_IsProtectedAndPrOnly()
+    {
+        string source = ReadRequiredSource(".github/workflows/gitops-handoff.yml");
+        string normalizedSource = NormalizeLineEndings(source);
+
+        Assert.Contains("name: gitops-handoff", source, StringComparison.Ordinal);
+        Assert.Contains("workflow_call:", source, StringComparison.Ordinal);
+        Assert.Contains("service:", source, StringComparison.Ordinal);
+        Assert.Contains("image:", source, StringComparison.Ordinal);
+        Assert.Contains("digest:", source, StringComparison.Ordinal);
+        Assert.Contains("gitops-path:", source, StringComparison.Ordinal);
+        Assert.Contains("gitops-token:\n        required: true", normalizedSource, StringComparison.Ordinal);
+        Assert.Contains("permissions:\n  contents: read", normalizedSource, StringComparison.Ordinal);
+        Assert.Contains("github.ref == 'refs/heads/main'", source, StringComparison.Ordinal);
+        Assert.Contains("github.ref_protected == true", source, StringComparison.Ordinal);
+        Assert.Contains("github.event_name == 'push'", source, StringComparison.Ordinal);
+        Assert.Contains("github.event_name == 'workflow_dispatch'", source, StringComparison.Ordinal);
+        Assert.Contains("repository: MALIEV-Co-Ltd/maliev-gitops", source, StringComparison.Ordinal);
+        Assert.Contains("token: ${{ secrets.gitops-token }}", source, StringComparison.Ordinal);
+        Assert.Contains("Set-GitOpsImageDigest.ps1", source, StringComparison.Ordinal);
+        Assert.Contains("SERVICE: ${{ inputs.service }}", source, StringComparison.Ordinal);
+        Assert.Contains("IMAGE: ${{ inputs.image }}", source, StringComparison.Ordinal);
+        Assert.Contains("DIGEST: ${{ inputs.digest }}", source, StringComparison.Ordinal);
+        Assert.Contains("GITOPS_PATH: ${{ inputs.gitops-path }}", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("-Service '${{", source, StringComparison.Ordinal);
+        Assert.Contains("kustomize build", source, StringComparison.Ordinal);
+        Assert.Contains("id: commit", source, StringComparison.Ordinal);
+        Assert.Contains("changed=true", source, StringComparison.Ordinal);
+        Assert.Contains("if: steps.commit.outputs.changed == 'true'", source, StringComparison.Ordinal);
+        Assert.Contains("gh pr create", source, StringComparison.Ordinal);
+        Assert.Contains("gh pr edit", source, StringComparison.Ordinal);
+        Assert.Contains("gitops/legacy-", source, StringComparison.Ordinal);
+
+        Assert.DoesNotContain("pull_request:", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("pull_request_target", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("kubectl", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("helm ", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("argocd", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("gh pr merge", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("sync", source, StringComparison.OrdinalIgnoreCase);
+        AssertActionUsesAreShaPinned(source);
+
+        foreach (string relativePath in RequiredActionSources.Where(path => path != ".github/workflows/gitops-handoff.yml"))
+        {
+            Assert.DoesNotContain("gitops-token", ReadRequiredSource(relativePath), StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Fact]
     public void FindRepositoryRoot_WhenGitMarkerIsFileOrDirectory_ReturnsRepositoryRoot()
     {
         DirectoryInfo? expectedRoot = new(AppContext.BaseDirectory);
@@ -264,4 +392,116 @@ public sealed class RepositoryContractTests
     }
 
     private static string NormalizeLineEndings(string source) => source.Replace("\r\n", "\n", StringComparison.Ordinal);
+
+    private sealed record ProcessResult(int ExitCode, string Output);
+
+    private sealed class GitOpsFixture : IDisposable
+    {
+        public const string ValidDigest = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        public const string ValidManifest = """
+            apiVersion: kustomize.config.k8s.io/v1beta1
+            kind: Kustomization
+            namespace: maliev-legacy
+            resources:
+              - ../../base
+            images:
+              - name: legacy-maliev-country-service
+                newName: registry.example/legacy-maliev-country-service
+                newTag: latest
+            """;
+
+        private GitOpsFixture(string containerPath, string repositoryPath, string relativeManifestPath)
+        {
+            ContainerPath = containerPath;
+            RepositoryPath = repositoryPath;
+            RelativeManifestPath = relativeManifestPath;
+        }
+
+        public string ContainerPath { get; }
+        public string RepositoryPath { get; }
+        public string RelativeManifestPath { get; }
+        public string ManifestPath => Path.Combine(RepositoryPath, RelativeManifestPath);
+
+        public static GitOpsFixture Create(string? manifest = null)
+        {
+            string containerPath = Path.Combine(Path.GetTempPath(), $"legacy-gitops-{Guid.NewGuid():N}");
+            string repositoryPath = Path.Combine(containerPath, "maliev-gitops");
+            const string relativeManifestPath = "3-apps/_legacy-country-service/overlays/legacy/kustomization.yaml";
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(repositoryPath, relativeManifestPath))!);
+            File.WriteAllText(Path.Combine(repositoryPath, relativeManifestPath), manifest ?? ValidManifest);
+            File.WriteAllText(Path.Combine(repositoryPath, "README.md"), "fixture\n");
+
+            GitOpsFixture fixture = new(containerPath, repositoryPath, relativeManifestPath);
+            fixture.RunGit("init");
+            fixture.RunGit("config", "user.name", "Fixture");
+            fixture.RunGit("config", "user.email", "fixture@example.invalid");
+            fixture.RunGit("config", "core.autocrlf", "false");
+            fixture.RunGit("add", ".");
+            fixture.RunGit("commit", "-m", "fixture");
+            return fixture;
+        }
+
+        public ProcessResult RunUpdater(
+            string service = "Legacy.Maliev.CountryService",
+            string digest = ValidDigest,
+            string? gitOpsPath = null)
+        {
+            string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "Set-GitOpsImageDigest.ps1");
+            return RunProcess(
+                RepositoryPath,
+                "pwsh",
+                "-NoLogo",
+                "-NoProfile",
+                "-File",
+                scriptPath,
+                "-GitOpsRoot",
+                RepositoryPath,
+                "-Service",
+                service,
+                "-Image",
+                "registry.example/legacy-maliev-country-service",
+                "-Digest",
+                digest,
+                "-GitOpsPath",
+                gitOpsPath ?? RelativeManifestPath);
+        }
+
+        public string RunGit(params string[] arguments)
+        {
+            ProcessResult result = RunProcess(RepositoryPath, "git", arguments);
+            Assert.True(result.ExitCode == 0, result.Output);
+            return result.Output;
+        }
+
+        public void Dispose()
+        {
+            foreach (string path in Directory.EnumerateFiles(ContainerPath, "*", SearchOption.AllDirectories))
+            {
+                File.SetAttributes(path, FileAttributes.Normal);
+            }
+
+            Directory.Delete(ContainerPath, recursive: true);
+        }
+
+        private static ProcessResult RunProcess(string workingDirectory, string fileName, params string[] arguments)
+        {
+            ProcessStartInfo startInfo = new(fileName)
+            {
+                WorkingDirectory = workingDirectory,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            };
+            foreach (string argument in arguments)
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+
+            using Process process = Process.Start(startInfo)!;
+            string standardOutput = process.StandardOutput.ReadToEnd();
+            string standardError = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+            return new ProcessResult(process.ExitCode, standardOutput + standardError);
+        }
+    }
 }
