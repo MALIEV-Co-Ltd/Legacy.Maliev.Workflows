@@ -208,6 +208,32 @@ public sealed class RepositoryContractTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GitOpsDigestUpdater_WhenManifestHasDuplicateTopLevelImagesBlocks_FailsBeforeUpdateOrNoOp(
+        bool firstBlockAlreadyHasDigest)
+    {
+        string firstBlock = firstBlockAlreadyHasDigest
+            ? GitOpsFixture.ValidManifest.Replace("newTag: latest", $"digest: {GitOpsFixture.ValidDigest}", StringComparison.Ordinal)
+            : GitOpsFixture.ValidManifest;
+        string manifest = $"""
+            {firstBlock.TrimEnd()}
+            images:
+              - name: duplicate-image
+                newName: registry.example/duplicate-image
+                newTag: latest
+            """;
+        using GitOpsFixture fixture = GitOpsFixture.Create(manifest);
+
+        ProcessResult result = fixture.RunUpdater();
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("manifest must contain exactly one top-level images block", result.Output, StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(fixture.OutputPath));
+        Assert.Empty(fixture.RunGit("diff", "--name-only"));
+    }
+
+    [Theory]
     [InlineData("NotLegacy.CountryService", GitOpsFixture.ValidDigest, "service must match Legacy.Maliev.*")]
     [InlineData("Legacy.Maliev.CountryService", "sha256:not-a-digest", "digest must be sha256 followed by 64 lowercase hexadecimal characters")]
     public void GitOpsDigestUpdater_WhenIdentityInputIsInvalid_FailsClosed(
@@ -346,6 +372,7 @@ public sealed class RepositoryContractTests
         Assert.Contains("GITHUB_EVENT_NAME", source, StringComparison.Ordinal);
         Assert.Contains("repository: MALIEV-Co-Ltd/maliev-gitops", source, StringComparison.Ordinal);
         Assert.Contains("token: ${{ inputs.token }}", source, StringComparison.Ordinal);
+        Assert.Contains("persist-credentials: false", source, StringComparison.Ordinal);
         Assert.Contains("Set-GitOpsImageDigest.ps1", source, StringComparison.Ordinal);
         Assert.Contains("SERVICE: ${{ inputs.service }}", source, StringComparison.Ordinal);
         Assert.Contains("IMAGE: ${{ inputs.image }}", source, StringComparison.Ordinal);
@@ -355,6 +382,13 @@ public sealed class RepositoryContractTests
         Assert.Contains("GITHUB_ACTION_PATH", source, StringComparison.Ordinal);
         Assert.Contains("kustomize build", source, StringComparison.Ordinal);
         Assert.Contains("if: steps.update.outputs.changed == 'true'", source, StringComparison.Ordinal);
+        Assert.Contains("git -c http.https://github.com/.extraheader=", source, StringComparison.Ordinal);
+        Assert.Contains("TOKEN: ${{ inputs.token }}", source, StringComparison.Ordinal);
+        Assert.Contains("GH_TOKEN: ${{ inputs.token }}", source, StringComparison.Ordinal);
+        Assert.Contains("if: always()", source, StringComparison.Ordinal);
+        Assert.Contains("git config --local --get-regexp", source, StringComparison.Ordinal);
+        Assert.Contains("git remote get-url origin", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("\n        git push", normalizedSource, StringComparison.Ordinal);
         Assert.Contains("gh pr create", source, StringComparison.Ordinal);
         Assert.Contains("gh pr edit", source, StringComparison.Ordinal);
 
@@ -385,6 +419,9 @@ public sealed class RepositoryContractTests
         Assert.Contains("Legacy.Maliev.CountryService", source, StringComparison.Ordinal);
         Assert.Contains("3-apps/_legacy-country-service/overlays/legacy/kustomization.yaml", source, StringComparison.Ordinal);
         Assert.Contains("not yet present on `maliev-gitops` main", source, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Contents: read and write", source, StringComparison.Ordinal);
+        Assert.Contains("Pull requests: read and write", source, StringComparison.Ordinal);
+        Assert.Contains("limited to `MALIEV-Co-Ltd/maliev-gitops`", source, StringComparison.Ordinal);
         Assert.DoesNotContain(".github/workflows/gitops-handoff.yml", source, StringComparison.Ordinal);
     }
 

@@ -170,6 +170,11 @@ if ($original -match '(?im)^\s*(?:nodeSelector|node-selector)\s*:') {
     Stop-InvalidInput 'node selectors are prohibited in the legacy image manifest'
 }
 
+$topLevelImagesMatches = [regex]::Matches($original, '(?m)^images\s*:\s*(?:#.*)?$')
+if ($topLevelImagesMatches.Count -ne 1) {
+    Stop-InvalidInput 'manifest must contain exactly one top-level images block'
+}
+
 $imagesMatch = [regex]::Match($original, '(?ms)^images:\s*\r?\n(?<block>(?:^[ \t]+.*(?:\r?\n|$))+)')
 if (-not $imagesMatch.Success) {
     Stop-InvalidInput 'manifest must contain one images block'

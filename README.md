@@ -68,6 +68,8 @@ jobs:
 
 The action reports `changed=false` and `status=no-op` when the requested digest is already present; in that state it does not create a branch, push, or open a pull request. Unknown services and contract versions require an explicit reviewed allowlist update.
 
+The caller token must be limited to `MALIEV-Co-Ltd/maliev-gitops` with only repository **Contents: read and write** and **Pull requests: read and write** permissions. It needs no workflow, administration, organization, package, or cluster permission. Checkout uses the token with credential persistence disabled; push receives an ephemeral per-command authorization header, `gh` receives `GH_TOKEN` only for its PR command step, and the action verifies that neither Git credential configuration nor an authenticated remote URL remains afterward.
+
 ## Repository contract
 
 Run the executable source contract with:

@@ -56,6 +56,7 @@ runs:
         ref: main
         path: .gitops-handoff
         fetch-depth: 0
+        persist-credentials: false
         token: ${{ inputs.token }}
 
     - name: Update the allowlisted image digest
@@ -101,7 +102,7 @@ runs:
         kustomize build "$(dirname "$GITOPS_PATH")" > /dev/null
         git diff --check
 
-    - name: Commit and push the deterministic branch
+    - name: Commit the deterministic branch
       if: steps.update.outputs.changed == 'true'
       shell: bash
       working-directory: .gitops-handoff
@@ -119,7 +120,20 @@ runs:
           exit 1
         }
         git commit -m "deploy(legacy): update $SERVICE image digest"
-        git push --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+
+    - name: Push with an ephemeral authenticated header
+      if: steps.update.outputs.changed == 'true'
+      shell: bash
+      working-directory: .gitops-handoff
+      env:
+        BRANCH: ${{ steps.update.outputs.branch }}
+        TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        auth_header="$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\r\n')"
+        echo "::add-mask::$auth_header"
+        git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $auth_header" \
+          push --force-with-lease origin "HEAD:refs/heads/$BRANCH"
 
     - name: Open or update the GitOps pull request
       if: steps.update.outputs.changed == 'true'
@@ -139,4 +153,24 @@ runs:
           gh pr edit "$number" --repo MALIEV-Co-Ltd/maliev-gitops --title "$title" --body "$body"
         else
           gh pr create --repo MALIEV-Co-Ltd/maliev-gitops --base main --head "$BRANCH" --title "$title" --body "$body"
+        fi
+
+    - name: Verify no credential remains in Git configuration
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        checkout="$GITHUB_WORKSPACE/.gitops-handoff"
+        if [[ ! -d "$checkout/.git" ]]; then
+          exit 0
+        fi
+        cd "$checkout"
+        if git config --local --get-regexp '(^credential\.|^http\..*extraheader)' > /dev/null; then
+          echo "GitOps checkout retained credential configuration" >&2
+          exit 1
+        fi
+        remote="$(git remote get-url origin)"
+        if [[ "$remote" == *"@"* ]]; then
+          echo "GitOps remote URL contains user information" >&2
+          exit 1
         fi
