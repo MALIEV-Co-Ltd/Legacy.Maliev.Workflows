@@ -176,7 +176,7 @@ try {
         $protectionPayload = @{
             required_status_checks = @{ strict = $true; contexts = @('validate / validate') }
             enforce_admins = $true
-            required_pull_request_reviews = @{ dismiss_stale_reviews = $true; required_approving_review_count = 1 }
+            required_pull_request_reviews = @{ dismiss_stale_reviews = $true; required_approving_review_count = 0 }
             restrictions = $null
             required_linear_history = $true
             allow_force_pushes = $false
@@ -208,7 +208,7 @@ try {
             $requiredContexts.Count -eq 1 -and $requiredContexts[0] -ceq 'validate / validate' -and
             $protectionReadback.enforce_admins.enabled -eq $true -and
             $protectionReadback.required_pull_request_reviews.dismiss_stale_reviews -eq $true -and
-            $protectionReadback.required_pull_request_reviews.required_approving_review_count -eq 1 -and
+            $protectionReadback.required_pull_request_reviews.required_approving_review_count -eq 0 -and
             $protectionReadback.required_linear_history.enabled -eq $true -and
             $protectionReadback.required_conversation_resolution.enabled -eq $true -and
             $protectionReadback.allow_force_pushes.enabled -eq $false -and

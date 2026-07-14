@@ -198,7 +198,8 @@ if ($joined -ceq "api $repositoryEndpoint") {
 }
 if ($joined -ceq "api $protectionEndpoint") {
     $conversationResolution = if ($env:GH_PROTECTION_MISMATCH) { 'false' } else { 'true' }
-    '{"required_status_checks":{"strict":true,"contexts":["validate / validate"]},"enforce_admins":{"enabled":true},"required_pull_request_reviews":{"dismiss_stale_reviews":true,"required_approving_review_count":1},"required_linear_history":{"enabled":true},"required_conversation_resolution":{"enabled":' + $conversationResolution + '},"allow_force_pushes":{"enabled":false},"allow_deletions":{"enabled":false}}'
+    $approvalCount = if ($env:GH_APPROVAL_COUNT_MISMATCH) { 1 } else { 0 }
+    '{"required_status_checks":{"strict":true,"contexts":["validate / validate"]},"enforce_admins":{"enabled":true},"required_pull_request_reviews":{"dismiss_stale_reviews":true,"required_approving_review_count":' + $approvalCount + '},"required_linear_history":{"enabled":true},"required_conversation_resolution":{"enabled":' + $conversationResolution + '},"allow_force_pushes":{"enabled":false},"allow_deletions":{"enabled":false}}'
     exit 0
 }
 if ($joined -ceq "api $environmentEndpoint") {
@@ -221,7 +222,7 @@ if ($Arguments.Count -eq 6 -and $Arguments[0] -ceq 'api' -and $Arguments[2] -ceq
             $payload.required_status_checks.strict -ne $true -or @($payload.required_status_checks.contexts).Count -ne 1 -or
             $payload.required_status_checks.contexts[0] -cne 'validate / validate' -or $payload.enforce_admins -ne $true -or
             $payload.required_pull_request_reviews.dismiss_stale_reviews -ne $true -or
-            $payload.required_pull_request_reviews.required_approving_review_count -ne 1 -or
+            $payload.required_pull_request_reviews.required_approving_review_count -ne 0 -or
             $payload.required_linear_history -ne $true -or $payload.allow_force_pushes -ne $false -or
             $payload.allow_deletions -ne $false -or $payload.required_conversation_resolution -ne $true) {
             Stop-StrictMock 'branch protection payload mismatch'
@@ -284,6 +285,7 @@ function Invoke-PublisherFixture {
         $Fixture,
         [string]$Visibility = '',
         [switch]$ProtectionMismatch,
+        [switch]$ApprovalCountMismatch,
         [switch]$EnvironmentMismatch,
         [switch]$UnexpectedWaitRule,
         [switch]$UnexpectedReviewerRule,
@@ -317,6 +319,7 @@ function Invoke-PublisherFixture {
         PRE_MERGE_STATE_FILE = $Fixture.PreMergeState
         GH_VISIBILITY = $Visibility
         GH_PROTECTION_MISMATCH = if ($ProtectionMismatch) { 'true' } else { '' }
+        GH_APPROVAL_COUNT_MISMATCH = if ($ApprovalCountMismatch) { 'true' } else { '' }
         GH_ENVIRONMENT_MISMATCH = if ($EnvironmentMismatch) { 'true' } else { '' }
         GH_UNEXPECTED_WAIT_RULE = if ($UnexpectedWaitRule) { 'true' } else { '' }
         GH_UNEXPECTED_REVIEWER_RULE = if ($UnexpectedReviewerRule) { 'true' } else { '' }
@@ -660,6 +663,15 @@ Describe 'Publish-LegacyRepository' {
         $fixture = New-PublicationFixture
         try {
             $result = Invoke-PublisherFixture $fixture -ProtectionMismatch
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'readback mismatch'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'fails closed when GitHub requires one approval for the solo-maintainer repository' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -ApprovalCountMismatch
             $result.ExitCode | Should Not Be 0
             $result.Output | Should Match 'readback mismatch'
         } finally { Remove-Item $fixture.Container -Recurse -Force }
