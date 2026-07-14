@@ -198,12 +198,20 @@ if ($joined -ceq "api $repositoryEndpoint") {
 }
 if ($joined -ceq "api $protectionEndpoint") {
     $conversationResolution = if ($env:GH_PROTECTION_MISMATCH) { 'false' } else { 'true' }
-    '{"required_status_checks":{"strict":true,"contexts":["validate / validate"]},"enforce_admins":{"enabled":true},"required_pull_request_reviews":{"dismiss_stale_reviews":true,"required_approving_review_count":1},"required_linear_history":{"enabled":true},"required_conversation_resolution":{"enabled":' + $conversationResolution + '},"allow_force_pushes":{"enabled":false},"allow_deletions":{"enabled":false}}'
+    $approvalCount = if ($env:GH_APPROVAL_COUNT_MISMATCH) { 1 } else { 0 }
+    '{"required_status_checks":{"strict":true,"contexts":["validate / validate"]},"enforce_admins":{"enabled":true},"required_pull_request_reviews":{"dismiss_stale_reviews":true,"required_approving_review_count":' + $approvalCount + '},"required_linear_history":{"enabled":true},"required_conversation_resolution":{"enabled":' + $conversationResolution + '},"allow_force_pushes":{"enabled":false},"allow_deletions":{"enabled":false}}'
     exit 0
 }
 if ($joined -ceq "api $environmentEndpoint") {
-    $waitTimer = if ($env:GH_ENVIRONMENT_MISMATCH) { 5 } else { 0 }
-    '{"name":"production","protection_rules":[{"type":"wait_timer","wait_timer":' + $waitTimer + '},{"type":"required_reviewers","prevent_self_review":true,"reviewers":[]},{"type":"branch_policy"}],"deployment_branch_policy":{"protected_branches":true,"custom_branch_policies":false}}'
+    $branchPolicy = if ($env:GH_ENVIRONMENT_MISMATCH) {
+        '"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}'
+    } else {
+        '"deployment_branch_policy":{"protected_branches":true,"custom_branch_policies":false}'
+    }
+    $rules = @('{"type":"branch_policy"}')
+    if ($env:GH_UNEXPECTED_WAIT_RULE) { $rules += '{"type":"wait_timer","wait_timer":5}' }
+    if ($env:GH_UNEXPECTED_REVIEWER_RULE) { $rules += '{"type":"required_reviewers","prevent_self_review":true,"reviewers":[{"type":"User","reviewer":{"login":"fixture-reviewer"}}]}' }
+    '{"name":"production","protection_rules":[' + ($rules -join ',') + '],' + $branchPolicy + '}'
     exit 0
 }
 if ($Arguments.Count -eq 6 -and $Arguments[0] -ceq 'api' -and $Arguments[2] -ceq '--method' -and
@@ -214,7 +222,7 @@ if ($Arguments.Count -eq 6 -and $Arguments[0] -ceq 'api' -and $Arguments[2] -ceq
             $payload.required_status_checks.strict -ne $true -or @($payload.required_status_checks.contexts).Count -ne 1 -or
             $payload.required_status_checks.contexts[0] -cne 'validate / validate' -or $payload.enforce_admins -ne $true -or
             $payload.required_pull_request_reviews.dismiss_stale_reviews -ne $true -or
-            $payload.required_pull_request_reviews.required_approving_review_count -ne 1 -or
+            $payload.required_pull_request_reviews.required_approving_review_count -ne 0 -or
             $payload.required_linear_history -ne $true -or $payload.allow_force_pushes -ne $false -or
             $payload.allow_deletions -ne $false -or $payload.required_conversation_resolution -ne $true) {
             Stop-StrictMock 'branch protection payload mismatch'
@@ -222,8 +230,7 @@ if ($Arguments.Count -eq 6 -and $Arguments[0] -ceq 'api' -and $Arguments[2] -ceq
         exit 0
     }
     if ($Arguments[1] -ceq $environmentEndpoint) {
-        if (@($payload.psobject.Properties).Count -ne 4 -or $payload.wait_timer -ne 0 -or
-            $payload.prevent_self_review -ne $true -or @($payload.reviewers).Count -ne 0 -or
+        if (@($payload.psobject.Properties).Count -ne 1 -or
             $payload.deployment_branch_policy.protected_branches -ne $true -or
             $payload.deployment_branch_policy.custom_branch_policies -ne $false) {
             Stop-StrictMock 'environment payload mismatch'
@@ -278,7 +285,10 @@ function Invoke-PublisherFixture {
         $Fixture,
         [string]$Visibility = '',
         [switch]$ProtectionMismatch,
+        [switch]$ApprovalCountMismatch,
         [switch]$EnvironmentMismatch,
+        [switch]$UnexpectedWaitRule,
+        [switch]$UnexpectedReviewerRule,
         [switch]$OmitPrivateSource,
         [ValidateSet('missing', 'empty', 'non-empty')][string]$RemoteState = 'missing',
         [switch]$ExistingPr)
@@ -309,7 +319,10 @@ function Invoke-PublisherFixture {
         PRE_MERGE_STATE_FILE = $Fixture.PreMergeState
         GH_VISIBILITY = $Visibility
         GH_PROTECTION_MISMATCH = if ($ProtectionMismatch) { 'true' } else { '' }
+        GH_APPROVAL_COUNT_MISMATCH = if ($ApprovalCountMismatch) { 'true' } else { '' }
         GH_ENVIRONMENT_MISMATCH = if ($EnvironmentMismatch) { 'true' } else { '' }
+        GH_UNEXPECTED_WAIT_RULE = if ($UnexpectedWaitRule) { 'true' } else { '' }
+        GH_UNEXPECTED_REVIEWER_RULE = if ($UnexpectedReviewerRule) { 'true' } else { '' }
     }
 }
 
@@ -567,7 +580,7 @@ jobs: { validate: { runs-on: ubuntu-24.04, steps: [{ uses: actions/checkout@ac59
 }
 
 Describe 'Publish-LegacyRepository' {
-    It 'publishes only after the gate, waits for validate, configures protections, and verifies readback' {
+    It 'publishes only after validation and accepts the live one-rule environment readback' {
         $fixture = New-PublicationFixture
         try {
             $result = Invoke-PublisherFixture $fixture
@@ -655,10 +668,37 @@ Describe 'Publish-LegacyRepository' {
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 
+    It 'fails closed when GitHub requires one approval for the solo-maintainer repository' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -ApprovalCountMismatch
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'readback mismatch'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
     It 'fails closed when exact environment protection readback differs' {
         $fixture = New-PublicationFixture
         try {
             $result = Invoke-PublisherFixture $fixture -EnvironmentMismatch
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'readback mismatch'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'fails closed when GitHub reports an unexpected active wait-timer rule' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -UnexpectedWaitRule
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'readback mismatch'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'fails closed when GitHub reports an unexpected active reviewer rule' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -UnexpectedReviewerRule
             $result.ExitCode | Should Not Be 0
             $result.Output | Should Match 'readback mismatch'
         } finally { Remove-Item $fixture.Container -Recurse -Force }
