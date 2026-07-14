@@ -13,6 +13,7 @@ public sealed class RepositoryContractTests
         ".github/dependabot.yml",
         "actions/dotnet-validate/action.yml",
         "actions/gitops-handoff/action.yml",
+        ".github/workflows/validate.yml",
         ".github/workflows/dotnet-validate.yml",
         ".github/workflows/publish-image.yml",
         "scripts/Set-GitOpsImageDigest.ps1",
@@ -74,6 +75,28 @@ public sealed class RepositoryContractTests
         Assert.DoesNotContain("gcloud", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("kubectl", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("argocd", source, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void PullRequestBootstrap_WhenContractIsEvaluated_CallsLocalValidationReadOnlyAndSecretless()
+    {
+        string source = ReadRequiredSource(".github/workflows/validate.yml");
+        string normalizedSource = NormalizeLineEndings(source);
+
+        Assert.Contains("name: validate", source, StringComparison.Ordinal);
+        Assert.Contains("on:\n  pull_request:", normalizedSource, StringComparison.Ordinal);
+        Assert.Contains("permissions:\n  contents: read", normalizedSource, StringComparison.Ordinal);
+        Assert.Contains("jobs:\n  validate:\n    name: validate", normalizedSource, StringComparison.Ordinal);
+        Assert.Contains("uses: ./.github/workflows/dotnet-validate.yml", source, StringComparison.Ordinal);
+        Assert.Contains("solution: Legacy.Maliev.Workflows.slnx", source, StringComparison.Ordinal);
+
+        Assert.DoesNotContain("pull_request_target", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("secrets: inherit", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("${{ secrets.", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("id-token: write", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("packages: write", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("contents: write", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("environment:", source, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
