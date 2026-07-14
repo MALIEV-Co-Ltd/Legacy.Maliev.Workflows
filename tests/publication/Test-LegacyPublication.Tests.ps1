@@ -202,8 +202,15 @@ if ($joined -ceq "api $protectionEndpoint") {
     exit 0
 }
 if ($joined -ceq "api $environmentEndpoint") {
-    $waitTimer = if ($env:GH_ENVIRONMENT_MISMATCH) { 5 } else { 0 }
-    '{"name":"production","protection_rules":[{"type":"wait_timer","wait_timer":' + $waitTimer + '},{"type":"required_reviewers","prevent_self_review":true,"reviewers":[]},{"type":"branch_policy"}],"deployment_branch_policy":{"protected_branches":true,"custom_branch_policies":false}}'
+    $branchPolicy = if ($env:GH_ENVIRONMENT_MISMATCH) {
+        '"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}'
+    } else {
+        '"deployment_branch_policy":{"protected_branches":true,"custom_branch_policies":false}'
+    }
+    $rules = @('{"type":"branch_policy"}')
+    if ($env:GH_UNEXPECTED_WAIT_RULE) { $rules += '{"type":"wait_timer","wait_timer":5}' }
+    if ($env:GH_UNEXPECTED_REVIEWER_RULE) { $rules += '{"type":"required_reviewers","prevent_self_review":true,"reviewers":[{"type":"User","reviewer":{"login":"fixture-reviewer"}}]}' }
+    '{"name":"production","protection_rules":[' + ($rules -join ',') + '],' + $branchPolicy + '}'
     exit 0
 }
 if ($Arguments.Count -eq 6 -and $Arguments[0] -ceq 'api' -and $Arguments[2] -ceq '--method' -and
@@ -222,8 +229,7 @@ if ($Arguments.Count -eq 6 -and $Arguments[0] -ceq 'api' -and $Arguments[2] -ceq
         exit 0
     }
     if ($Arguments[1] -ceq $environmentEndpoint) {
-        if (@($payload.psobject.Properties).Count -ne 4 -or $payload.wait_timer -ne 0 -or
-            $payload.prevent_self_review -ne $true -or @($payload.reviewers).Count -ne 0 -or
+        if (@($payload.psobject.Properties).Count -ne 1 -or
             $payload.deployment_branch_policy.protected_branches -ne $true -or
             $payload.deployment_branch_policy.custom_branch_policies -ne $false) {
             Stop-StrictMock 'environment payload mismatch'
@@ -279,6 +285,8 @@ function Invoke-PublisherFixture {
         [string]$Visibility = '',
         [switch]$ProtectionMismatch,
         [switch]$EnvironmentMismatch,
+        [switch]$UnexpectedWaitRule,
+        [switch]$UnexpectedReviewerRule,
         [switch]$OmitPrivateSource,
         [ValidateSet('missing', 'empty', 'non-empty')][string]$RemoteState = 'missing',
         [switch]$ExistingPr)
@@ -310,6 +318,8 @@ function Invoke-PublisherFixture {
         GH_VISIBILITY = $Visibility
         GH_PROTECTION_MISMATCH = if ($ProtectionMismatch) { 'true' } else { '' }
         GH_ENVIRONMENT_MISMATCH = if ($EnvironmentMismatch) { 'true' } else { '' }
+        GH_UNEXPECTED_WAIT_RULE = if ($UnexpectedWaitRule) { 'true' } else { '' }
+        GH_UNEXPECTED_REVIEWER_RULE = if ($UnexpectedReviewerRule) { 'true' } else { '' }
     }
 }
 
@@ -567,7 +577,7 @@ jobs: { validate: { runs-on: ubuntu-24.04, steps: [{ uses: actions/checkout@ac59
 }
 
 Describe 'Publish-LegacyRepository' {
-    It 'publishes only after the gate, waits for validate, configures protections, and verifies readback' {
+    It 'publishes only after validation and accepts the live one-rule environment readback' {
         $fixture = New-PublicationFixture
         try {
             $result = Invoke-PublisherFixture $fixture
@@ -659,6 +669,24 @@ Describe 'Publish-LegacyRepository' {
         $fixture = New-PublicationFixture
         try {
             $result = Invoke-PublisherFixture $fixture -EnvironmentMismatch
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'readback mismatch'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'fails closed when GitHub reports an unexpected active wait-timer rule' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -UnexpectedWaitRule
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'readback mismatch'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'fails closed when GitHub reports an unexpected active reviewer rule' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -UnexpectedReviewerRule
             $result.ExitCode | Should Not Be 0
             $result.Output | Should Match 'readback mismatch'
         } finally { Remove-Item $fixture.Container -Recurse -Force }
