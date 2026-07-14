@@ -115,6 +115,70 @@ public sealed class RepositoryContractTests
     }
 
     [Fact]
+    public void TrustedImagePublicationWorkflow_WhenContractIsEvaluated_RequiresTrustedCallerAndOidcPermissions()
+    {
+        string source = ReadRequiredSource(".github/workflows/publish-image.yml");
+        string normalizedSource = NormalizeLineEndings(source);
+
+        Assert.Contains("name: publish-image", source, StringComparison.Ordinal);
+        Assert.Contains("workflow_call:", source, StringComparison.Ordinal);
+        Assert.Contains("image:", source, StringComparison.Ordinal);
+        Assert.Contains("dockerfile:", source, StringComparison.Ordinal);
+        Assert.Contains("context:", source, StringComparison.Ordinal);
+        Assert.Contains("environment:", source, StringComparison.Ordinal);
+        Assert.Contains("workload-identity-provider:", source, StringComparison.Ordinal);
+        Assert.Contains("service-account:", source, StringComparison.Ordinal);
+        Assert.Contains("outputs:\n      digest:", normalizedSource, StringComparison.Ordinal);
+        Assert.Contains("permissions:\n  contents: read\n  id-token: write", normalizedSource, StringComparison.Ordinal);
+        Assert.Contains("environment: ${{ inputs.environment }}", source, StringComparison.Ordinal);
+        Assert.Contains("github.ref == 'refs/heads/main'", source, StringComparison.Ordinal);
+        Assert.Contains("github.event_name == 'push'", source, StringComparison.Ordinal);
+        Assert.Contains("github.event_name == 'workflow_dispatch'", source, StringComparison.Ordinal);
+
+        Assert.DoesNotContain("pull_request:", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("pull_request_target", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("${{ secrets.", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("credentials_json", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("service_account_key", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("private_key", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("client_email", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("kubectl", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("helm ", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("argocd", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(":latest", source, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void TrustedImagePublicationWorkflow_WhenContractIsEvaluated_BuildsOnceScansBeforePushAndReturnsDigest()
+    {
+        string source = ReadRequiredSource(".github/workflows/publish-image.yml");
+
+        Assert.Single(Regex.Matches(source, @"docker/build-push-action@[0-9a-f]{40}"));
+        Assert.Contains("google-github-actions/auth@", source, StringComparison.Ordinal);
+        Assert.Contains("workload_identity_provider: ${{ inputs.workload-identity-provider }}", source, StringComparison.Ordinal);
+        Assert.Contains("service_account: ${{ inputs.service-account }}", source, StringComparison.Ordinal);
+        Assert.Contains("token_format: access_token", source, StringComparison.Ordinal);
+        Assert.Contains("docker/login-action@", source, StringComparison.Ordinal);
+        Assert.Contains("docker/setup-buildx-action@", source, StringComparison.Ordinal);
+        Assert.Contains("aquasecurity/trivy-action@", source, StringComparison.Ordinal);
+        Assert.Contains("push: false", source, StringComparison.Ordinal);
+        Assert.Contains("load: true", source, StringComparison.Ordinal);
+        Assert.Contains("${{ inputs.image }}:${{ github.sha }}", source, StringComparison.Ordinal);
+        Assert.Contains("^sha256:[0-9a-f]{64}$", source, StringComparison.Ordinal);
+        Assert.Contains("echo \"digest=$DIGEST\" >> \"$GITHUB_OUTPUT\"", source, StringComparison.Ordinal);
+
+        int buildIndex = source.IndexOf("docker/build-push-action@", StringComparison.Ordinal);
+        int scanIndex = source.IndexOf("aquasecurity/trivy-action@", StringComparison.Ordinal);
+        int pushIndex = source.IndexOf("docker push", StringComparison.Ordinal);
+        int digestIndex = source.IndexOf("docker buildx imagetools inspect", StringComparison.Ordinal);
+
+        Assert.True(buildIndex >= 0 && scanIndex > buildIndex, "Expected Trivy to scan the locally built image.");
+        Assert.True(pushIndex > scanIndex, "Expected the vulnerability scan to pass before image publication.");
+        Assert.True(digestIndex > pushIndex, "Expected immutable digest resolution after image publication.");
+        Assert.Single(Regex.Matches(source, @"GITHUB_OUTPUT"));
+    }
+
+    [Fact]
     public void FindRepositoryRoot_WhenGitMarkerIsFileOrDirectory_ReturnsRepositoryRoot()
     {
         DirectoryInfo? expectedRoot = new(AppContext.BaseDirectory);
