@@ -30,8 +30,16 @@ runs:
         restore-keys: |
           ${{ runner.os }}-nuget-
 
+    - name: Install Gitleaks
+      shell: bash
+      run: |
+        go install github.com/zricethezav/gitleaks/v8@6eaad039603a4de39fddd1cf5f727391efe9974e # v8.30.0
+        echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
     - name: Scan repository for leaked secrets
-      uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: gitleaks git --redact --exit-code 1
 
     - name: Restore
       shell: bash

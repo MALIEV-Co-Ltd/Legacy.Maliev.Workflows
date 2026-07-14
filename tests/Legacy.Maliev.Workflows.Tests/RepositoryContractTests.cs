@@ -93,7 +93,7 @@ public sealed class RepositoryContractTests
         Assert.Contains("dotnet-version:", source, StringComparison.Ordinal);
         Assert.Contains("actions/setup-dotnet@", source, StringComparison.Ordinal);
         Assert.Contains("actions/cache@", source, StringComparison.Ordinal);
-        Assert.Contains("gitleaks/gitleaks-action@", source, StringComparison.Ordinal);
+        AssertUsesSecretlessGitleaksCli(source);
         AssertValidationCommandsRunInOrder(source);
     }
 
@@ -110,6 +110,7 @@ public sealed class RepositoryContractTests
         Assert.Contains("timeout-minutes: 20", source, StringComparison.Ordinal);
         Assert.Contains("cancel-in-progress: true", source, StringComparison.Ordinal);
         Assert.Contains("persist-credentials: false", source, StringComparison.Ordinal);
+        AssertUsesSecretlessGitleaksCli(source);
         AssertValidationCommandsRunInOrder(source);
     }
 
@@ -176,6 +177,18 @@ public sealed class RepositoryContractTests
             Assert.True(commandIndex > previousIndex, $"Expected validation command in order: {command}");
             previousIndex = commandIndex;
         }
+    }
+
+    private static void AssertUsesSecretlessGitleaksCli(string source)
+    {
+        Assert.DoesNotContain("gitleaks/gitleaks-action", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("${{ secrets.", source, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "go install github.com/zricethezav/gitleaks/v8@6eaad039603a4de39fddd1cf5f727391efe9974e",
+            source,
+            StringComparison.Ordinal);
+        Assert.Contains("echo \"$(go env GOPATH)/bin\" >> \"$GITHUB_PATH\"", source, StringComparison.Ordinal);
+        Assert.Contains("gitleaks git --redact --exit-code 1", source, StringComparison.Ordinal);
     }
 
     private static string NormalizeLineEndings(string source) => source.Replace("\r\n", "\n", StringComparison.Ordinal);
