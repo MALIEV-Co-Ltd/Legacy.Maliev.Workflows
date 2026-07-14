@@ -6,7 +6,7 @@ Reusable CI/CD and publication gates for services migrated from the private MALI
 
 Pull-request validation is fork-safe and secretless. It runs with read-only repository contents, never uses `pull_request_target`, and receives no environment secret, cloud identity, package-write permission, GitHub App token, or personal access token. Validation may build, test, format, audit dependencies, scan for secrets, and scan containers; it cannot publish or deploy.
 
-Deployment is a separate trusted boundary. Image publication and GitOps handoff may run only for a protected `main` push or an explicitly authorized trusted dispatch, after the exact commit has passed its required validation check. Deployment jobs bind to a protected GitHub environment and use least-privilege OpenID Connect federation. Service repositories hand an immutable image digest to `maliev-gitops`; they do not run `kubectl`, Helm, or Argo commands against the cluster.
+Deployment is a separate trusted boundary. Image publication and GitOps handoff may run only for a push to protected `main`, after the exact commit has passed its required validation check. Deployment jobs bind to a protected GitHub environment and use least-privilege OpenID Connect federation. Service repositories hand an immutable image digest to `maliev-gitops`; they do not run `kubectl`, Helm, or Argo commands against the cluster.
 
 ## Public history contract
 
