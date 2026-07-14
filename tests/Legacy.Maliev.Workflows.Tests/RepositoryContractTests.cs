@@ -115,6 +115,35 @@ public sealed class RepositoryContractTests
     }
 
     [Fact]
+    public void ForkSafeValidationAction_WhenLocalDependenciesAreConfigured_UsesAnExactSafeBooleanContract()
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+
+        AssertLocalDependencyContract(source);
+    }
+
+    [Theory]
+    [InlineData("    default: 'false'", "    default: 'true'")]
+    [InlineData("        true|false)", "        true|false|*)")]
+    [InlineData("          exit 1", "          exit 0")]
+    [InlineData("          export GITHUB_ACTIONS=false", "          export GITHUB_ACTIONS=true")]
+    [InlineData("dotnet restore", "echo restore")]
+    [InlineData("dotnet build", "echo build")]
+    [InlineData("dotnet test", "echo test")]
+    [InlineData("dotnet format", "echo format")]
+    [InlineData("dotnet list", "echo list")]
+    public void ForkSafeValidationAction_WhenLocalDependencyContractIsMutated_FailsSourceContract(
+        string original,
+        string mutation)
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+        string mutatedSource = source.Replace(original, mutation, StringComparison.Ordinal);
+
+        Assert.NotEqual(source, mutatedSource);
+        Assert.ThrowsAny<Exception>(() => AssertLocalDependencyContract(mutatedSource));
+    }
+
+    [Fact]
     public void ForkSafeValidationWorkflow_WhenContractIsEvaluated_ExposesCallerContractAndMatchesAction()
     {
         string source = ReadRequiredSource(".github/workflows/dotnet-validate.yml");
@@ -512,6 +541,46 @@ public sealed class RepositoryContractTests
             Assert.True(commandIndex > previousIndex, $"Expected validation command in order: {command}");
             previousIndex = commandIndex;
         }
+    }
+
+    private static void AssertLocalDependencyContract(string source)
+    {
+        string normalizedSource = NormalizeLineEndings(source);
+        Assert.Contains("use-local-maliev-dependencies:", source, StringComparison.Ordinal);
+        Assert.Contains("    default: 'false'", source, StringComparison.Ordinal);
+        Assert.Contains("USE_LOCAL_MALIEV_DEPENDENCIES_INPUT: ${{ inputs.use-local-maliev-dependencies }}", source, StringComparison.Ordinal);
+        Assert.Contains("case \"$USE_LOCAL_MALIEV_DEPENDENCIES_INPUT\" in", source, StringComparison.Ordinal);
+        Assert.Contains("        true|false)", source, StringComparison.Ordinal);
+        Assert.Contains("USE_LOCAL_MALIEV_DEPENDENCIES=$USE_LOCAL_MALIEV_DEPENDENCIES_INPUT", source, StringComparison.Ordinal);
+        Assert.Contains(">> \"$GITHUB_ENV\"", source, StringComparison.Ordinal);
+        Assert.Contains("          exit 1", source, StringComparison.Ordinal);
+
+        const string localDependencyPreamble =
+            "        if [[ \"$USE_LOCAL_MALIEV_DEPENDENCIES\" == \"true\" ]]; then\n" +
+            "          export GITHUB_ACTIONS=false\n" +
+            "        fi\n" +
+            "        ";
+        string[] dotnetCommands =
+        [
+            "dotnet restore",
+            "dotnet build",
+            "dotnet test",
+            "dotnet format",
+            "dotnet list",
+        ];
+
+        foreach (string command in dotnetCommands)
+        {
+            Assert.Contains($"{localDependencyPreamble}{command}", normalizedSource, StringComparison.Ordinal);
+        }
+
+        Assert.Equal(dotnetCommands.Length, Regex.Matches(source, "export GITHUB_ACTIONS=false", RegexOptions.CultureInvariant).Count);
+        Assert.DoesNotContain("eval ", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("bash -c", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("${{ secrets.", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("contents: write", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("packages: write", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("id-token: write", source, StringComparison.OrdinalIgnoreCase);
     }
 
     private static void AssertActionUsesAreShaPinned(string source)
