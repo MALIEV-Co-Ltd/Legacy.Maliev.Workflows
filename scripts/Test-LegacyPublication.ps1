@@ -4,7 +4,11 @@ param(
     [string]$RepositoryPath,
 
     [Parameter(Mandatory = $true)]
-    [string]$GitHubRepository
+    [string]$GitHubRepository,
+
+    [string]$PrivateSourceRepositoryPath,
+
+    [switch]$IndependentRepository
 )
 
 Set-StrictMode -Version Latest
@@ -56,9 +60,71 @@ function Invoke-GitRead {
     Invoke-RedactedCommand -Command 'git' -Arguments (@('-C', $script:ResolvedRepositoryPath) + $Arguments) -FailureMessage $FailureMessage -ReturnOutput
 }
 
+function Test-SafeBlockStyleWorkflowYaml {
+    param([string]$Source)
+
+    $blockScalarIndent = -1
+    foreach ($line in ($Source -split "`r?`n")) {
+        if ($line -match "`t") { return $false }
+        $indent = $line.Length - $line.TrimStart(' ').Length
+        if ($blockScalarIndent -ge 0) {
+            if ($line.Trim().Length -eq 0 -or $indent -gt $blockScalarIndent) { continue }
+            $blockScalarIndent = -1
+        }
+
+        $structural = $line.Trim()
+        if ($structural.Length -eq 0 -or $structural.StartsWith('#')) { continue }
+        if ($structural -match '^(?:---|\.\.\.)(?:\s+#.*)?$') { return $false }
+        if ($structural -match '^(?:-\s*)?["'']' -or $structural -match '^(?:-\s*)?<<\s*:') { return $false }
+        if ($structural -match '(?:^|[\s:\-])(?:&|\*)[A-Za-z0-9_-]+' -or $structural -match '(?:^|\s)![A-Za-z!]') { return $false }
+
+        $mapping = [regex]::Match($line, '^\s*(?:-\s*)?(?<key>[^:]+?)\s*:\s*(?<value>.*)$')
+        if ($mapping.Success) {
+            if ($mapping.Groups['key'].Value.Trim() -notmatch '^[A-Za-z0-9_-]+$') { return $false }
+            $value = $mapping.Groups['value'].Value.Trim()
+            if ($value -match '^[\{\[]') { return $false }
+            if ($value -match '^[>|][+-]?(?:\s+#.*)?$') { $blockScalarIndent = $indent }
+        }
+    }
+    return $true
+}
+
+function Test-GitCommitExistsInObjectDatabase {
+    param([string]$GitRepositoryPath, [string]$CommitOid)
+
+    $git = Get-Command 'git' -CommandType Application | Select-Object -First 1
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new($git.Source)
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in @('-C', $GitRepositoryPath, 'cat-file', '-e', "$CommitOid`^{commit}")) {
+        [void]$startInfo.ArgumentList.Add($argument)
+    }
+    $process = [System.Diagnostics.Process]::Start($startInfo)
+    $stdout = $process.StandardOutput.ReadToEndAsync()
+    $stderr = $process.StandardError.ReadToEndAsync()
+    $process.WaitForExit()
+    [void]$stdout.GetAwaiter().GetResult()
+    [void]$stderr.GetAwaiter().GetResult()
+    return $process.ExitCode -eq 0
+}
+
 try {
     if ($GitHubRepository -cnotmatch '^MALIEV-Co-Ltd/Legacy\.Maliev\.[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?$') {
         Stop-PublicationGate 'Repository name must use the exact MALIEV legacy namespace MALIEV-Co-Ltd/Legacy.Maliev.*.'
+    }
+
+    $provenanceAudit = $null
+    if ($IndependentRepository) {
+        if ($GitHubRepository -cne 'MALIEV-Co-Ltd/Legacy.Maliev.Workflows') {
+            Stop-PublicationGate 'Only MALIEV-Co-Ltd/Legacy.Maliev.Workflows may use independent mode.'
+        }
+        if (-not [string]::IsNullOrWhiteSpace($PrivateSourceRepositoryPath)) {
+            Stop-PublicationGate 'Independent mode cannot be combined with a private source repository path.'
+        }
+        $provenanceAudit = 'Provenance audit: independent shared Workflows repository; private-source ODB comparison is not applicable.'
+    } elseif ([string]::IsNullOrWhiteSpace($PrivateSourceRepositoryPath)) {
+        Stop-PublicationGate 'A private source repository path is required for extracted service publication.'
     }
 
     $script:ResolvedRepositoryPath = (Resolve-Path -LiteralPath $RepositoryPath).Path
@@ -84,6 +150,20 @@ try {
         Stop-PublicationGate 'Candidate history must contain exactly one fresh root.'
     }
 
+    if (-not $IndependentRepository) {
+        $resolvedPrivateSourcePath = (Resolve-Path -LiteralPath $PrivateSourceRepositoryPath).Path
+        if (-not (Test-Path -LiteralPath (Join-Path $resolvedPrivateSourcePath '.git'))) {
+            Stop-PublicationGate 'Private source path must identify a Git repository.'
+        }
+        $candidateCommits = @((Invoke-GitRead @('rev-list', '--all')) -split "`r?`n" | Where-Object { $_ })
+        foreach ($candidateCommit in $candidateCommits) {
+            if (Test-GitCommitExistsInObjectDatabase $resolvedPrivateSourcePath $candidateCommit) {
+                Stop-PublicationGate 'A candidate commit object also exists in the private source object database.'
+            }
+        }
+        $provenanceAudit = 'Provenance audit: reachable commit OIDs do not intersect the supplied private-source ODB; unavailable object databases cannot be proven.'
+    }
+
     $provenanceEvidence = @(
         Invoke-GitRead @('remote', '-v')
         Invoke-GitRead @('config', '--local', '--list')
@@ -101,10 +181,17 @@ try {
     if ($trackedFiles | Where-Object { $_ -match $prohibitedFilePattern }) {
         Stop-PublicationGate 'Candidate tracks prohibited secret material, certificate, backup, dump, archive, or local environment file.'
     }
+    $historicalFiles = @((Invoke-GitRead @('log', '--all', '--format=', '--name-only', '--diff-filter=ACDMRT')) -split "`r?`n" | Where-Object { $_ } | Select-Object -Unique)
+    if ($historicalFiles | Where-Object { $_ -match $prohibitedFilePattern }) {
+        Stop-PublicationGate 'Candidate contains a prohibited filename in complete history or an included ref.'
+    }
 
     $automationPaths = $trackedFiles | Where-Object { $_ -match '^\.github/workflows/.*\.ya?ml$' -or $_ -match '(?i)(^|/)action\.ya?ml$' }
     foreach ($automationPath in $automationPaths) {
         $workflowSource = Get-Content -LiteralPath (Join-Path $script:ResolvedRepositoryPath $automationPath) -Raw
+        if (-not (Test-SafeBlockStyleWorkflowYaml $workflowSource)) {
+            Stop-PublicationGate 'Automation YAML must use the safe block-style YAML subset; flow collections, aliases, anchors, multi-document streams, tags, tabs, and quoted keys are prohibited.'
+        }
         $unsafe = $false
 
         if ($workflowSource -match '(?im)^\s*pull_request_target\s*:|^\s*on\s*:\s*pull_request_target\s*$|^\s*on\s*:\s*\[[^\]]*\bpull_request_target\b') { $unsafe = $true }
@@ -174,6 +261,7 @@ try {
         Pop-Location
     }
 
+    Write-Output $provenanceAudit
     Write-Output 'Publication gate passed: repository history, source, workflows, secrets, and quality checks are safe.'
     exit 0
 } catch {

@@ -34,14 +34,22 @@ function Invoke-Git {
 function New-PublicationFixture {
     $container = Join-Path ([System.IO.Path]::GetTempPath()) ('legacy-publication-' + [guid]::NewGuid().ToString('N'))
     $repository = Join-Path $container 'candidate'
+    $privateSource = Join-Path $container 'private-source'
     $tools = Join-Path $container 'tools'
     $bare = Join-Path $container 'published.git'
-    New-Item -ItemType Directory -Path $repository, $tools | Out-Null
+    New-Item -ItemType Directory -Path $repository, $privateSource, $tools | Out-Null
 
     Invoke-Git $repository init -b main | Out-Null
     Invoke-Git $repository config user.name Fixture | Out-Null
     Invoke-Git $repository config user.email fixture@example.invalid | Out-Null
     Invoke-Git $repository config core.autocrlf false | Out-Null
+
+    Invoke-Git $privateSource init -b main | Out-Null
+    Invoke-Git $privateSource config user.name Fixture | Out-Null
+    Invoke-Git $privateSource config user.email fixture@example.invalid | Out-Null
+    Set-Content (Join-Path $privateSource 'private-source.txt') 'private source fixture with unrelated objects'
+    Invoke-Git $privateSource add . | Out-Null
+    Invoke-Git $privateSource commit -m 'private source root' | Out-Null
 
     Set-Content (Join-Path $repository 'Legacy.Maliev.Fixture.slnx') '<Solution />'
     New-Item -ItemType Directory -Path (Join-Path $repository '.github\workflows') | Out-Null
@@ -90,32 +98,83 @@ exit 0
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
 $joined = $Arguments -join ' '
 Add-Content -LiteralPath $env:GH_LOG -Value $joined
-if ($Arguments[0] -eq 'repo' -and $Arguments[1] -eq 'create') {
+
+function Stop-StrictMock([string]$Message) {
+    [Console]::Error.WriteLine('strict gh mock rejected call: ' + $Message)
+    exit 97
+}
+
+if ($Arguments.Count -eq 10 -and $Arguments[0] -eq 'repo' -and $Arguments[1] -eq 'create' -and
+    $Arguments[2] -ceq 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture' -and $Arguments[3] -ceq '--public' -and
+    $Arguments[4] -ceq '--source' -and $Arguments[5] -ceq $env:FIXTURE_REPOSITORY -and
+    $Arguments[6] -ceq '--remote' -and $Arguments[7] -ceq 'origin' -and
+    $Arguments[8] -ceq '--description' -and $Arguments[9] -ceq 'Migrated MALIEV legacy service with fresh public history') {
     & $env:REAL_GIT -C $env:FIXTURE_REPOSITORY remote add origin $env:BARE_REPOSITORY
     exit $LASTEXITCODE
 }
-if ($Arguments[0] -eq 'run' -and $Arguments[1] -eq 'list') {
+if ($Arguments.Count -eq 12 -and $Arguments[0] -eq 'run' -and $Arguments[1] -eq 'list' -and
+    $Arguments[2] -ceq '--repo' -and $Arguments[3] -ceq 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture' -and
+    $Arguments[4] -ceq '--workflow' -and $Arguments[5] -ceq 'dotnet-validate.yml' -and
+    $Arguments[6] -ceq '--commit' -and $Arguments[7] -match '^[0-9a-f]{40}$' -and
+    $Arguments[8] -ceq '--limit' -and $Arguments[9] -ceq '20' -and
+    $Arguments[10] -ceq '--json' -and $Arguments[11] -ceq 'databaseId,status,conclusion,name') {
     '[{"databaseId":42,"status":"completed","conclusion":"success","name":"validate"}]'
     exit 0
 }
-if ($Arguments[0] -eq 'run' -and $Arguments[1] -eq 'view') {
+if ($joined -ceq 'run watch 42 --repo MALIEV-Co-Ltd/Legacy.Maliev.Fixture --exit-status') { exit 0 }
+if ($joined -ceq 'run view 42 --repo MALIEV-Co-Ltd/Legacy.Maliev.Fixture --json jobs') {
     '{"jobs":[{"name":"validate","status":"completed","conclusion":"success"}]}'
     exit 0
 }
-if ($Arguments[0] -eq 'api' -and $joined -notmatch '--method') {
-    if ($joined -match '/branches/main/protection') {
-        $conversationResolution = if ($env:GH_PROTECTION_MISMATCH) { 'false' } else { 'true' }
-        '{"required_status_checks":{"strict":true,"contexts":["validate / validate"]},"enforce_admins":{"enabled":true},"required_pull_request_reviews":{"dismiss_stale_reviews":true,"required_approving_review_count":1},"required_linear_history":{"enabled":true},"required_conversation_resolution":{"enabled":' + $conversationResolution + '},"allow_force_pushes":{"enabled":false},"allow_deletions":{"enabled":false}}'
-    } elseif ($joined -match '/environments/production') {
-        '{"name":"production","deployment_branch_policy":{"protected_branches":true,"custom_branch_policies":false}}'
-    } else {
-        $visibility = if ($env:GH_VISIBILITY) { $env:GH_VISIBILITY } else { 'public' }
-        '{"visibility":"' + $visibility + '","default_branch":"main","security_and_analysis":{"private_vulnerability_reporting":{"status":"enabled"}}}'
-    }
+
+$repositoryEndpoint = 'repos/MALIEV-Co-Ltd/Legacy.Maliev.Fixture'
+$protectionEndpoint = $repositoryEndpoint + '/branches/main/protection'
+$environmentEndpoint = $repositoryEndpoint + '/environments/production'
+$vulnerabilityEndpoint = $repositoryEndpoint + '/private-vulnerability-reporting'
+
+if ($joined -ceq "api $vulnerabilityEndpoint --method PUT") { exit 0 }
+if ($joined -ceq "api $vulnerabilityEndpoint") { '{"enabled":true}'; exit 0 }
+if ($joined -ceq "api $repositoryEndpoint") {
+    $visibility = if ($env:GH_VISIBILITY) { $env:GH_VISIBILITY } else { 'public' }
+    '{"visibility":"' + $visibility + '","default_branch":"main"}'
     exit 0
 }
-$null = @($input)
-exit 0
+if ($joined -ceq "api $protectionEndpoint") {
+    $conversationResolution = if ($env:GH_PROTECTION_MISMATCH) { 'false' } else { 'true' }
+    '{"required_status_checks":{"strict":true,"contexts":["validate / validate"]},"enforce_admins":{"enabled":true},"required_pull_request_reviews":{"dismiss_stale_reviews":true,"required_approving_review_count":1},"required_linear_history":{"enabled":true},"required_conversation_resolution":{"enabled":' + $conversationResolution + '},"allow_force_pushes":{"enabled":false},"allow_deletions":{"enabled":false}}'
+    exit 0
+}
+if ($joined -ceq "api $environmentEndpoint") {
+    $waitTimer = if ($env:GH_ENVIRONMENT_MISMATCH) { 5 } else { 0 }
+    '{"name":"production","protection_rules":[{"type":"wait_timer","wait_timer":' + $waitTimer + '},{"type":"required_reviewers","prevent_self_review":true,"reviewers":[]},{"type":"branch_policy"}],"deployment_branch_policy":{"protected_branches":true,"custom_branch_policies":false}}'
+    exit 0
+}
+if ($Arguments.Count -eq 6 -and $Arguments[0] -ceq 'api' -and $Arguments[2] -ceq '--method' -and
+    $Arguments[3] -ceq 'PUT' -and $Arguments[4] -ceq '--input' -and (Test-Path -LiteralPath $Arguments[5])) {
+    $payload = Get-Content -LiteralPath $Arguments[5] -Raw | ConvertFrom-Json
+    if ($Arguments[1] -ceq $protectionEndpoint) {
+        if (@($payload.psobject.Properties).Count -ne 8 -or
+            $payload.required_status_checks.strict -ne $true -or @($payload.required_status_checks.contexts).Count -ne 1 -or
+            $payload.required_status_checks.contexts[0] -cne 'validate / validate' -or $payload.enforce_admins -ne $true -or
+            $payload.required_pull_request_reviews.dismiss_stale_reviews -ne $true -or
+            $payload.required_pull_request_reviews.required_approving_review_count -ne 1 -or
+            $payload.required_linear_history -ne $true -or $payload.allow_force_pushes -ne $false -or
+            $payload.allow_deletions -ne $false -or $payload.required_conversation_resolution -ne $true) {
+            Stop-StrictMock 'branch protection payload mismatch'
+        }
+        exit 0
+    }
+    if ($Arguments[1] -ceq $environmentEndpoint) {
+        if (@($payload.psobject.Properties).Count -ne 4 -or $payload.wait_timer -ne 0 -or
+            $payload.prevent_self_review -ne $true -or @($payload.reviewers).Count -ne 0 -or
+            $payload.deployment_branch_policy.protected_branches -ne $true -or
+            $payload.deployment_branch_policy.custom_branch_policies -ne $false) {
+            Stop-StrictMock 'environment payload mismatch'
+        }
+        exit 0
+    }
+}
+Stop-StrictMock $joined
 '@ | Set-Content (Join-Path $tools 'gh.ps1')
 
     Invoke-Git $repository add . | Out-Null
@@ -125,6 +184,7 @@ exit 0
     [pscustomobject]@{
         Container = $container
         Repository = $repository
+        PrivateSource = $privateSource
         Tools = $tools
         Bare = $bare
         DotnetLog = Join-Path $container 'dotnet.log'
@@ -133,9 +193,12 @@ exit 0
 }
 
 function Invoke-GateFixture {
-    param($Fixture, [string]$Name = 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture')
+    param($Fixture, [string]$Name = 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture', [string]$PrivateSourceRepositoryPath = $Fixture.PrivateSource, [switch]$IndependentRepository)
     $path = $Fixture.Tools + [IO.Path]::PathSeparator + $env:PATH
-    Invoke-Process $Fixture.Repository 'pwsh' @('-NoLogo', '-NoProfile', '-File', $GateScript, '-RepositoryPath', $Fixture.Repository, '-GitHubRepository', $Name) @{
+    $arguments = @('-NoLogo', '-NoProfile', '-File', $GateScript, '-RepositoryPath', $Fixture.Repository, '-GitHubRepository', $Name)
+    if ($PrivateSourceRepositoryPath) { $arguments += @('-PrivateSourceRepositoryPath', $PrivateSourceRepositoryPath) }
+    if ($IndependentRepository) { $arguments += '-IndependentRepository' }
+    Invoke-Process $Fixture.Repository 'pwsh' $arguments @{
         PATH = $path
         REAL_GIT = $RealGit
         FIXTURE_REPOSITORY = $Fixture.Repository
@@ -144,9 +207,11 @@ function Invoke-GateFixture {
 }
 
 function Invoke-PublisherFixture {
-    param($Fixture, [string]$Visibility = '', [switch]$ProtectionMismatch)
+    param($Fixture, [string]$Visibility = '', [switch]$ProtectionMismatch, [switch]$EnvironmentMismatch, [switch]$OmitPrivateSource)
     $path = $Fixture.Tools + [IO.Path]::PathSeparator + $env:PATH
-    Invoke-Process $Fixture.Repository 'pwsh' @('-NoLogo', '-NoProfile', '-File', $PublishScript, '-RepositoryPath', $Fixture.Repository, '-GitHubRepository', 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture', '-WaitTimeoutSeconds', '5', '-PollIntervalSeconds', '0') @{
+    $arguments = @('-NoLogo', '-NoProfile', '-File', $PublishScript, '-RepositoryPath', $Fixture.Repository, '-GitHubRepository', 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture', '-WaitTimeoutSeconds', '5', '-PollIntervalSeconds', '0')
+    if (-not $OmitPrivateSource) { $arguments += @('-PrivateSourceRepositoryPath', $Fixture.PrivateSource) }
+    Invoke-Process $Fixture.Repository 'pwsh' $arguments @{
         PATH = $path
         REAL_GIT = $RealGit
         FIXTURE_REPOSITORY = $Fixture.Repository
@@ -155,6 +220,7 @@ function Invoke-PublisherFixture {
         GH_LOG = $Fixture.GhLog
         GH_VISIBILITY = $Visibility
         GH_PROTECTION_MISMATCH = if ($ProtectionMismatch) { 'true' } else { '' }
+        GH_ENVIRONMENT_MISMATCH = if ($EnvironmentMismatch) { 'true' } else { '' }
     }
 }
 
@@ -227,6 +293,21 @@ Describe 'Test-LegacyPublication' {
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 
+    It 'rejects a prohibited environment filename deleted from the current tree' {
+        $fixture = New-PublicationFixture
+        try {
+            Set-Content (Join-Path $fixture.Repository '.env') 'NON_SECRET_FIXTURE=value'
+            Invoke-Git $fixture.Repository add .env | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'historical environment file' | Out-Null
+            Remove-Item (Join-Path $fixture.Repository '.env')
+            Invoke-Git $fixture.Repository add -u | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'remove environment file' | Out-Null
+            $result = Invoke-GateFixture $fixture
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'prohibited filename in complete history'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
     It 'rejects a secret removed from the current tree and never prints the secret' {
         $fixture = New-PublicationFixture
         try {
@@ -266,6 +347,80 @@ jobs:
             $result = Invoke-GateFixture $fixture
             $result.ExitCode | Should Not Be 0
             $result.Output | Should Match 'workflow security contract'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'rejects a valid malicious flow-style workflow before policy inspection' {
+        $fixture = New-PublicationFixture
+        try {
+            @'
+name: unsafe-flow
+on: { pull_request: {} }
+permissions: { contents: write }
+jobs: { validate: { runs-on: ubuntu-24.04, steps: [{ uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c, with: { persist-credentials: true } }] } }
+'@ | Set-Content (Join-Path $fixture.Repository '.github\workflows\validate.yml')
+            Invoke-Git $fixture.Repository add . | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'obfuscated unsafe workflow' | Out-Null
+            $result = Invoke-GateFixture $fixture
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'safe block-style YAML subset'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'rejects multi-document anchors aliases and quoted policy keys' {
+        $cases = @(
+            "name: first`non:`n  pull_request:`n---`nname: second`n",
+            "name: anchored`non:`n  pull_request:`npermissions: &policy`n  contents: read`njobs: *policy`n",
+            "name: quoted`n`"on`":`n  `"pull_request`":`n`"permissions`":`n  `"contents`": write`n"
+        )
+        foreach ($source in $cases) {
+            $fixture = New-PublicationFixture
+            try {
+                Set-Content (Join-Path $fixture.Repository '.github\workflows\validate.yml') $source
+                Invoke-Git $fixture.Repository add . | Out-Null
+                Invoke-Git $fixture.Repository commit -m 'unsupported yaml policy syntax' | Out-Null
+                $result = Invoke-GateFixture $fixture
+                $result.ExitCode | Should Not Be 0
+                $result.Output | Should Match 'safe block-style YAML subset'
+            } finally { Remove-Item $fixture.Container -Recurse -Force }
+        }
+    }
+
+    It 'rejects candidate commits that intersect the supplied private source object database' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-GateFixture $fixture -PrivateSourceRepositoryPath $fixture.Repository
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'commit object also exists in the private source'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'rejects an intersecting commit that is unreachable but remains in the private source object database' {
+        $fixture = New-PublicationFixture
+        try {
+            Invoke-Git $fixture.PrivateSource fetch $fixture.Repository main | Out-Null
+            Remove-Item (Join-Path $fixture.PrivateSource '.git\FETCH_HEAD') -Force
+            $result = Invoke-GateFixture $fixture
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'commit object also exists in the private source'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'requires a private source path for an extracted service repository' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-GateFixture $fixture -PrivateSourceRepositoryPath ''
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'private source repository path is required'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'allows independent mode only for the exact shared Workflows repository' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-GateFixture $fixture -PrivateSourceRepositoryPath '' -IndependentRepository
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'only MALIEV-Co-Ltd/Legacy.Maliev.Workflows may use independent mode'
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 
@@ -319,7 +474,8 @@ Describe 'Publish-LegacyRepository' {
             $log | Should Match 'repo create MALIEV-Co-Ltd/Legacy.Maliev.Fixture --public'
             $log | Should Match 'run list.*--commit'
             $log | Should Match 'branches/main/protection.*--method PUT'
-            $log | Should Match 'private_vulnerability_reporting'
+            $log | Should Match '(?m)^api repos/MALIEV-Co-Ltd/Legacy.Maliev.Fixture/private-vulnerability-reporting --method PUT\r?$'
+            $log | Should Match '(?m)^api repos/MALIEV-Co-Ltd/Legacy.Maliev.Fixture/private-vulnerability-reporting\r?$'
             $log | Should Match 'environments/production.*--method PUT'
             $log | Should Match '(?m)branches/main/protection\r?$'
             $log | Should Match '(?m)environments/production\r?$'
@@ -351,6 +507,24 @@ Describe 'Publish-LegacyRepository' {
             $result = Invoke-PublisherFixture $fixture -ProtectionMismatch
             $result.ExitCode | Should Not Be 0
             $result.Output | Should Match 'readback mismatch'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'fails closed when exact environment protection readback differs' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -EnvironmentMismatch
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'readback mismatch'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'requires private source comparison before publishing an extracted service' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -OmitPrivateSource
+            $result.ExitCode | Should Not Be 0
+            Test-Path $fixture.GhLog | Should Be $false
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 }
