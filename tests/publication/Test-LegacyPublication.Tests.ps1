@@ -104,26 +104,83 @@ function Stop-StrictMock([string]$Message) {
     exit 97
 }
 
+if ($joined -ceq 'repo view MALIEV-Co-Ltd/Legacy.Maliev.Fixture --json isEmpty,visibility,defaultBranchRef') {
+    if ($env:GH_REMOTE_STATE -ceq 'missing') { exit 1 }
+    if ($env:GH_REMOTE_STATE -ceq 'empty') { '{"isEmpty":true,"visibility":"PUBLIC","defaultBranchRef":null}'; exit 0 }
+    if ($env:GH_REMOTE_STATE -ceq 'non-empty') { '{"isEmpty":false,"visibility":"PUBLIC","defaultBranchRef":{"name":"main"}}'; exit 0 }
+    Stop-StrictMock 'unknown remote state'
+}
 if ($Arguments.Count -eq 10 -and $Arguments[0] -eq 'repo' -and $Arguments[1] -eq 'create' -and
     $Arguments[2] -ceq 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture' -and $Arguments[3] -ceq '--public' -and
     $Arguments[4] -ceq '--source' -and $Arguments[5] -ceq $env:FIXTURE_REPOSITORY -and
     $Arguments[6] -ceq '--remote' -and $Arguments[7] -ceq 'origin' -and
     $Arguments[8] -ceq '--description' -and $Arguments[9] -ceq 'Migrated MALIEV legacy service with fresh public history') {
-    & $env:REAL_GIT -C $env:FIXTURE_REPOSITORY remote add origin $env:BARE_REPOSITORY
+    $remoteUrl = 'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Fixture.git'
+    & $env:REAL_GIT -C $env:FIXTURE_REPOSITORY remote add origin $remoteUrl
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    & $env:REAL_GIT -C $env:FIXTURE_REPOSITORY config "url.$env:BARE_REPOSITORY.insteadOf" $remoteUrl
     exit $LASTEXITCODE
 }
-if ($Arguments.Count -eq 12 -and $Arguments[0] -eq 'run' -and $Arguments[1] -eq 'list' -and
+if ($Arguments.Count -eq 12 -and $Arguments[0] -ceq 'pr' -and $Arguments[1] -ceq 'list' -and
     $Arguments[2] -ceq '--repo' -and $Arguments[3] -ceq 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture' -and
-    $Arguments[4] -ceq '--workflow' -and $Arguments[5] -ceq 'dotnet-validate.yml' -and
+    $Arguments[4] -ceq '--base' -and $Arguments[5] -ceq 'main' -and
+    $Arguments[6] -ceq '--head' -and $Arguments[7] -ceq "publication/$env:CANDIDATE_SHA" -and
+    $Arguments[8] -ceq '--state' -and $Arguments[9] -ceq 'open' -and
+    $Arguments[10] -ceq '--json' -and $Arguments[11] -ceq 'number,headRefOid,baseRefName,headRefName,state') {
+    $remoteMain = & $env:REAL_GIT --git-dir $env:BARE_REPOSITORY rev-parse refs/heads/main
+    $remoteCandidate = & $env:REAL_GIT --git-dir $env:BARE_REPOSITORY rev-parse "refs/heads/publication/$env:CANDIDATE_SHA"
+    if ($remoteMain -cne $env:ROOT_SHA -or $remoteCandidate -cne $env:CANDIDATE_SHA) {
+        Stop-StrictMock 'candidate history reached the wrong remote ref before PR validation'
+    }
+    Set-Content -LiteralPath $env:PRE_MERGE_STATE_FILE -Value 'root-only-main-and-exact-candidate-branch'
+    if (Test-Path -LiteralPath $env:PR_STATE_FILE) {
+        '[{"number":17,"headRefOid":"' + $env:CANDIDATE_SHA + '","baseRefName":"main","headRefName":"publication/' + $env:CANDIDATE_SHA + '","state":"OPEN"}]'
+    } else { '[]' }
+    exit 0
+}
+if ($Arguments.Count -eq 12 -and $Arguments[0] -ceq 'pr' -and $Arguments[1] -ceq 'create' -and
+    $Arguments[2] -ceq '--repo' -and $Arguments[3] -ceq 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture' -and
+    $Arguments[4] -ceq '--base' -and $Arguments[5] -ceq 'main' -and
+    $Arguments[6] -ceq '--head' -and $Arguments[7] -ceq "publication/$env:CANDIDATE_SHA" -and
+    $Arguments[8] -ceq '--title' -and $Arguments[9] -ceq "Publish Legacy.Maliev.Fixture at $env:CANDIDATE_SHA" -and
+    $Arguments[10] -ceq '--body' -and $Arguments[11] -ceq 'Bootstrap publication through the required pull-request validation boundary.') {
+    Set-Content -LiteralPath $env:PR_STATE_FILE -Value 'created'
+    'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Fixture/pull/17'
+    exit 0
+}
+if ($Arguments.Count -eq 14 -and $Arguments[0] -eq 'run' -and $Arguments[1] -eq 'list' -and
+    $Arguments[2] -ceq '--repo' -and $Arguments[3] -ceq 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture' -and
+    $Arguments[4] -ceq '--workflow' -and $Arguments[5] -ceq 'validate.yml' -and
     $Arguments[6] -ceq '--commit' -and $Arguments[7] -match '^[0-9a-f]{40}$' -and
-    $Arguments[8] -ceq '--limit' -and $Arguments[9] -ceq '20' -and
-    $Arguments[10] -ceq '--json' -and $Arguments[11] -ceq 'databaseId,status,conclusion,name') {
-    '[{"databaseId":42,"status":"completed","conclusion":"success","name":"validate"}]'
+    $Arguments[7] -ceq $env:CANDIDATE_SHA -and $Arguments[8] -ceq '--event' -and
+    $Arguments[9] -ceq 'pull_request' -and $Arguments[10] -ceq '--limit' -and
+    $Arguments[11] -ceq '20' -and $Arguments[12] -ceq '--json' -and
+    $Arguments[13] -ceq 'databaseId,status,conclusion,name,headSha,event') {
+    '[{"databaseId":42,"status":"completed","conclusion":"success","name":"validate","headSha":"' + $env:CANDIDATE_SHA + '","event":"pull_request"}]'
     exit 0
 }
 if ($joined -ceq 'run watch 42 --repo MALIEV-Co-Ltd/Legacy.Maliev.Fixture --exit-status') { exit 0 }
 if ($joined -ceq 'run view 42 --repo MALIEV-Co-Ltd/Legacy.Maliev.Fixture --json jobs') {
-    '{"jobs":[{"name":"validate","status":"completed","conclusion":"success"}]}'
+    '{"jobs":[{"name":"validate / validate","status":"completed","conclusion":"success"}]}'
+    exit 0
+}
+if ($joined -ceq "pr merge 17 --repo MALIEV-Co-Ltd/Legacy.Maliev.Fixture --squash --delete-branch --match-head-commit $env:CANDIDATE_SHA") {
+    $tree = & $env:REAL_GIT --git-dir $env:BARE_REPOSITORY rev-parse "$env:CANDIDATE_SHA`^{tree}"
+    $env:GIT_AUTHOR_NAME = 'Fixture'
+    $env:GIT_AUTHOR_EMAIL = 'fixture@example.invalid'
+    $env:GIT_COMMITTER_NAME = 'Fixture'
+    $env:GIT_COMMITTER_EMAIL = 'fixture@example.invalid'
+    $mergedSha = 'bootstrap publication' | & $env:REAL_GIT --git-dir $env:BARE_REPOSITORY commit-tree $tree -p $env:ROOT_SHA
+    if ($LASTEXITCODE -ne 0 -or $mergedSha -notmatch '^[0-9a-f]{40}$') { Stop-StrictMock 'unable to simulate squash merge' }
+    & $env:REAL_GIT --git-dir $env:BARE_REPOSITORY update-ref refs/heads/main $mergedSha $env:ROOT_SHA
+    if ($LASTEXITCODE -ne 0) { Stop-StrictMock 'unable to update simulated merged main' }
+    & $env:REAL_GIT --git-dir $env:BARE_REPOSITORY update-ref -d "refs/heads/publication/$env:CANDIDATE_SHA"
+    Set-Content -LiteralPath $env:MERGED_SHA_FILE -Value $mergedSha
+    exit 0
+}
+if ($joined -ceq 'api repos/MALIEV-Co-Ltd/Legacy.Maliev.Fixture/commits/main --jq .sha') {
+    if (-not (Test-Path -LiteralPath $env:MERGED_SHA_FILE)) { Stop-StrictMock 'main SHA read before squash merge' }
+    Get-Content -LiteralPath $env:MERGED_SHA_FILE -Raw
     exit 0
 }
 
@@ -179,6 +236,11 @@ Stop-StrictMock $joined
 
     Invoke-Git $repository add . | Out-Null
     Invoke-Git $repository commit -m 'fresh public root' | Out-Null
+    $rootSha = Invoke-Git $repository rev-parse HEAD
+    Add-Content (Join-Path $repository 'README.md') 'candidate publication change'
+    Invoke-Git $repository add README.md | Out-Null
+    Invoke-Git $repository commit -m 'candidate publication change' | Out-Null
+    $headSha = Invoke-Git $repository rev-parse HEAD
     Invoke-Process $container $RealGit @('init', '--bare', $bare) | Out-Null
 
     [pscustomobject]@{
@@ -187,8 +249,13 @@ Stop-StrictMock $joined
         PrivateSource = $privateSource
         Tools = $tools
         Bare = $bare
+        RootSha = $rootSha
+        HeadSha = $headSha
         DotnetLog = Join-Path $container 'dotnet.log'
         GhLog = Join-Path $container 'gh.log'
+        PrState = Join-Path $container 'pr-state.txt'
+        MergedSha = Join-Path $container 'merged-sha.txt'
+        PreMergeState = Join-Path $container 'pre-merge-state.txt'
     }
 }
 
@@ -207,8 +274,24 @@ function Invoke-GateFixture {
 }
 
 function Invoke-PublisherFixture {
-    param($Fixture, [string]$Visibility = '', [switch]$ProtectionMismatch, [switch]$EnvironmentMismatch, [switch]$OmitPrivateSource)
+    param(
+        $Fixture,
+        [string]$Visibility = '',
+        [switch]$ProtectionMismatch,
+        [switch]$EnvironmentMismatch,
+        [switch]$OmitPrivateSource,
+        [ValidateSet('missing', 'empty', 'non-empty')][string]$RemoteState = 'missing',
+        [switch]$ExistingPr)
     $path = $Fixture.Tools + [IO.Path]::PathSeparator + $env:PATH
+    if ($RemoteState -cne 'missing') {
+        $remoteUrl = 'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Fixture.git'
+        Invoke-Git $Fixture.Repository remote add origin $remoteUrl | Out-Null
+        Invoke-Git $Fixture.Repository config "url.$($Fixture.Bare).insteadOf" $remoteUrl | Out-Null
+    }
+    if ($RemoteState -ceq 'non-empty') {
+        Invoke-Git $Fixture.Repository push origin "$($Fixture.RootSha):refs/heads/main" | Out-Null
+    }
+    if ($ExistingPr) { Set-Content -LiteralPath $Fixture.PrState -Value 'existing' }
     $arguments = @('-NoLogo', '-NoProfile', '-File', $PublishScript, '-RepositoryPath', $Fixture.Repository, '-GitHubRepository', 'MALIEV-Co-Ltd/Legacy.Maliev.Fixture', '-WaitTimeoutSeconds', '5', '-PollIntervalSeconds', '0')
     if (-not $OmitPrivateSource) { $arguments += @('-PrivateSourceRepositoryPath', $Fixture.PrivateSource) }
     Invoke-Process $Fixture.Repository 'pwsh' $arguments @{
@@ -218,6 +301,12 @@ function Invoke-PublisherFixture {
         BARE_REPOSITORY = $Fixture.Bare
         DOTNET_LOG = $Fixture.DotnetLog
         GH_LOG = $Fixture.GhLog
+        GH_REMOTE_STATE = $RemoteState
+        ROOT_SHA = $Fixture.RootSha
+        CANDIDATE_SHA = $Fixture.HeadSha
+        PR_STATE_FILE = $Fixture.PrState
+        MERGED_SHA_FILE = $Fixture.MergedSha
+        PRE_MERGE_STATE_FILE = $Fixture.PreMergeState
         GH_VISIBILITY = $Visibility
         GH_PROTECTION_MISMATCH = if ($ProtectionMismatch) { 'true' } else { '' }
         GH_ENVIRONMENT_MISMATCH = if ($EnvironmentMismatch) { 'true' } else { '' }
@@ -350,6 +439,20 @@ jobs:
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 
+    It 'rejects a pull-request validation workflow with any additional trigger' {
+        $fixture = New-PublicationFixture
+        try {
+            $workflowPath = Join-Path $fixture.Repository '.github\workflows\validate.yml'
+            $source = (Get-Content $workflowPath -Raw) -replace '  pull_request:', "  pull_request:`n  push:"
+            Set-Content $workflowPath $source
+            Invoke-Git $fixture.Repository add $workflowPath | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'unsafe additional trigger' | Out-Null
+            $result = Invoke-GateFixture $fixture
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'workflow security contract'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
     It 'rejects a valid malicious flow-style workflow before policy inspection' {
         $fixture = New-PublicationFixture
         try {
@@ -472,13 +575,22 @@ Describe 'Publish-LegacyRepository' {
             $result.Output | Should Match 'Publication and protection verified'
             $log = Get-Content $fixture.GhLog -Raw
             $log | Should Match 'repo create MALIEV-Co-Ltd/Legacy.Maliev.Fixture --public'
-            $log | Should Match 'run list.*--commit'
+            (Get-Content $fixture.PreMergeState -Raw).Trim() | Should Be 'root-only-main-and-exact-candidate-branch'
+            $mergedSha = (Get-Content $fixture.MergedSha -Raw).Trim()
+            (Invoke-Git $fixture.Bare rev-parse refs/heads/main) | Should Be $mergedSha
+            $mergedSha | Should Not Be $fixture.HeadSha
+            $log | Should Match "pr create.*--base main.*--head publication/$($fixture.HeadSha)"
+            $log | Should Match "run list.*--workflow validate.yml.*--commit $($fixture.HeadSha)"
+            $log | Should Match "pr merge.*--squash.*--match-head-commit $($fixture.HeadSha)"
+            $log | Should Match 'api repos/MALIEV-Co-Ltd/Legacy.Maliev.Fixture/commits/main --jq \.sha'
             $log | Should Match 'branches/main/protection.*--method PUT'
             $log | Should Match '(?m)^api repos/MALIEV-Co-Ltd/Legacy.Maliev.Fixture/private-vulnerability-reporting --method PUT\r?$'
             $log | Should Match '(?m)^api repos/MALIEV-Co-Ltd/Legacy.Maliev.Fixture/private-vulnerability-reporting\r?$'
             $log | Should Match 'environments/production.*--method PUT'
             $log | Should Match '(?m)branches/main/protection\r?$'
             $log | Should Match '(?m)environments/production\r?$'
+            $log.IndexOf('run list', [StringComparison]::Ordinal) | Should BeLessThan $log.IndexOf('pr merge', [StringComparison]::Ordinal)
+            $log.IndexOf('pr merge', [StringComparison]::Ordinal) | Should BeLessThan $log.IndexOf('branches/main/protection', [StringComparison]::Ordinal)
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 
@@ -489,6 +601,39 @@ Describe 'Publish-LegacyRepository' {
             $result = Invoke-PublisherFixture $fixture
             $result.ExitCode | Should Not Be 0
             Test-Path $fixture.GhLog | Should Be $false
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'reuses a pre-created empty repository without attempting to create it again' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -RemoteState empty
+            $result.ExitCode | Should Be 0
+            $log = Get-Content $fixture.GhLog -Raw
+            $log | Should Match '^repo view '
+            $log | Should Not Match '(?m)^repo create '
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'reuses the exact open candidate pull request when publication resumes' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -ExistingPr
+            $result.ExitCode | Should Be 0
+            $log = Get-Content $fixture.GhLog -Raw
+            $log | Should Not Match '(?m)^pr create '
+            ([regex]::Matches($log, '(?m)^pr list ')).Count | Should Be 1
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'fails before any publication push when the remote repository is unexpectedly non-empty' {
+        $fixture = New-PublicationFixture
+        try {
+            $result = Invoke-PublisherFixture $fixture -RemoteState non-empty
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'non-empty'
+            $log = Get-Content $fixture.GhLog -Raw
+            $log | Should Not Match '(?m)^pr (?:list|create|merge) '
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 

@@ -206,6 +206,16 @@ try {
         }
 
         if ($workflowSource -match '(?im)^\s*pull_request\s*:|^\s*on\s*:\s*pull_request\s*$|^\s*on\s*:\s*\[[^\]]*\bpull_request\b') {
+            $workflowLines = @($workflowSource -split '\r?\n')
+            $onLineIndex = [Array]::IndexOf($workflowLines, 'on:')
+            $triggers = @()
+            for ($lineIndex = $onLineIndex + 1; $onLineIndex -ge 0 -and $lineIndex -lt $workflowLines.Count; $lineIndex++) {
+                $line = $workflowLines[$lineIndex]
+                if ([string]::IsNullOrWhiteSpace($line)) { continue }
+                if ($line -notmatch '^ ') { break }
+                if ($line -match '^ {2}(?<trigger>[A-Za-z0-9_-]+):') { $triggers += $Matches['trigger'] }
+            }
+            if ($triggers.Count -ne 1 -or $triggers[0] -cne 'pull_request') { $unsafe = $true }
             if ($workflowSource -match '(?im)^\s*permissions\s*:\s*write-all\s*(?:#.*)?$' -or
                 $workflowSource -match '(?im)^\s*[A-Za-z0-9_-]+\s*:\s*write\s*(?:#.*)?$' -or
                 $workflowSource -match '(?i)\$\{\{\s*secrets\.' -or

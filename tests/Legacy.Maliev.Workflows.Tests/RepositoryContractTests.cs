@@ -85,6 +85,7 @@ public sealed class RepositoryContractTests
 
         Assert.Contains("name: validate", source, StringComparison.Ordinal);
         Assert.Contains("on:\n  pull_request:", normalizedSource, StringComparison.Ordinal);
+        AssertExclusivePullRequestTrigger(normalizedSource);
         Assert.Contains("permissions:\n  contents: read", normalizedSource, StringComparison.Ordinal);
         Assert.Contains("jobs:\n  validate:\n    name: validate", normalizedSource, StringComparison.Ordinal);
         Assert.Contains("uses: ./.github/workflows/dotnet-validate.yml", source, StringComparison.Ordinal);
@@ -525,6 +526,36 @@ public sealed class RepositoryContractTests
         {
             Assert.Matches(@"uses:\s+[^\s@]+@[0-9a-f]{40}(?:\s|$)", actionLine);
         }
+    }
+
+    private static void AssertExclusivePullRequestTrigger(string source)
+    {
+        string[] lines = source.Split('\n');
+        int onLineIndex = Array.IndexOf(lines, "on:");
+        Assert.True(onLineIndex >= 0, "Expected a block-style on mapping.");
+
+        List<string> triggers = [];
+        for (int lineIndex = onLineIndex + 1; lineIndex < lines.Length; lineIndex++)
+        {
+            string line = lines[lineIndex];
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            if (!line.StartsWith(' '))
+            {
+                break;
+            }
+
+            Match trigger = Regex.Match(line, @"^ {2}(?<trigger>[A-Za-z0-9_-]+):");
+            if (trigger.Success)
+            {
+                triggers.Add(trigger.Groups["trigger"].Value);
+            }
+        }
+
+        Assert.Equal(["pull_request"], triggers);
     }
 
     private static void AssertUsesSecretlessGitleaksCli(string source)
