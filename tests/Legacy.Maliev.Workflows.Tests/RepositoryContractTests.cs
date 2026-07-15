@@ -7,6 +7,15 @@ namespace Legacy.Maliev.Workflows.Tests;
 
 public sealed class RepositoryContractTests
 {
+    private const string Node24CheckoutReference =
+        "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0";
+
+    private const string Node24SetupDotnetReference =
+        "actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0";
+
+    private const string Node24CacheReference =
+        "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0";
+
     private static readonly object BashEnvironmentLock = new();
 
     private static readonly string[] RequiredFiles =
@@ -62,6 +71,25 @@ public sealed class RepositoryContractTests
 
             AssertActionUsesAreShaPinned(source);
         }
+    }
+
+    [Theory]
+    [InlineData("actions/dotnet-validate/action.yml")]
+    [InlineData(".github/workflows/dotnet-validate.yml")]
+    public void DotnetValidationSources_WhenContractIsEvaluated_UseNode24Actions(string relativePath)
+    {
+        string source = ReadRequiredSource(relativePath);
+
+        Assert.Contains(Node24SetupDotnetReference, source, StringComparison.Ordinal);
+        Assert.Contains(Node24CacheReference, source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ForkSafeValidationWorkflow_WhenContractIsEvaluated_UsesNode24Checkout()
+    {
+        string source = ReadRequiredSource(".github/workflows/dotnet-validate.yml");
+
+        Assert.Contains(Node24CheckoutReference, source, StringComparison.Ordinal);
     }
 
     [Fact]
