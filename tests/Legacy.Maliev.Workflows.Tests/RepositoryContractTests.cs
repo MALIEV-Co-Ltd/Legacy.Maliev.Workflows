@@ -1,11 +1,14 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using YamlDotNet.RepresentationModel;
 using Xunit;
 
 namespace Legacy.Maliev.Workflows.Tests;
 
 public sealed class RepositoryContractTests
 {
+    private static readonly object BashEnvironmentLock = new();
+
     private static readonly string[] RequiredFiles =
     [
         "README.md",
@@ -112,6 +115,124 @@ public sealed class RepositoryContractTests
         Assert.Contains("actions/cache@", source, StringComparison.Ordinal);
         AssertUsesSecretlessGitleaksCli(source);
         AssertValidationCommandsRunInOrder(source);
+    }
+
+    [Fact]
+    public void ForkSafeValidationAction_WhenLocalDependenciesAreConfigured_UsesAnExactSafeBooleanContract()
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+
+        AssertLocalDependencyContract(source);
+    }
+
+    [Theory]
+    [InlineData("    default: 'false'", "    default: 'true'")]
+    [InlineData("        true|false)", "        true|false|TRUE)")]
+    [InlineData("          exit 1", "          exit 0")]
+    [InlineData("          export GITHUB_ACTIONS=false", "          export GITHUB_ACTIONS=true")]
+    [InlineData("dotnet restore", "echo restore")]
+    [InlineData("dotnet build", "echo build")]
+    [InlineData("dotnet test", "echo test")]
+    [InlineData("dotnet format", "echo format")]
+    [InlineData("dotnet list", "echo list")]
+    public void ForkSafeValidationAction_WhenLocalDependencyContractIsMutated_FailsSourceContract(
+        string original,
+        string mutation)
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+        string mutatedSource = source.Replace(original, mutation, StringComparison.Ordinal);
+
+        Assert.NotEqual(source, mutatedSource);
+        Assert.ThrowsAny<Exception>(() => AssertLocalDependencyContract(mutatedSource));
+    }
+
+    [Fact]
+    public void ForkSafeValidationAction_WhenValidatorIsMovedAfterRestore_FailsSourceContract()
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+        int validatorStart = source.IndexOf("    - name: Validate local MALIEV dependency mode", StringComparison.Ordinal);
+        int validatorEnd = source.IndexOf("    - name: Install Gitleaks", validatorStart, StringComparison.Ordinal);
+        string validatorBlock = source[validatorStart..validatorEnd];
+        string withoutValidator = source.Remove(validatorStart, validatorEnd - validatorStart);
+        int buildStart = withoutValidator.IndexOf("    - name: Build", StringComparison.Ordinal);
+        string mutatedSource = withoutValidator.Insert(buildStart, validatorBlock);
+
+        Assert.ThrowsAny<Exception>(() => AssertLocalDependencyContract(mutatedSource));
+    }
+
+    [Fact]
+    public void ForkSafeValidationAction_WhenAnUnguardedRestoreIsAdded_FailsSourceContract()
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+        string mutatedSource = source + """
+
+                - name: Unsafe extra restore
+                  shell: bash
+                  run: dotnet restore extra.slnx
+            """;
+
+        Assert.ThrowsAny<Exception>(() => AssertLocalDependencyContract(mutatedSource));
+    }
+
+    [Theory]
+    [InlineData("true", "USE_LOCAL_MALIEV_DEPENDENCIES=true")]
+    [InlineData("false", "USE_LOCAL_MALIEV_DEPENDENCIES=false")]
+    public void ForkSafeValidationAction_WhenLocalDependencyInputIsExactLowercase_AcceptsIt(
+        string input,
+        string expectedEnvironmentEntry)
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+
+        ProcessResult result = RunValidatorFixture(source, input);
+
+        Assert.True(result.ExitCode == 0, result.Output);
+        Assert.Contains(expectedEnvironmentEntry, result.Output, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("TRUE")]
+    [InlineData("1")]
+    [InlineData("")]
+    [InlineData("true; printf injected")]
+    public void ForkSafeValidationAction_WhenLocalDependencyInputIsNotExactLowercase_RejectsIt(string input)
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+
+        ProcessResult result = RunValidatorFixture(source, input);
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("must be exactly 'true' or 'false'", result.Output, StringComparison.Ordinal);
+        Assert.DoesNotContain("injected", result.Output, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("true", "child=false")]
+    [InlineData("false", "child=true")]
+    public void ForkSafeValidationAction_WhenDotnetStepRuns_OverridesOnlyTheEnabledChild(
+        string localDependencyMode,
+        string expectedChildEnvironment)
+    {
+        string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
+        string? parentEnvironmentBefore = Environment.GetEnvironmentVariable("GITHUB_ACTIONS");
+
+        foreach (YamlMappingNode step in ReadActionSteps(source).Where(ContainsDotnetCommand))
+        {
+            string runScript = ReadScalar(step, "run");
+            string fixtureScript = Regex.Replace(
+                runScript,
+                @"(?m)^dotnet .+$",
+                "printf 'child=%s\\n' \"$GITHUB_ACTIONS\"");
+
+            ProcessResult result = RunBashFixture(
+                fixtureScript,
+                ("GITHUB_ACTIONS", "true"),
+                ("USE_LOCAL_MALIEV_DEPENDENCIES", localDependencyMode));
+
+            Assert.True(result.ExitCode == 0, result.Output);
+            Assert.Contains(expectedChildEnvironment, result.Output, StringComparison.Ordinal);
+        }
+
+        Assert.Equal(parentEnvironmentBefore, Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
     }
 
     [Fact]
@@ -511,6 +632,199 @@ public sealed class RepositoryContractTests
             int commandIndex = source.IndexOf(command, StringComparison.Ordinal);
             Assert.True(commandIndex > previousIndex, $"Expected validation command in order: {command}");
             previousIndex = commandIndex;
+        }
+    }
+
+    private static void AssertLocalDependencyContract(string source)
+    {
+        YamlStream yaml = ReadYaml(source);
+        YamlMappingNode root = Assert.IsType<YamlMappingNode>(yaml.Documents.Single().RootNode);
+        YamlMappingNode inputs = ReadMapping(root, "inputs");
+        YamlMappingNode localDependencyInput = ReadMapping(inputs, "use-local-maliev-dependencies");
+        Assert.Equal("false", ReadScalar(localDependencyInput, "default"));
+
+        YamlMappingNode[] steps = ReadActionSteps(source);
+        YamlMappingNode validator = Assert.Single(
+            steps,
+            step => ReadOptionalScalar(step, "name") == "Validate local MALIEV dependency mode");
+        int validatorIndex = Array.IndexOf(steps, validator);
+        Assert.Equal("bash", ReadScalar(validator, "shell"));
+        Assert.Equal(
+            "${{ inputs.use-local-maliev-dependencies }}",
+            ReadScalar(ReadMapping(validator, "env"), "USE_LOCAL_MALIEV_DEPENDENCIES_INPUT"));
+
+        string validatorScript = NormalizeLineEndings(ReadScalar(validator, "run"));
+        Assert.Contains("case \"$USE_LOCAL_MALIEV_DEPENDENCIES_INPUT\" in", validatorScript, StringComparison.Ordinal);
+        string[] casePatterns = Regex.Matches(validatorScript, @"(?m)^ {2}(?<pattern>[^)\r\n]+)\)$")
+            .Select(match => match.Groups["pattern"].Value)
+            .ToArray();
+        Assert.Equal(["true|false", "*"], casePatterns);
+        Assert.Contains("USE_LOCAL_MALIEV_DEPENDENCIES=$USE_LOCAL_MALIEV_DEPENDENCIES_INPUT", validatorScript, StringComparison.Ordinal);
+        Assert.Contains(">> \"$GITHUB_ENV\"", validatorScript, StringComparison.Ordinal);
+        Assert.Contains("    exit 1", validatorScript, StringComparison.Ordinal);
+
+        string[] expectedDotnetCommands =
+        [
+            "dotnet restore \"${{ inputs.solution }}\"",
+            "dotnet build \"${{ inputs.solution }}\" --configuration Release --no-restore",
+            "dotnet test \"${{ inputs.solution }}\" --configuration Release --no-build --no-restore",
+            "dotnet format \"${{ inputs.solution }}\" --verify-no-changes --no-restore",
+            "dotnet list \"${{ inputs.solution }}\" package --vulnerable --include-transitive --no-restore",
+        ];
+
+        List<(int StepIndex, string Command, string Script)> dotnetInvocations = [];
+        for (int stepIndex = 0; stepIndex < steps.Length; stepIndex++)
+        {
+            string? runScript = ReadOptionalScalar(steps[stepIndex], "run");
+            if (runScript is null)
+            {
+                continue;
+            }
+
+            MatchCollection commands = Regex.Matches(
+                NormalizeLineEndings(runScript),
+                @"(?m)^(?<command>dotnet (?:restore|build|test|format|list)\b[^\r\n]*)$");
+            dotnetInvocations.AddRange(commands.Select(match => (stepIndex, match.Groups["command"].Value, runScript)));
+        }
+
+        Assert.Equal(expectedDotnetCommands.Length, dotnetInvocations.Count);
+        foreach (string expectedCommand in expectedDotnetCommands)
+        {
+            (int stepIndex, string command, string runScript) = Assert.Single(
+                dotnetInvocations,
+                invocation => invocation.Command == expectedCommand);
+            Assert.True(stepIndex > validatorIndex, $"Validator must run before {command}.");
+            Assert.Equal(
+                $"if [[ \"$USE_LOCAL_MALIEV_DEPENDENCIES\" == \"true\" ]]; then\n" +
+                $"  export GITHUB_ACTIONS=false\n" +
+                $"fi\n" +
+                expectedCommand,
+                NormalizeLineEndings(runScript).TrimEnd());
+        }
+
+        Assert.Equal(
+            expectedDotnetCommands.Length,
+            dotnetInvocations.Sum(invocation => Regex.Matches(invocation.Script, "export GITHUB_ACTIONS=false").Count));
+        Assert.DoesNotContain("eval ", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("bash -c", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("${{ secrets.", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("contents: write", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("packages: write", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("id-token: write", source, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static YamlStream ReadYaml(string source)
+    {
+        YamlStream yaml = [];
+        yaml.Load(new StringReader(source));
+        Assert.Single(yaml.Documents);
+        return yaml;
+    }
+
+    private static YamlMappingNode[] ReadActionSteps(string source)
+    {
+        YamlMappingNode root = Assert.IsType<YamlMappingNode>(ReadYaml(source).Documents.Single().RootNode);
+        YamlSequenceNode steps = Assert.IsType<YamlSequenceNode>(ReadNode(ReadMapping(root, "runs"), "steps"));
+        return steps.Children.Select(Assert.IsType<YamlMappingNode>).ToArray();
+    }
+
+    private static YamlMappingNode ReadMapping(YamlMappingNode mapping, string key) =>
+        Assert.IsType<YamlMappingNode>(ReadNode(mapping, key));
+
+    private static YamlNode ReadNode(YamlMappingNode mapping, string key) => mapping.Children
+        .Single(pair => Assert.IsType<YamlScalarNode>(pair.Key).Value == key)
+        .Value;
+
+    private static string ReadScalar(YamlMappingNode mapping, string key) =>
+        Assert.IsType<YamlScalarNode>(ReadNode(mapping, key)).Value ??
+        throw new InvalidDataException($"Expected a non-null scalar value for '{key}'.");
+
+    private static string? ReadOptionalScalar(YamlMappingNode mapping, string key)
+    {
+        foreach ((YamlNode nodeKey, YamlNode value) in mapping.Children)
+        {
+            if (Assert.IsType<YamlScalarNode>(nodeKey).Value == key)
+            {
+                return Assert.IsType<YamlScalarNode>(value).Value;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool ContainsDotnetCommand(YamlMappingNode step) =>
+        ReadOptionalScalar(step, "run") is string runScript &&
+        Regex.IsMatch(runScript, @"(?m)^dotnet (?:restore|build|test|format|list)\b");
+
+    private static ProcessResult RunValidatorFixture(string source, string input)
+    {
+        YamlMappingNode validator = Assert.Single(
+            ReadActionSteps(source),
+            step => ReadOptionalScalar(step, "name") == "Validate local MALIEV dependency mode");
+        string githubEnvironmentPath = $"/tmp/legacy-workflows-github-env-{Guid.NewGuid():N}";
+        string fixtureScript =
+            "(\n" + ReadScalar(validator, "run") + "\n)\n" +
+            "status=$?\n" +
+            "if [[ -f \"$GITHUB_ENV\" ]]; then cat \"$GITHUB_ENV\"; rm -f \"$GITHUB_ENV\"; fi\n" +
+            "exit $status\n";
+        return RunBashFixture(
+            fixtureScript,
+            ("GITHUB_ENV", githubEnvironmentPath),
+            ("USE_LOCAL_MALIEV_DEPENDENCIES_INPUT", input));
+    }
+
+    private static ProcessResult RunBashFixture(string script, params (string Name, string Value)[] environment)
+    {
+        foreach ((string name, _) in environment)
+        {
+            Assert.Matches("^[A-Z][A-Z0-9_]*$", name);
+        }
+
+        lock (BashEnvironmentLock)
+        {
+            Dictionary<string, string?> originalEnvironment = environment
+                .Select(variable => variable.Name)
+                .Append("WSLENV")
+                .Distinct(StringComparer.Ordinal)
+                .ToDictionary(
+                    name => name,
+                    Environment.GetEnvironmentVariable,
+                    StringComparer.Ordinal);
+            try
+            {
+                foreach ((string name, string value) in environment)
+                {
+                    Environment.SetEnvironmentVariable(name, value);
+                }
+
+                Environment.SetEnvironmentVariable(
+                    "WSLENV",
+                    string.Join(':', environment.Select(variable => $"{variable.Name}/u")));
+
+                ProcessStartInfo startInfo = new("bash")
+                {
+                    WorkingDirectory = FindRepositoryRoot(),
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                };
+
+                using Process process = Process.Start(startInfo)!;
+                process.StandardInput.Write(script);
+                process.StandardInput.Close();
+                string standardOutput = process.StandardOutput.ReadToEnd();
+                string standardError = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+                return new ProcessResult(process.ExitCode, standardOutput + standardError);
+            }
+            finally
+            {
+                foreach ((string name, string? value) in originalEnvironment)
+                {
+                    Environment.SetEnvironmentVariable(name, value);
+                }
+            }
         }
     }
 

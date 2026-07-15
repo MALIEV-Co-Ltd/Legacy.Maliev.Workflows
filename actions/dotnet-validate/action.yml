@@ -13,6 +13,10 @@ inputs:
     description: .NET SDK version installed for validation.
     required: false
     default: 10.0.x
+  use-local-maliev-dependencies:
+    description: Set to true when sibling MALIEV projects must be resolved from the caller workspace.
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -30,6 +34,21 @@ runs:
         restore-keys: |
           ${{ runner.os }}-nuget-
 
+    - name: Validate local MALIEV dependency mode
+      shell: bash
+      env:
+        USE_LOCAL_MALIEV_DEPENDENCIES_INPUT: ${{ inputs.use-local-maliev-dependencies }}
+      run: |
+        case "$USE_LOCAL_MALIEV_DEPENDENCIES_INPUT" in
+          true|false)
+            echo "USE_LOCAL_MALIEV_DEPENDENCIES=$USE_LOCAL_MALIEV_DEPENDENCIES_INPUT" >> "$GITHUB_ENV"
+            ;;
+          *)
+            echo "use-local-maliev-dependencies must be exactly 'true' or 'false'." >&2
+            exit 1
+            ;;
+        esac
+
     - name: Install Gitleaks
       shell: bash
       run: |
@@ -44,24 +63,44 @@ runs:
     - name: Restore
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: dotnet restore "${{ inputs.solution }}"
+      run: |
+        if [[ "$USE_LOCAL_MALIEV_DEPENDENCIES" == "true" ]]; then
+          export GITHUB_ACTIONS=false
+        fi
+        dotnet restore "${{ inputs.solution }}"
 
     - name: Build
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: dotnet build "${{ inputs.solution }}" --configuration Release --no-restore
+      run: |
+        if [[ "$USE_LOCAL_MALIEV_DEPENDENCIES" == "true" ]]; then
+          export GITHUB_ACTIONS=false
+        fi
+        dotnet build "${{ inputs.solution }}" --configuration Release --no-restore
 
     - name: Test
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: dotnet test "${{ inputs.solution }}" --configuration Release --no-build --no-restore
+      run: |
+        if [[ "$USE_LOCAL_MALIEV_DEPENDENCIES" == "true" ]]; then
+          export GITHUB_ACTIONS=false
+        fi
+        dotnet test "${{ inputs.solution }}" --configuration Release --no-build --no-restore
 
     - name: Verify formatting
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: dotnet format "${{ inputs.solution }}" --verify-no-changes --no-restore
+      run: |
+        if [[ "$USE_LOCAL_MALIEV_DEPENDENCIES" == "true" ]]; then
+          export GITHUB_ACTIONS=false
+        fi
+        dotnet format "${{ inputs.solution }}" --verify-no-changes --no-restore
 
     - name: Audit vulnerable packages
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: dotnet list "${{ inputs.solution }}" package --vulnerable --include-transitive --no-restore
+      run: |
+        if [[ "$USE_LOCAL_MALIEV_DEPENDENCIES" == "true" ]]; then
+          export GITHUB_ACTIONS=false
+        fi
+        dotnet list "${{ inputs.solution }}" package --vulnerable --include-transitive --no-restore
