@@ -29,6 +29,13 @@ The repository will expose these immutable, SHA-pinned interfaces:
 
 Consumers must reference shared actions and reusable workflows by a complete 40-character commit SHA, never by a branch or floating tag. Shared workflows and actions store no service or deployment credential. The GitOps composite action accepts a token only from the service-owned job that invokes it. That caller job must bind its own protected deployment `environment`, restrict execution to protected `main`, and pass its environment-scoped secret explicitly.
 
+Legacy service Docker contexts that depend on the public `Maliev.Aspire`,
+`Maliev.MessagingContracts`, `Legacy.Maliev.ServiceDefaults`, or
+`Legacy.Maliev.CompatibilityContracts` repositories pass their exact commit through the matching
+`*-ref` input. The publisher checks out only the requested dependency under
+`.dependencies` with persisted credentials disabled before building. Empty inputs perform no extra
+checkout; branch names and floating tags are forbidden by the caller's repository contract.
+
 ## GitOps handoff adoption
 
 Contract `v1` initially allowlists only this established mapping:

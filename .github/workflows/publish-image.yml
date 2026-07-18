@@ -27,6 +27,26 @@ on:
         description: Google service account authorized to publish the image
         required: true
         type: string
+      maliev-aspire-ref:
+        description: Optional immutable Maliev.Aspire commit required by the caller Docker context
+        required: false
+        default: ""
+        type: string
+      messaging-contracts-ref:
+        description: Optional immutable Maliev.MessagingContracts commit required by the caller Docker context
+        required: false
+        default: ""
+        type: string
+      legacy-service-defaults-ref:
+        description: Optional immutable Legacy.Maliev.ServiceDefaults commit required by the caller Docker context
+        required: false
+        default: ""
+        type: string
+      compatibility-contracts-ref:
+        description: Optional immutable Legacy.Maliev.CompatibilityContracts commit required by the caller Docker context
+        required: false
+        default: ""
+        type: string
     outputs:
       digest:
         description: Published immutable image digest
@@ -51,6 +71,68 @@ jobs:
       - name: Check out caller repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          persist-credentials: false
+
+      - name: Validate optional dependency commits
+        shell: bash
+        env:
+          MALIEV_ASPIRE_REF: ${{ inputs.maliev-aspire-ref }}
+          MESSAGING_CONTRACTS_REF: ${{ inputs.messaging-contracts-ref }}
+          LEGACY_SERVICE_DEFAULTS_REF: ${{ inputs.legacy-service-defaults-ref }}
+          COMPATIBILITY_CONTRACTS_REF: ${{ inputs.compatibility-contracts-ref }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$MALIEV_ASPIRE_REF" && ! "$MALIEV_ASPIRE_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "maliev-aspire-ref must be an immutable 40-character commit" >&2
+            exit 1
+          fi
+          if [[ -n "$MESSAGING_CONTRACTS_REF" && ! "$MESSAGING_CONTRACTS_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "messaging-contracts-ref must be an immutable 40-character commit" >&2
+            exit 1
+          fi
+          if [[ -n "$LEGACY_SERVICE_DEFAULTS_REF" && ! "$LEGACY_SERVICE_DEFAULTS_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "legacy-service-defaults-ref must be an immutable 40-character commit" >&2
+            exit 1
+          fi
+          if [[ -n "$COMPATIBILITY_CONTRACTS_REF" && ! "$COMPATIBILITY_CONTRACTS_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "compatibility-contracts-ref must be an immutable 40-character commit" >&2
+            exit 1
+          fi
+
+      - name: Check out pinned Maliev.Aspire dependency
+        if: ${{ inputs.maliev-aspire-ref != '' }}
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: MALIEV-Co-Ltd/Maliev.Aspire
+          ref: ${{ inputs.maliev-aspire-ref }}
+          path: .dependencies/Maliev.Aspire
+          persist-credentials: false
+
+      - name: Check out pinned messaging contracts dependency
+        if: ${{ inputs.messaging-contracts-ref != '' }}
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: MALIEV-Co-Ltd/Maliev.MessagingContracts
+          ref: ${{ inputs.messaging-contracts-ref }}
+          path: .dependencies/Maliev.MessagingContracts
+          persist-credentials: false
+
+      - name: Check out pinned legacy service defaults dependency
+        if: ${{ inputs.legacy-service-defaults-ref != '' }}
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults
+          ref: ${{ inputs.legacy-service-defaults-ref }}
+          path: .dependencies/Legacy.Maliev.ServiceDefaults
+          persist-credentials: false
+
+      - name: Check out pinned legacy compatibility contracts dependency
+        if: ${{ inputs.compatibility-contracts-ref != '' }}
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: MALIEV-Co-Ltd/Legacy.Maliev.CompatibilityContracts
+          ref: ${{ inputs.compatibility-contracts-ref }}
+          path: .dependencies/Legacy.Maliev.CompatibilityContracts
           persist-credentials: false
 
       - name: Prepare immutable image tag
