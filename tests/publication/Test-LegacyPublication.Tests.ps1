@@ -715,14 +715,14 @@ Describe 'Publish-LegacyRepository' {
 }
 
 Describe 'Dependabot publication contract' {
-    It 'configures grouped weekly NuGet Docker and GitHub Actions updates' {
+    It 'configures grouped weekly updates only for dependency manifests in this repository' {
         $source = Get-Content (Join-Path $RepositoryRoot '.github\dependabot.yml') -Raw
         $source | Should Match 'version:\s*2'
         $source | Should Match 'package-ecosystem:\s*"nuget"'
-        $source | Should Match 'package-ecosystem:\s*"docker"'
+        $source | Should Not Match 'package-ecosystem:\s*"docker"'
         $source | Should Match 'package-ecosystem:\s*"github-actions"'
-        ([regex]::Matches($source, 'interval:\s*"weekly"')).Count | Should Be 3
-        ([regex]::Matches($source, '(?m)^\s+groups:\s*$')).Count | Should Be 3
-        ([regex]::Matches($source, 'patterns:\s*\["\*"\]')).Count | Should Be 3
+        ([regex]::Matches($source, 'interval:\s*"weekly"')).Count | Should Be 2
+        ([regex]::Matches($source, '(?m)^\s+groups:\s*$')).Count | Should Be 2
+        ([regex]::Matches($source, 'patterns:\s*\["\*"\]')).Count | Should Be 2
     }
 }

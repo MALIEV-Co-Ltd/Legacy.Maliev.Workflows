@@ -10,16 +10,6 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
 
-  - package-ecosystem: "docker"
-    directory: "/"
-    open-pull-requests-limit: 5
-    schedule:
-      interval: "weekly"
-    groups:
-      compatible-updates:
-        patterns: ["*"]
-        update-types: ["minor", "patch"]
-
   - package-ecosystem: "github-actions"
     directory: "/"
     open-pull-requests-limit: 5
