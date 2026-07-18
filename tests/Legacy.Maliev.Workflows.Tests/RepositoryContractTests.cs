@@ -62,7 +62,6 @@ public sealed class RepositoryContractTests
         Dictionary<string, string> expectedLimits = new(StringComparer.Ordinal)
         {
             ["nuget"] = "10",
-            ["docker"] = "5",
             ["github-actions"] = "5",
         };
 
