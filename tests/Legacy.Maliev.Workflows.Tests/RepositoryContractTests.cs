@@ -325,6 +325,10 @@ public sealed class RepositoryContractTests
         Assert.Contains("environment:", source, StringComparison.Ordinal);
         Assert.Contains("workload-identity-provider:", source, StringComparison.Ordinal);
         Assert.Contains("service-account:", source, StringComparison.Ordinal);
+        Assert.Contains("maliev-aspire-ref:", source, StringComparison.Ordinal);
+        Assert.Contains("messaging-contracts-ref:", source, StringComparison.Ordinal);
+        Assert.Contains("legacy-service-defaults-ref:", source, StringComparison.Ordinal);
+        Assert.Contains("compatibility-contracts-ref:", source, StringComparison.Ordinal);
         Assert.Contains("outputs:\n      digest:", normalizedSource, StringComparison.Ordinal);
         Assert.Contains("permissions:\n  contents: read\n  id-token: write", normalizedSource, StringComparison.Ordinal);
         Assert.Contains("environment: ${{ inputs.environment }}", source, StringComparison.Ordinal);
@@ -375,6 +379,44 @@ public sealed class RepositoryContractTests
         Assert.True(pushIndex > scanIndex, "Expected the vulnerability scan to pass before image publication.");
         Assert.True(digestIndex > pushIndex, "Expected immutable digest resolution after image publication.");
         Assert.Single(Regex.Matches(source, @"GITHUB_OUTPUT"));
+    }
+
+    [Fact]
+    public void TrustedImagePublicationWorkflow_WhenPublicDependenciesAreRequested_ChecksOutPinnedRefsBeforeBuild()
+    {
+        string source = ReadRequiredSource(".github/workflows/publish-image.yml");
+
+        Assert.Contains("repository: MALIEV-Co-Ltd/Maliev.Aspire", source, StringComparison.Ordinal);
+        Assert.Contains("ref: ${{ inputs.maliev-aspire-ref }}", source, StringComparison.Ordinal);
+        Assert.Contains("path: .dependencies/Maliev.Aspire", source, StringComparison.Ordinal);
+        Assert.Contains("repository: MALIEV-Co-Ltd/Maliev.MessagingContracts", source, StringComparison.Ordinal);
+        Assert.Contains("ref: ${{ inputs.messaging-contracts-ref }}", source, StringComparison.Ordinal);
+        Assert.Contains("path: .dependencies/Maliev.MessagingContracts", source, StringComparison.Ordinal);
+        Assert.Contains("inputs.maliev-aspire-ref != ''", source, StringComparison.Ordinal);
+        Assert.Contains("inputs.messaging-contracts-ref != ''", source, StringComparison.Ordinal);
+        Assert.Contains("repository: MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults", source, StringComparison.Ordinal);
+        Assert.Contains("ref: ${{ inputs.legacy-service-defaults-ref }}", source, StringComparison.Ordinal);
+        Assert.Contains("path: .dependencies/Legacy.Maliev.ServiceDefaults", source, StringComparison.Ordinal);
+        Assert.Contains("repository: MALIEV-Co-Ltd/Legacy.Maliev.CompatibilityContracts", source, StringComparison.Ordinal);
+        Assert.Contains("ref: ${{ inputs.compatibility-contracts-ref }}", source, StringComparison.Ordinal);
+        Assert.Contains("path: .dependencies/Legacy.Maliev.CompatibilityContracts", source, StringComparison.Ordinal);
+        Assert.Contains("inputs.legacy-service-defaults-ref != ''", source, StringComparison.Ordinal);
+        Assert.Contains("inputs.compatibility-contracts-ref != ''", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("github-token:", source, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("! \"$MALIEV_ASPIRE_REF\" =~ ^[0-9a-f]{40}$", source, StringComparison.Ordinal);
+        Assert.Contains("! \"$MESSAGING_CONTRACTS_REF\" =~ ^[0-9a-f]{40}$", source, StringComparison.Ordinal);
+        Assert.Contains("! \"$LEGACY_SERVICE_DEFAULTS_REF\" =~ ^[0-9a-f]{40}$", source, StringComparison.Ordinal);
+        Assert.Contains("! \"$COMPATIBILITY_CONTRACTS_REF\" =~ ^[0-9a-f]{40}$", source, StringComparison.Ordinal);
+
+        int aspireCheckoutIndex = source.IndexOf("path: .dependencies/Maliev.Aspire", StringComparison.Ordinal);
+        int messagingCheckoutIndex = source.IndexOf("path: .dependencies/Maliev.MessagingContracts", StringComparison.Ordinal);
+        int serviceDefaultsCheckoutIndex = source.IndexOf("path: .dependencies/Legacy.Maliev.ServiceDefaults", StringComparison.Ordinal);
+        int compatibilityCheckoutIndex = source.IndexOf("path: .dependencies/Legacy.Maliev.CompatibilityContracts", StringComparison.Ordinal);
+        int buildIndex = source.IndexOf("docker/build-push-action@", StringComparison.Ordinal);
+        Assert.True(aspireCheckoutIndex >= 0 && aspireCheckoutIndex < buildIndex);
+        Assert.True(messagingCheckoutIndex >= 0 && messagingCheckoutIndex < buildIndex);
+        Assert.True(serviceDefaultsCheckoutIndex >= 0 && serviceDefaultsCheckoutIndex < buildIndex);
+        Assert.True(compatibilityCheckoutIndex >= 0 && compatibilityCheckoutIndex < buildIndex);
     }
 
     [Fact]
