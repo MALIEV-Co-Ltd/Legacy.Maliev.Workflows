@@ -140,14 +140,15 @@ public sealed class RepositoryContractTests
     }
 
     [Fact]
-    public void PullRequestBootstrap_WhenContractIsEvaluated_CallsLocalValidationReadOnlyAndSecretless()
+    public void ValidationBootstrap_WhenContractIsEvaluated_CoversPullRequestsAndProtectedMainReadOnlyAndSecretless()
     {
         string source = ReadRequiredSource(".github/workflows/validate.yml");
         string normalizedSource = NormalizeLineEndings(source);
 
         Assert.Contains("name: validate", source, StringComparison.Ordinal);
         Assert.Contains("on:\n  pull_request:", normalizedSource, StringComparison.Ordinal);
-        AssertExclusivePullRequestTrigger(normalizedSource);
+        Assert.Contains("  push:\n    branches: [main]", normalizedSource, StringComparison.Ordinal);
+        AssertValidationTriggers(normalizedSource);
         Assert.Contains("permissions:\n  contents: read", normalizedSource, StringComparison.Ordinal);
         Assert.Contains("jobs:\n  validate:\n    name: validate", normalizedSource, StringComparison.Ordinal);
         Assert.Contains("uses: ./.github/workflows/dotnet-validate.yml", source, StringComparison.Ordinal);
@@ -943,7 +944,7 @@ public sealed class RepositoryContractTests
         }
     }
 
-    private static void AssertExclusivePullRequestTrigger(string source)
+    private static void AssertValidationTriggers(string source)
     {
         string[] lines = source.Split('\n');
         int onLineIndex = Array.IndexOf(lines, "on:");
@@ -970,7 +971,7 @@ public sealed class RepositoryContractTests
             }
         }
 
-        Assert.Equal(["pull_request"], triggers);
+        Assert.Equal(["pull_request", "push"], triggers);
     }
 
     private static void AssertUsesSecretlessGitleaksCli(string source)
