@@ -55,6 +55,38 @@ public sealed class RepositoryContractTests
     }
 
     [Fact]
+    public void DependabotConfiguration_WhenContractIsEvaluated_GroupsOnlyCompatibleUpdatesWithinQueueLimits()
+    {
+        YamlMappingNode root = Assert.IsType<YamlMappingNode>(ReadYaml(ReadRequiredSource(".github/dependabot.yml")).Documents.Single().RootNode);
+        YamlSequenceNode updates = Assert.IsType<YamlSequenceNode>(ReadNode(root, "updates"));
+        Dictionary<string, string> expectedLimits = new(StringComparer.Ordinal)
+        {
+            ["nuget"] = "10",
+            ["docker"] = "5",
+            ["github-actions"] = "5",
+        };
+
+        Assert.Equal(expectedLimits.Count, updates.Children.Count);
+        foreach (YamlNode updateNode in updates.Children)
+        {
+            YamlMappingNode update = Assert.IsType<YamlMappingNode>(updateNode);
+            string ecosystem = ReadScalar(update, "package-ecosystem");
+            Assert.Equal(expectedLimits[ecosystem], ReadScalar(update, "open-pull-requests-limit"));
+
+            YamlMappingNode groups = Assert.IsType<YamlMappingNode>(ReadNode(update, "groups"));
+            YamlMappingNode compatible = Assert.IsType<YamlMappingNode>(Assert.Single(groups.Children).Value);
+            YamlSequenceNode patterns = Assert.IsType<YamlSequenceNode>(ReadNode(compatible, "patterns"));
+            Assert.Equal(["*"], patterns.Children.Select(Assert.IsType<YamlScalarNode>).Select(node => node.Value));
+
+            YamlSequenceNode updateTypes = Assert.IsType<YamlSequenceNode>(ReadNode(compatible, "update-types"));
+            Assert.Equal(
+                ["minor", "patch"],
+                updateTypes.Children.Select(Assert.IsType<YamlScalarNode>).Select(node => node.Value));
+            Assert.DoesNotContain(updateTypes.Children, node => Assert.IsType<YamlScalarNode>(node).Value == "major");
+        }
+    }
+
+    [Fact]
     public void ActionSources_WhenContractIsEvaluated_AreSafeAndShaPinned()
     {
         string repositoryRoot = FindRepositoryRoot();
