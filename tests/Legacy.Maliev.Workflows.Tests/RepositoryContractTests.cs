@@ -8,7 +8,7 @@ namespace Legacy.Maliev.Workflows.Tests;
 public sealed class RepositoryContractTests
 {
     private const string Node24CheckoutReference =
-        "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0";
+        "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1";
 
     private const string Node24SetupDotnetReference =
         "actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0";
