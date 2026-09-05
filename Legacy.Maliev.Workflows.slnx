@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="tools/analytics/WireFixtures/WireFixtures.csproj" />
   <Project Path="tests/Legacy.Maliev.Workflows.Tests/Legacy.Maliev.Workflows.Tests.csproj" />
 </Solution>

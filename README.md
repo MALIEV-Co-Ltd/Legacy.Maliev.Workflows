@@ -79,6 +79,12 @@ The caller token must be limited to `MALIEV-Co-Ltd/maliev-gitops` with only repo
 
 ## Repository contract
 
+Operational aggregate receipts can be validated locally without credentials or
+network access by the fail-closed consumer documented in
+[`tools/analytics/README.md`](tools/analytics/README.md). The consumer preserves
+the separation between source-attributed aggregate counts, qualification, and
+campaign attribution.
+
 Run the executable source contract with:
 
 ```powershell
