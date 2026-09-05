@@ -1,0 +1,1 @@
+{"FromUtc":"2026-08-25T17:00:00Z","ToUtc":"2026-09-01T17:00:00Z","Days":[{"DayUtc":"2026-08-26T00:00:00","PaidInvoiceCount":3,"SourceAttributedPaidInvoiceCount":1,"UnattributedPaidInvoiceCount":2,"PaidInvoiceAmountsByCurrency":[{"Currency":"THB","PaidInvoiceTotal":120.5000,"PaidInvoiceCount":2},{"Currency":"USD","PaidInvoiceTotal":25.01,"PaidInvoiceCount":1}]}]}
