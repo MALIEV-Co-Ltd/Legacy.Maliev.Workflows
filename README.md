@@ -2,6 +2,28 @@
 
 Reusable CI/CD and publication gates for services migrated from the private MALIEV legacy monorepo into fresh public repositories.
 
+## All-service source commit ledger
+
+`migration/source-commit-ledger.json` is the fail-closed inventory of every
+non-merge commit in the read-only `maliev-web` source history. Each changed
+path is assigned to one or more canonical Legacy repositories, or to an
+explicit approved retirement/source-tooling disposition, by
+`migration/source-path-owners.json`. The generated artifact also pins every
+owning repository's `origin/main` SHA and evidence URL at generation time.
+
+Refresh it locally from committed Git objects only:
+
+```powershell
+.\scripts\New-SourceCommitLedger.ps1 `
+  -SourceRepository R:\maliev-web `
+  -SourceRef origin/main
+```
+
+An unmapped or ambiguously mapped historical path stops generation. The ledger
+is a classification and traceability contract; it is not by itself evidence
+that runtime behavior has been migrated. Migration evidence remains mandatory
+in each owning repository and in Project #2.
+
 ## Trust boundaries
 
 Pull-request validation is fork-safe and secretless. It runs with read-only repository contents, never uses `pull_request_target`, and receives no environment secret, cloud identity, package-write permission, GitHub App token, or personal access token. Validation may build, test, format, audit dependencies, scan for secrets, and scan containers; it cannot publish or deploy.
