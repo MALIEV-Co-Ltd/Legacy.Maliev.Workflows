@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
+  "rules": [
+    { "pattern": "^Maliev\\.AuthService\\.|^Maliev\\.Identities(?:/|$)", "owners": ["Legacy.Maliev.AuthService"] },
+    { "pattern": "^Maliev\\.(?:Country|Currency)Service\\.", "owners": ["Legacy.Maliev.CountryService"] },
+    { "pattern": "^Maliev\\.CustomerService\\.", "owners": ["Legacy.Maliev.CustomerService"] },
+    { "pattern": "^Maliev\\.(?:Email|Message)Service\\.", "owners": ["Legacy.Maliev.NotificationService"] },
+    { "pattern": "^Maliev\\.EmployeeService\\.", "owners": ["Legacy.Maliev.EmployeeService"] },
+    { "pattern": "^Maliev\\.JobService\\.", "owners": ["Legacy.Maliev.CareerService"] },
+    { "pattern": "^Maliev\\.MaterialService\\.", "owners": ["Legacy.Maliev.CatalogService"] },
+    { "pattern": "^Maliev\\.(?:Invoice|Payment|Receipt)Service\\.", "owners": ["Legacy.Maliev.AccountingService"] },
+    { "pattern": "^Maliev\\.(?:Order|OrderStatus)Service\\.", "owners": ["Legacy.Maliev.OrderService"] },
+    { "pattern": "^Maliev\\.(?:PurchaseOrder|Supplier)Service\\.", "owners": ["Legacy.Maliev.ProcurementService"] },
+    { "pattern": "^Maliev\\.(?:Quotation|QuotationRequest)Service\\.", "owners": ["Legacy.Maliev.QuotationService"] },
+    { "pattern": "^Maliev\\.PdfService\\.", "owners": ["Legacy.Maliev.DocumentService"] },
+    { "pattern": "^Maliev\\.UploadService\\.", "owners": ["Legacy.Maliev.FileService"] },
+    { "pattern": "^Maliev\\.Web(?:\\.|/|$)", "owners": ["Legacy.Maliev.Web"] },
+    { "pattern": "^Maliev\\.Intranet(?:\\.|/|$)", "owners": ["Legacy.Maliev.Intranet"] },
+    { "pattern": "^Maliev\\.SqlServer(?:/|$)", "owners": ["Legacy.Maliev.DataMigration"] },
+    { "pattern": "^Maliev\\.CertManager(?:/|$)|^gce-ingress-maliev\\.yaml$|^apply-gce-ingress-maliev\\.cmd$", "owners": ["Legacy.Maliev.AppHost"] },
+    { "pattern": "^Maliev\\.(?:AspNetCore\\.DataAnnotations|Common|Entities|Middleware\\..*|Service\\.WebApi|LoggerService\\..*|NativeLogging)(?:/|$)", "owners": ["Legacy.Maliev.CompatibilityContracts", "Legacy.Maliev.ServiceDefaults"] },
+    { "pattern": "^\\.github/|^\\.editorconfig$|^\\.gitattributes$|^\\.gitignore$|^\\.gitleaks\\.toml$|^tools/", "owners": ["Legacy.Maliev.Workflows"] },
+    { "pattern": "^docs/|^design-qa\\.md$", "owners": ["Legacy.Maliev.Workflows"] },
+    { "pattern": "^\\.dockerignore$|^Maliev\\.sln$|^(?:deploy_(?:all|api|intranet|pdf|web)|update-(?:deployment-resources|replicas-and-memory|resources)|apply-(?:ingress-api|ingress-intranet|ingress-staging|ingress-www))\\.(?:ps1|sh|cmd)$|^(?:optimize-cluster|patch-live-resources|update-resources-dev-optimized|update-resources-optimized)\\.sh$|^ingress-(?:api|intranet|staging|www)\\.yaml$|^activate gcloud account\\.cmd$|^clear nuget package\\.cmd$", "owners": ["Legacy.Maliev.AppHost", "Legacy.Maliev.Workflows"] },
+    { "pattern": "^Maliev\\.PredictionService\\.|^Maliev\\.Service\\.(?:Barcode|PayPal)|^Maliev\\.LineChatbotService(?:/|$)", "disposition": "approved-retirement", "decision": "Legacy architecture intentionally omits unused prediction, barcode, PayPal, and LINE chatbot runtimes." },
+    { "pattern": "^\\.(?:claude|impeccable|superpowers)/", "disposition": "source-tooling-only", "decision": "Local authoring-agent configuration is not a production runtime contract." }
+  ]
+}
