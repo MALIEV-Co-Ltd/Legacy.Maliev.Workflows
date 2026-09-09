@@ -1,6 +1,9 @@
 {
   "schemaVersion": 1,
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
+  "architecturalTargets": [
+    "Legacy.Maliev.ContactService"
+  ],
   "rules": [
     { "pattern": "^Maliev\\.AuthService\\.|^Maliev\\.Identities(?:/|$)", "owners": ["Legacy.Maliev.AuthService"] },
     { "pattern": "^Maliev\\.(?:Country|Currency)Service\\.", "owners": ["Legacy.Maliev.CountryService"] },

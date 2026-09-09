@@ -16,6 +16,9 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         var root = document.RootElement;
         Assert.Equal(1, root.GetProperty("schemaVersion").GetInt32());
         Assert.Equal("MALIEV-Co-Ltd/maliev-web", root.GetProperty("sourceRepository").GetString());
+        Assert.Equal(
+            ["Legacy.Maliev.ContactService"],
+            root.GetProperty("architecturalTargets").EnumerateArray().Select(item => item.GetString()!).ToArray());
 
         var patterns = new HashSet<string>(StringComparer.Ordinal);
         foreach (var rule in root.GetProperty("rules").EnumerateArray())
@@ -41,6 +44,8 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.Matches(Sha, root.GetProperty("sourceCheckpoint").GetString()!);
         var targets = root.GetProperty("legacyTargets");
         Assert.True(targets.EnumerateObject().Any());
+        Assert.True(targets.TryGetProperty("Legacy.Maliev.ContactService", out _),
+            "The extracted ContactService must retain target-SHA evidence even without a one-to-one source project.");
         foreach (var target in targets.EnumerateObject())
         {
             var mainSha = target.Value.GetProperty("mainSha").GetString()!;
@@ -96,6 +101,7 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.DoesNotContain("git -C $SourceRepository checkout", script, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("git -C $SourceRepository reset", script, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("git -C $SourceRepository clean", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("$mapping.architecturalTargets", script, StringComparison.Ordinal);
     }
 
     private static JsonDocument Load(string relativePath) =>
