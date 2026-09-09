@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-09T01:40:38.1306423+00:00",
+  "generatedAt": "2026-09-09T02:01:22.6583123+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "5ac7d045c51194edd9e64d8564f1b726b001be34",
+  "sourceCheckpoint": "ad2774760862371b4ea442d02669ad9ecd4913f5",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
       "mainSha": "23ad316c28031f47add05c010e37e6355ac0b2eb",
@@ -85,11 +85,11 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/44a25cbfc24de9a64a82f59f462d0c0fb45af1e9"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "0dcb1bfd34450b124daf0dee52fa8523aee30af9",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/0dcb1bfd34450b124daf0dee52fa8523aee30af9"
+      "mainSha": "caa43d2d2464be43c0ebcb2c5636d0f5a8a3edc6",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/caa43d2d2464be43c0ebcb2c5636d0f5a8a3edc6"
     }
   },
-  "nonMergeCommitCount": 928,
+  "nonMergeCommitCount": 929,
   "records": [
     {
       "ordinal": 1,
@@ -79510,6 +79510,23 @@
           "path": "Maliev.sln",
           "owners": [
             "Legacy.Maliev.AppHost",
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 929,
+      "commit": "ad2774760862371b4ea442d02669ad9ecd4913f5",
+      "authoredAt": "2026-09-06T15:02:43+07:00",
+      "subject": "docs(cnc): plan evidence-backed manufacturing quotation recovery",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/ad2774760862371b4ea442d02669ad9ecd4913f5",
+      "classifications": [
+        {
+          "path": "docs/superpowers/plans/2026-09-06-cnc-quotation-manufacturing-recovery.md",
+          "owners": [
             "Legacy.Maliev.Workflows"
           ],
           "disposition": "migration-required",
