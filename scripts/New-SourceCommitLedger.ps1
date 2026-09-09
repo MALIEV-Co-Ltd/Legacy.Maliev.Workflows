@@ -21,7 +21,10 @@ $checkpoint = ([string](Invoke-SourceGit rev-parse $SourceRef | Select-Object -F
 if ($checkpoint -notmatch '^[0-9a-f]{40}$') { throw "Source ref did not resolve to a full commit SHA: $checkpoint" }
 
 $legacyTargets = [ordered]@{}
-$ownerNames = @($mapping.rules.owners | ForEach-Object { $_ } | Sort-Object -Unique)
+$ownerNames = @(
+    @($mapping.rules.owners | ForEach-Object { $_ }) + @($mapping.architecturalTargets) |
+        Sort-Object -Unique
+)
 foreach ($owner in $ownerNames) {
     $repositoryPath = Join-Path $LegacyRoot $owner
     if (-not (Test-Path -LiteralPath (Join-Path $repositoryPath '.git'))) { throw "Canonical Legacy repository was not found: $repositoryPath" }
