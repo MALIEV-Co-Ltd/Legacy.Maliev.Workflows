@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-09T02:06:08.3440789+00:00",
+  "generatedAt": "2026-09-09T03:02:54.7134909+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "ad2774760862371b4ea442d02669ad9ecd4913f5",
   "legacyTargets": {
@@ -41,8 +41,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/66574d7bbec83b3c7def676d76f2b44a230209a2"
     },
     "Legacy.Maliev.DataMigration": {
-      "mainSha": "b3c161f8a47dfec4e031995c0830e4c6e6749972",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/b3c161f8a47dfec4e031995c0830e4c6e6749972"
+      "mainSha": "d37dbf19982b1ce92d3c33f0e7febe90e3589d1c",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/d37dbf19982b1ce92d3c33f0e7febe90e3589d1c"
     },
     "Legacy.Maliev.DocumentService": {
       "mainSha": "25a7c63b3c28d461455cc5f106ea220382979880",
@@ -85,8 +85,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/44a25cbfc24de9a64a82f59f462d0c0fb45af1e9"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "cfbfb6f73c648aeacb23cdd641b2b0f6bf6f0c74",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/cfbfb6f73c648aeacb23cdd641b2b0f6bf6f0c74"
+      "mainSha": "647b678ebb62d94606e04adbc3ef081c95a5556e",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/647b678ebb62d94606e04adbc3ef081c95a5556e"
     }
   },
   "nonMergeCommitCount": 929,
