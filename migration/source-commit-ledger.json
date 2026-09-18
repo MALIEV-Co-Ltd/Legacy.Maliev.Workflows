@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-18T06:41:22.5194774+00:00",
+  "generatedAt": "2026-09-18T09:49:17.6678980+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "7c416cc8cfd27ef7440e7c046529011630276807",
+  "sourceCheckpoint": "96392ed2a1913cb0c95bf8adc4668d35cc8137ff",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
       "mainSha": "4cc64bd9b419b3a73307af6265d2e59a37eb0e20",
@@ -85,11 +85,11 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/b5612144ba3a2d6736319213fb8e356b0b220116"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "fddbdb9dec0d110ca0667c1377993c7bde8e0106",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/fddbdb9dec0d110ca0667c1377993c7bde8e0106"
+      "mainSha": "1d0916ca649e2e8b6dd6237d4f514de7e1434dc5",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/1d0916ca649e2e8b6dd6237d4f514de7e1434dc5"
     }
   },
-  "nonMergeCommitCount": 945,
+  "nonMergeCommitCount": 946,
   "records": [
     {
       "ordinal": 1,
@@ -80526,6 +80526,71 @@
         },
         {
           "path": "Maliev.Web/wwwroot/src/app/css/table.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 946,
+      "commit": "96392ed2a1913cb0c95bf8adc4668d35cc8137ff",
+      "authoredAt": "2026-09-18T15:26:08+07:00",
+      "subject": "Improve Thai service-page intent guidance",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/96392ed2a1913cb0c95bf8adc4668d35cc8137ff",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/CncSeoContractSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/SeoBusinessContractTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Scanning.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/CNC-Machining.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/Custom-Manufacturing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/Index.cshtml",
           "owners": [
             "Legacy.Maliev.Web"
           ],
