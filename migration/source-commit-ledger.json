@@ -1,95 +1,95 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-09T08:27:34.0858915+00:00",
+  "generatedAt": "2026-09-18T06:41:22.5194774+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "ad2774760862371b4ea442d02669ad9ecd4913f5",
+  "sourceCheckpoint": "7c416cc8cfd27ef7440e7c046529011630276807",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
-      "mainSha": "23ad316c28031f47add05c010e37e6355ac0b2eb",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/commit/23ad316c28031f47add05c010e37e6355ac0b2eb"
+      "mainSha": "4cc64bd9b419b3a73307af6265d2e59a37eb0e20",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/commit/4cc64bd9b419b3a73307af6265d2e59a37eb0e20"
     },
     "Legacy.Maliev.AppHost": {
-      "mainSha": "baf51340a480e5288a807cace45a17d7d2054e16",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AppHost/commit/baf51340a480e5288a807cace45a17d7d2054e16"
+      "mainSha": "728bceb2f0f8fabfb3878321ca7c54d476b29344",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AppHost/commit/728bceb2f0f8fabfb3878321ca7c54d476b29344"
     },
     "Legacy.Maliev.AuthService": {
-      "mainSha": "d5836e925c24f84b719c1ac10d2553dcd760e75a",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/d5836e925c24f84b719c1ac10d2553dcd760e75a"
+      "mainSha": "d3311024e863f97ad067b608c70dac23edb8f2cb",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/d3311024e863f97ad067b608c70dac23edb8f2cb"
     },
     "Legacy.Maliev.CareerService": {
-      "mainSha": "9c2e1a59abe57b9e83494a548f84aa6bbafad572",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CareerService/commit/9c2e1a59abe57b9e83494a548f84aa6bbafad572"
+      "mainSha": "a1802d4e2a3bf5bdbaeaf2320be00e5e19157375",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CareerService/commit/a1802d4e2a3bf5bdbaeaf2320be00e5e19157375"
     },
     "Legacy.Maliev.CatalogService": {
       "mainSha": "de4b3364e924cca1aeebb3280817f0c9bd7ea6bc",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/commit/de4b3364e924cca1aeebb3280817f0c9bd7ea6bc"
     },
     "Legacy.Maliev.CompatibilityContracts": {
-      "mainSha": "13eefdb44cad42b46216bb0378af8c76e3672c2c",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CompatibilityContracts/commit/13eefdb44cad42b46216bb0378af8c76e3672c2c"
+      "mainSha": "05ef0b33ae118d3f1da015a842c9e7cbb55ad37f",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CompatibilityContracts/commit/05ef0b33ae118d3f1da015a842c9e7cbb55ad37f"
     },
     "Legacy.Maliev.ContactService": {
-      "mainSha": "8ae4bdae167989463a53541ae793db63c15dd639",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ContactService/commit/8ae4bdae167989463a53541ae793db63c15dd639"
+      "mainSha": "831816a3ce95ab5d2a5b029d3f933c09fec9452f",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ContactService/commit/831816a3ce95ab5d2a5b029d3f933c09fec9452f"
     },
     "Legacy.Maliev.CountryService": {
-      "mainSha": "5cb31a4805a0675aabda1b7d87d68ac6354cb8d3",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CountryService/commit/5cb31a4805a0675aabda1b7d87d68ac6354cb8d3"
+      "mainSha": "9c53137022bbd4e48d03084a090357ea98215559",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CountryService/commit/9c53137022bbd4e48d03084a090357ea98215559"
     },
     "Legacy.Maliev.CustomerService": {
-      "mainSha": "66574d7bbec83b3c7def676d76f2b44a230209a2",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/66574d7bbec83b3c7def676d76f2b44a230209a2"
+      "mainSha": "1270d63295a53f79aee265e57949e793ccb6516d",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/1270d63295a53f79aee265e57949e793ccb6516d"
     },
     "Legacy.Maliev.DataMigration": {
-      "mainSha": "c5434c3a5c1df45e62df7db2cad9332da2f63e8a",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/c5434c3a5c1df45e62df7db2cad9332da2f63e8a"
+      "mainSha": "baf187a96b8f218ca8a0d693033895b1c809a7b5",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/baf187a96b8f218ca8a0d693033895b1c809a7b5"
     },
     "Legacy.Maliev.DocumentService": {
-      "mainSha": "25a7c63b3c28d461455cc5f106ea220382979880",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DocumentService/commit/25a7c63b3c28d461455cc5f106ea220382979880"
+      "mainSha": "36bb52747cec7854db2349f8a63d771c9479b2af",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DocumentService/commit/36bb52747cec7854db2349f8a63d771c9479b2af"
     },
     "Legacy.Maliev.EmployeeService": {
       "mainSha": "101e0dc8009174b24c3013011b5393aa1ca66bee",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.EmployeeService/commit/101e0dc8009174b24c3013011b5393aa1ca66bee"
     },
     "Legacy.Maliev.FileService": {
-      "mainSha": "62372c5110cf42448cbcc648903e8bd09f313663",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.FileService/commit/62372c5110cf42448cbcc648903e8bd09f313663"
+      "mainSha": "992135d8d49adc6747ce5495a4386e88ace9de1d",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.FileService/commit/992135d8d49adc6747ce5495a4386e88ace9de1d"
     },
     "Legacy.Maliev.Intranet": {
-      "mainSha": "c63fa5a6448b8613e6f5b2b6151168116c2c7484",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/commit/c63fa5a6448b8613e6f5b2b6151168116c2c7484"
+      "mainSha": "a94c9cb472ce0c5fce323ebbff1a9c03705f2bd8",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/commit/a94c9cb472ce0c5fce323ebbff1a9c03705f2bd8"
     },
     "Legacy.Maliev.NotificationService": {
-      "mainSha": "622f00ccc650da27f02d7b4e073699852d8ebdf6",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/commit/622f00ccc650da27f02d7b4e073699852d8ebdf6"
+      "mainSha": "bc2fee84421edaaf544a8f6040ae57ea81eeb14e",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/commit/bc2fee84421edaaf544a8f6040ae57ea81eeb14e"
     },
     "Legacy.Maliev.OrderService": {
-      "mainSha": "4daf33d2794b50cf137fc8ec136539151930707b",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.OrderService/commit/4daf33d2794b50cf137fc8ec136539151930707b"
+      "mainSha": "c371e2f2e81e46e28787c4472ce25a4bd08052ef",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.OrderService/commit/c371e2f2e81e46e28787c4472ce25a4bd08052ef"
     },
     "Legacy.Maliev.ProcurementService": {
       "mainSha": "931feb5c6ec8f71ce95bbf093478429d299af130",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ProcurementService/commit/931feb5c6ec8f71ce95bbf093478429d299af130"
     },
     "Legacy.Maliev.QuotationService": {
-      "mainSha": "7d4d0061cdb595c86bfa67074fec7c61b9f3812f",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/commit/7d4d0061cdb595c86bfa67074fec7c61b9f3812f"
+      "mainSha": "89a6d653302561fedc5756cf0843458971d50a7b",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/commit/89a6d653302561fedc5756cf0843458971d50a7b"
     },
     "Legacy.Maliev.ServiceDefaults": {
-      "mainSha": "9c4ac9d44a08bcd0aa2088348790ab863814669c",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/9c4ac9d44a08bcd0aa2088348790ab863814669c"
+      "mainSha": "c6074f9b8dd880eb18870f7dc9ff7a64a9d5e9a9",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/c6074f9b8dd880eb18870f7dc9ff7a64a9d5e9a9"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "44a25cbfc24de9a64a82f59f462d0c0fb45af1e9",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/44a25cbfc24de9a64a82f59f462d0c0fb45af1e9"
+      "mainSha": "b5612144ba3a2d6736319213fb8e356b0b220116",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/b5612144ba3a2d6736319213fb8e356b0b220116"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "a25f8042d1739ee54bcc393165e9d9861f7a2ca4",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/a25f8042d1739ee54bcc393165e9d9861f7a2ca4"
+      "mainSha": "fddbdb9dec0d110ca0667c1377993c7bde8e0106",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/fddbdb9dec0d110ca0667c1377993c7bde8e0106"
     }
   },
-  "nonMergeCommitCount": 929,
+  "nonMergeCommitCount": 945,
   "records": [
     {
       "ordinal": 1,
@@ -79519,15 +79519,1015 @@
     },
     {
       "ordinal": 929,
-      "commit": "ad2774760862371b4ea442d02669ad9ecd4913f5",
-      "authoredAt": "2026-09-06T15:02:43+07:00",
-      "subject": "docs(cnc): plan evidence-backed manufacturing quotation recovery",
-      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/ad2774760862371b4ea442d02669ad9ecd4913f5",
+      "commit": "14a7f42608526b1773643e8050a2ec9c775e6723",
+      "authoredAt": "2026-09-14T10:43:22+07:00",
+      "subject": "fix(web): render correct quotation thumbnails",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/14a7f42608526b1773643e8050a2ec9c775e6723",
       "classifications": [
         {
-          "path": "docs/superpowers/plans/2026-09-06-cnc-quotation-manufacturing-recovery.md",
+          "path": "Maliev.Web.Tests/InstantQuotationReviewStateBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 930,
+      "commit": "362308b605ff94878f684258ade46c67ae0b08ee",
+      "authoredAt": "2026-09-12T16:59:18+07:00",
+      "subject": "Add authoritative quotation qualification contract",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/362308b605ff94878f684258ade46c67ae0b08ee",
+      "classifications": [
+        {
+          "path": "Maliev.QuotationRequestService.Api/Controllers/QuotationRequestsController.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Common/Models/QualificationReceipt.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Common/Models/QualificationStateUpdateRequest.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Data/Database/QuotationRequestContext/QuotationRequestContext.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Data/Database/QuotationRequestContext/Request.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Data/Database/QuotationRequestContext/RequestQualificationAudit.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/CreateQuotationRequestAsync_UnitTest.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationPersistenceModelTests.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationStateAsync_UnitTest.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.SqlServer/Deployments/2026-09-12-quotation-request-qualification-contract.sql",
+          "owners": [
+            "Legacy.Maliev.DataMigration"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 931,
+      "commit": "e78ab85594e688aed223f54ef31c7b6df399a735",
+      "authoredAt": "2026-09-12T16:59:28+07:00",
+      "subject": "Add employee qualification workflow",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/e78ab85594e688aed223f54ef31c7b6df399a735",
+      "classifications": [
+        {
+          "path": "Maliev.Intranet/Pages/QuotationRequests/View.cshtml",
+          "owners": [
+            "Legacy.Maliev.Intranet"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Intranet/Pages/QuotationRequests/View.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Intranet"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 932,
+      "commit": "99462c12c33fc62da281fc90fc61a8ee458d0d7a",
+      "authoredAt": "2026-09-14T20:27:56+07:00",
+      "subject": "Harden qualification persistence and receipt privacy",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/99462c12c33fc62da281fc90fc61a8ee458d0d7a",
+      "classifications": [
+        {
+          "path": "Maliev.QuotationRequestService.Api/Controllers/QuotationRequestsController.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Common/Models/QualificationReceipt.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Data/Database/QuotationRequestContext/QuotationRequestContext.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/Integration/QuotationRequestSqlServerFixture.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/Maliev.QuotationRequestService.Tests.csproj",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationContractIntegrationTests.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationPersistenceModelTests.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationStateAsync_UnitTest.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 933,
+      "commit": "d957038a208b2cbdf1604010a6d82f1d74f1a06c",
+      "authoredAt": "2026-09-14T20:28:12+07:00",
+      "subject": "docs(web): design 3D printing pricing integrity release",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/d957038a208b2cbdf1604010a6d82f1d74f1a06c",
+      "classifications": [
+        {
+          "path": "docs/superpowers/specs/2026-09-14-3d-printing-pricing-integrity-design.md",
           "owners": [
             "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 934,
+      "commit": "2128395c31a1ebfe94f9d0ced846bdc861fe62f4",
+      "authoredAt": "2026-09-14T20:31:43+07:00",
+      "subject": "docs(web): plan 3D printing pricing integrity release",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/2128395c31a1ebfe94f9d0ced846bdc861fe62f4",
+      "classifications": [
+        {
+          "path": "docs/superpowers/plans/2026-09-14-3d-printing-pricing-integrity.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 935,
+      "commit": "05c42bcf7529e9d606803c271490baed59546bc1",
+      "authoredAt": "2026-09-14T20:36:23+07:00",
+      "subject": "fix(web): price FDM build profiles from physical inputs",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/05c42bcf7529e9d606803c271490baed59546bc1",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/FdmBuildProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PrintTimeCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 936,
+      "commit": "047a7b673c397c388d974b030d55e8eee5b88d69",
+      "authoredAt": "2026-09-14T20:40:44+07:00",
+      "subject": "fix(web): estimate FDM support from layer overlap",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/047a7b673c397c388d974b030d55e8eee5b88d69",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationModelWorkerSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingModels.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PrintTimeCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 937,
+      "commit": "813f8ffdcd6b2cb1ed567f5264807133ddd482b7",
+      "authoredAt": "2026-09-14T20:45:48+07:00",
+      "subject": "fix(web): price resin by occupied plates",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/813f8ffdcd6b2cb1ed567f5264807133ddd482b7",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationBuildPreferenceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 938,
+      "commit": "a15177b36ecb8a729e5eae61238ca9a073d10184",
+      "authoredAt": "2026-09-14T20:57:38+07:00",
+      "subject": "fix(web): seal additive quote prices server-side",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/a15177b36ecb8a729e5eae61238ca9a073d10184",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveQuoteTicketServiceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationFulfillmentSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.Fulfillment.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveQuoteTicketService.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveQuoteTickets.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 939,
+      "commit": "a22cc927ef943e9a9f4ab9dbdd6337befdd06eab",
+      "authoredAt": "2026-09-14T21:07:54+07:00",
+      "subject": "fix(web): fail closed on FX and international shipping",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/a22cc927ef943e9a9f4ab9dbdd6337befdd06eab",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveDestinationPricingSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveDestinationPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveExchangeRateTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveQuoteTicketServiceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.Fulfillment.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveQuoteTicketService.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/ExchangeRateSnapshot.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingModels.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/ShippingCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 940,
+      "commit": "60d3677264e046fd73028ff3ccb75097d153bedb",
+      "authoredAt": "2026-09-14T21:35:10+07:00",
+      "subject": "test(web): verify additive pricing integrity release",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/60d3677264e046fd73028ff3ccb75097d153bedb",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationAuthenticatedProfilePageTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationInhalerCorpusBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/superpowers/plans/2026-09-14-3d-printing-pricing-integrity.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 941,
+      "commit": "941cd2757246527108eb0dddce7582d1a47ea442",
+      "authoredAt": "2026-09-14T22:05:26+07:00",
+      "subject": "perf(web): keep additive support analysis out of CNC",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/941cd2757246527108eb0dddce7582d1a47ea442",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationModelWorkerSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 942,
+      "commit": "cc5b3864b8752f5e5e421f01a68d8925c940021a",
+      "authoredAt": "2026-09-15T07:56:26+07:00",
+      "subject": "fix(web): describe resin process in quotation review",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/cc5b3864b8752f5e5e421f01a68d8925c940021a",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationBuildPreferenceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationFulfillmentCoordinatorTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPreliminaryQuotationSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewStateBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.Fulfillment.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 943,
+      "commit": "d15a44524698e315bc712139ef4dc2e8e35f3013",
+      "authoredAt": "2026-09-15T09:26:45+07:00",
+      "subject": "fix(web): keep quotation available during country outage",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/d15a44524698e315bc712139ef4dc2e8e35f3013",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationThumbnailMaterialTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/QuotationCountryFailureTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Quotation/Index.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_CssPartial.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 944,
+      "commit": "3ce9936b6e39f41c000e542f005a18645f445a8a",
+      "authoredAt": "2026-09-15T10:53:13+07:00",
+      "subject": "fix: preserve API-owned CNC lead attribution",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/3ce9936b6e39f41c000e542f005a18645f445a8a",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/MeasurementTrackingSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/SearchTruthSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CNC-Machining.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Quotation/Index.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/LeadAnalyticsEventQueue.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 945,
+      "commit": "7c416cc8cfd27ef7440e7c046529011630276807",
+      "authoredAt": "2026-09-15T15:14:03+07:00",
+      "subject": "feat: switch site typography to Outfit",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/7c416cc8cfd27ef7440e7c046529011630276807",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/DeploymentStaticAssetSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FontLoadingSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/DESIGN.md",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_FontPartial.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_InstantQuotationLayout.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_Layout.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/SecurityHeaderPolicy.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/deploy.ps1",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/package-lock.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/package.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/ibm-plex/ibm-plex.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/outfit/LICENSE.txt",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/outfit/outfit-latin-400-normal.woff2",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/outfit/outfit-latin-500-normal.woff2",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/outfit/outfit-latin-600-normal.woff2",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/outfit/outfit-latin-ext-400-normal.woff2",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/outfit/outfit-latin-ext-500-normal.woff2",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/outfit/outfit-latin-ext-600-normal.woff2",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/lib/outfit/outfit.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/app.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/space-error.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/table.css",
+          "owners": [
+            "Legacy.Maliev.Web"
           ],
           "disposition": "migration-required",
           "decision": null
