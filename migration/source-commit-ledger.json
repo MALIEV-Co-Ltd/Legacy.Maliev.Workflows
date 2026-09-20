@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-18T09:49:17.6678980+00:00",
+  "generatedAt": "2026-09-20T05:32:07.1174583+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "96392ed2a1913cb0c95bf8adc4668d35cc8137ff",
+  "sourceCheckpoint": "67a798e5cee4f66e913e08804e7218af5774e98f",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
       "mainSha": "4cc64bd9b419b3a73307af6265d2e59a37eb0e20",
@@ -81,15 +81,15 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/c6074f9b8dd880eb18870f7dc9ff7a64a9d5e9a9"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "b5612144ba3a2d6736319213fb8e356b0b220116",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/b5612144ba3a2d6736319213fb8e356b0b220116"
+      "mainSha": "59754c000071d4513f96d1ae97bb2a8e2e3f28af",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/59754c000071d4513f96d1ae97bb2a8e2e3f28af"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "1d0916ca649e2e8b6dd6237d4f514de7e1434dc5",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/1d0916ca649e2e8b6dd6237d4f514de7e1434dc5"
+      "mainSha": "83edcf7e705254e488127aca76a74d77e15ccaed",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/83edcf7e705254e488127aca76a74d77e15ccaed"
     }
   },
-  "nonMergeCommitCount": 946,
+  "nonMergeCommitCount": 955,
   "records": [
     {
       "ordinal": 1,
@@ -80593,6 +80593,647 @@
           "path": "Maliev.Web/Pages/Services/Index.cshtml",
           "owners": [
             "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 947,
+      "commit": "5650867256ebfddecb4e3bf96afc962269dcd08e",
+      "authoredAt": "2026-09-19T18:58:33+07:00",
+      "subject": "fix(web): calibrate instant FDM pricing",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/5650867256ebfddecb4e3bf96afc962269dcd08e",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PrintTimeCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 948,
+      "commit": "9d1a5e9cda4927128a60271b50c57fbf3fae00c5",
+      "authoredAt": "2026-09-19T19:47:39+07:00",
+      "subject": "test(web): add additive benchmark harness",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/9d1a5e9cda4927128a60271b50c57fbf3fae00c5",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveBenchmarkTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/Maliev.Web.Tests.csproj",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/manifest.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/manifest.v1.schema.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/report.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/report.v1.schema.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/AdditiveBenchmarkCli.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/AdditiveBenchmarkRunner.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/Maliev.AdditiveBenchmark.csproj",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/Program.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/README.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 949,
+      "commit": "e12e3d0f6bc144e690d46c3184cae29e128b7c6e",
+      "authoredAt": "2026-09-19T20:05:30+07:00",
+      "subject": "docs(web): record additive pricing evidence decisions",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/e12e3d0f6bc144e690d46c3184cae29e128b7c6e",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/manifest.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/report.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/additive-quotation-evidence-2026-09-19.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 950,
+      "commit": "da2796fd4dd395cb2a839057f4e8dfd99f13f6b6",
+      "authoredAt": "2026-09-19T20:05:41+07:00",
+      "subject": "feat(web): add auditable additive order calculator",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/da2796fd4dd395cb2a839057f4e8dfd99f13f6b6",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveOrderCostCalculatorTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveOrderCostCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 951,
+      "commit": "54a3033842b19967766d10dcb6cf18f8f032f155",
+      "authoredAt": "2026-09-19T20:05:42+07:00",
+      "subject": "feat(web): gate resin automation on approved evidence",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/54a3033842b19967766d10dcb6cf18f8f032f155",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ResinBuildProfileEvidenceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/ResinBuildProfileEvidence.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 952,
+      "commit": "8b54af5097b8b4232bc42dcd5684d293c3c9c37b",
+      "authoredAt": "2026-09-19T20:05:53+07:00",
+      "subject": "fix(web): label additive estimates as preliminary",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/8b54af5097b8b4232bc42dcd5684d293c3c9c37b",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationBuildPreferenceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 953,
+      "commit": "5e048f3f69cdd4032ca19128320eb6878cd9ac43",
+      "authoredAt": "2026-09-19T21:05:14+07:00",
+      "subject": "feat(web): validate Bambu filament profile evidence",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/5e048f3f69cdd4032ca19128320eb6878cd9ac43",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveBenchmarkTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/BambuStudioProfileResolverTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FilamentProfileCatalogTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.schema.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/manifest.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/report.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/additive-quotation-evidence-2026-09-19.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/AdditiveBenchmarkCli.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioCli.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioProfileResolver.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioResultParser.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/FilamentProfileCatalogValidator.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/README.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 954,
+      "commit": "cf9721daa399aeddf30e4714a9f62f6daee9daae",
+      "authoredAt": "2026-09-19T22:49:38+07:00",
+      "subject": "feat(web): approve additive profile evidence",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/cf9721daa399aeddf30e4714a9f62f6daee9daae",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/BambuStudioProfileResolverTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FilamentProfileCatalogTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ResinBuildProfileEvidenceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PrintTimeCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/ResinBuildProfileEvidence.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/AdditiveBenchmarkRunner.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioProfileResolver.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 955,
+      "commit": "67a798e5cee4f66e913e08804e7218af5774e98f",
+      "authoredAt": "2026-09-19T22:51:13+07:00",
+      "subject": "fix(web): make additive quotes auditable and reproducible",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/67a798e5cee4f66e913e08804e7218af5774e98f",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveGeometryValidatorTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveLeadTimeCalculatorTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveOrderCostCalculatorTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveOrderPricingEndpointTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveQuoteTicketServiceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/DeploymentRegressionSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationAuthenticatedProfilePageTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationSessionCookieSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.Fulfillment.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveGeometryValidator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveLeadTimeCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveOrderCostCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveQuoteTicketService.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveQuoteTickets.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingModels.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/additive-quotation-evidence-2026-09-19.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/superpowers/plans/2026-09-19-additive-production-completion.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
           ],
           "disposition": "migration-required",
           "decision": null
