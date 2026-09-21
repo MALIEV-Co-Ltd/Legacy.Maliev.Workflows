@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-20T05:32:07.1174583+00:00",
+  "generatedAt": "2026-09-21T01:26:08.9923433+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "67a798e5cee4f66e913e08804e7218af5774e98f",
+  "sourceCheckpoint": "b75d73e4c06426a948b4eb07fc3fde50f45ea87c",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
       "mainSha": "4cc64bd9b419b3a73307af6265d2e59a37eb0e20",
@@ -81,15 +81,15 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/c6074f9b8dd880eb18870f7dc9ff7a64a9d5e9a9"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "59754c000071d4513f96d1ae97bb2a8e2e3f28af",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/59754c000071d4513f96d1ae97bb2a8e2e3f28af"
+      "mainSha": "1dc5ee13bb4aeada575c9fcfb34a8ce62be22d6c",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/1dc5ee13bb4aeada575c9fcfb34a8ce62be22d6c"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "83edcf7e705254e488127aca76a74d77e15ccaed",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/83edcf7e705254e488127aca76a74d77e15ccaed"
+      "mainSha": "81385a501231afcebb75c75b83a0c38189902239",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/81385a501231afcebb75c75b83a0c38189902239"
     }
   },
-  "nonMergeCommitCount": 955,
+  "nonMergeCommitCount": 992,
   "records": [
     {
       "ordinal": 1,
@@ -81234,6 +81234,1899 @@
           "path": "docs/superpowers/plans/2026-09-19-additive-production-completion.md",
           "owners": [
             "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 956,
+      "commit": "076a13b53f5c7786ab8ff8738ee322480b93503c",
+      "authoredAt": "2026-09-20T10:43:44+07:00",
+      "subject": "docs: plan deterministic FDM support and slicing simulation",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/076a13b53f5c7786ab8ff8738ee322480b93503c",
+      "classifications": [
+        {
+          "path": "docs/superpowers/plans/2026-09-20-fdm-simulation-plan.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/superpowers/specs/2026-09-20-fdm-simulation-design.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 957,
+      "commit": "b4e6e871dfb1e046273499c1eb1d2fbccc556237",
+      "authoredAt": "2026-09-20T11:12:41+07:00",
+      "subject": "test: make additive references pose and profile comparable",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/b4e6e871dfb1e046273499c1eb1d2fbccc556237",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveBenchmarkTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/manifest.v2.schema.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/AdditiveBenchmarkRunner.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioCli.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioResultParser.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BenchmarkReferenceValidator.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/README.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 958,
+      "commit": "0e7e95216bc4c73495d3e64ae910f88d26f139b9",
+      "authoredAt": "2026-09-20T11:23:46+07:00",
+      "subject": "feat: resolve deterministic FDM simulation profiles",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/0e7e95216bc4c73495d3e64ae910f88d26f139b9",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/BambuStudioProfileResolverTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FilamentProfileCatalogTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/simulation-result.v1.schema.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/SimulationContracts.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioProfileResolver.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 959,
+      "commit": "e1cfd932ef2aee6a909a61c96d3df6803ceb6184",
+      "authoredAt": "2026-09-20T11:40:50+07:00",
+      "subject": "feat: extract topology-preserving FDM layers",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/e1cfd932ef2aee6a909a61c96d3df6803ceb6184",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Maliev.Web.csproj",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/LayerContourBuilder.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/MeshNormalizer.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 960,
+      "commit": "b1c233dd42899b24821d69b773ea24bd9a84c9f2",
+      "authoredAt": "2026-09-20T11:51:17+07:00",
+      "subject": "feat: estimate walls skins infill and bridges from paths",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/b1c233dd42899b24821d69b773ea24bd9a84c9f2",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationModelPathsTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/InfillPathPlanner.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ModelPathPlanner.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/SimulationContracts.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 961,
+      "commit": "a0227738295a3bd39b7a56987534d22bc087cc94",
+      "authoredAt": "2026-09-20T12:00:11+07:00",
+      "subject": "feat: report deposited support body and interface volume",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/a0227738295a3bd39b7a56987534d22bc087cc94",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationModelPathsTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationSupportTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ModelPathPlanner.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/SimulationContracts.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/SupportPlanner.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 962,
+      "commit": "f007faa5054fae855104d954b8d207af7d0a5d95",
+      "authoredAt": "2026-09-20T12:06:19+07:00",
+      "subject": "feat: simulate collision-aware tree support paths",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/f007faa5054fae855104d954b8d207af7d0a5d95",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationModelPathsTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationSupportTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/TreeSupportPlanner.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 963,
+      "commit": "0c667c3173165c2b11cd2c71dfcb4523bfcbdd17",
+      "authoredAt": "2026-09-20T12:15:09+07:00",
+      "subject": "feat: estimate per-feature FDM motion and plate time",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/0c667c3173165c2b11cd2c71dfcb4523bfcbdd17",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationModelPathsTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationMotionTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationSupportTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/FdmSimulationEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/FeatureMotionEstimator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/SimulationContracts.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 964,
+      "commit": "9c1bc774fe8c5e9c12af08f22b532222c0182776",
+      "authoredAt": "2026-09-20T12:21:45+07:00",
+      "subject": "feat: evaluate FDM orientation fit and multi-plate scenarios",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/9c1bc774fe8c5e9c12af08f22b532222c0182776",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationModelPathsTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationMotionTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationScenarioTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationSupportTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/MachineScenarioPlanner.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/OrientationPlanner.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/SimulationContracts.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 965,
+      "commit": "5928c0198ca32731514f97d1e1ff7c83cd2393be",
+      "authoredAt": "2026-09-20T12:21:56+07:00",
+      "subject": "fix(web): publish accurate domestic shipping guidance",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/5928c0198ca32731514f97d1e1ff7c83cd2393be",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/SeoBusinessContractTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_ServiceLocationPartial.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 966,
+      "commit": "49033c72d2270c81eb08ca2621ef7b9defc950e8",
+      "authoredAt": "2026-09-20T12:31:48+07:00",
+      "subject": "feat: bind FDM shadow simulation to server uploads",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/49033c72d2270c81eb08ca2621ef7b9defc950e8",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationIntegrationTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveSimulationService.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Startup.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 967,
+      "commit": "17d3f4d2b22d83e252307e73a0c7b6ee822659ef",
+      "authoredAt": "2026-09-20T12:39:32+07:00",
+      "subject": "feat: show FDM simulation evidence in shadow mode",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/17d3f4d2b22d83e252307e73a0c7b6ee822659ef",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationUiSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/appsettings.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 968,
+      "commit": "b3a4a28603c1e246cd4622a8394da65c11e08142",
+      "authoredAt": "2026-09-20T12:47:45+07:00",
+      "subject": "test: freeze anonymous FDM release corpus",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/b3a4a28603c1e246cd4622a8394da65c11e08142",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveBenchmarkTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/private-corpus.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/AdditiveBenchmarkCli.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/PrivateCorpusInventory.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/README.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 969,
+      "commit": "c3bf396009bb1c078afcee93a3a059a7d96c6e76",
+      "authoredAt": "2026-09-20T12:47:54+07:00",
+      "subject": "docs: record FDM simulation release decision",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/c3bf396009bb1c078afcee93a3a059a7d96c6e76",
+      "classifications": [
+        {
+          "path": "docs/additive-quotation-evidence-2026-09-19.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/superpowers/verification/2026-09-20-fdm-simulation-results.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 970,
+      "commit": "e4d113c93a22cc0858bea14d6f98b77958af1058",
+      "authoredAt": "2026-09-20T12:56:46+07:00",
+      "subject": "style: normalize additive simulator source endings",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/e4d113c93a22cc0858bea14d6f98b77958af1058",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveBenchmarkTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/BambuStudioProfileResolverTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FilamentProfileCatalogTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Startup.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/AdditiveBenchmarkCli.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/AdditiveBenchmarkRunner.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioCli.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioProfileResolver.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BambuStudioResultParser.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/BenchmarkReferenceValidator.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/additive-benchmark/PrivateCorpusInventory.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 971,
+      "commit": "870c2f439a69e2912840560a4b65be51a20ded29",
+      "authoredAt": "2026-09-20T13:05:13+07:00",
+      "subject": "docs: record FDM validation outcomes",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/870c2f439a69e2912840560a4b65be51a20ded29",
+      "classifications": [
+        {
+          "path": "docs/superpowers/verification/2026-09-20-fdm-simulation-results.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 972,
+      "commit": "6431b1b649015dc17ad936ed18eb59c1ff7f4080",
+      "authoredAt": "2026-09-20T13:40:28+07:00",
+      "subject": "feat: package runtime FDM simulation profiles",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/6431b1b649015dc17ad936ed18eb59c1ff7f4080",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Maliev.Web.csproj",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/runtime-fdm-profiles.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/RuntimeAdditiveSimulationProfileProvider.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Startup.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 973,
+      "commit": "a785bcd6bcb07740b879b8f74c519a14282848d4",
+      "authoredAt": "2026-09-20T13:40:55+07:00",
+      "subject": "fix(web): restore file guide and Thai scan copy",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/a785bcd6bcb07740b879b8f74c519a14282848d4",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Scanning.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 974,
+      "commit": "61e563461973cbe0e3862894ad4431eb9263739d",
+      "authoredAt": "2026-09-20T13:44:43+07:00",
+      "subject": "feat: activate guarded FDM simulation pricing",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/61e563461973cbe0e3862894ad4431eb9263739d",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationIntegrationTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveSimulationService.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/MeshUploadReader.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/appsettings.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 975,
+      "commit": "199e5f94562d3f1621f20c598ae5abef4d6c98d0",
+      "authoredAt": "2026-09-20T13:48:54+07:00",
+      "subject": "docs: qualify production FDM profile evidence",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/199e5f94562d3f1621f20c598ae5abef4d6c98d0",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/runtime-fdm-profiles.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/superpowers/verification/2026-09-20-fdm-simulation-results.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 976,
+      "commit": "cea523b0f06df9be7ef091d6ef8abd7a6ccb6552",
+      "authoredAt": "2026-09-20T13:53:27+07:00",
+      "subject": "fix(web): restore printing guide below service toc",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/cea523b0f06df9be7ef091d6ef8abd7a6ccb6552",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 977,
+      "commit": "36b041e3f424650b084424e448cb22e3ad572f6a",
+      "authoredAt": "2026-09-20T14:00:54+07:00",
+      "subject": "style: normalize FDM release sources",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/36b041e3f424650b084424e448cb22e3ad572f6a",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationIntegrationTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveSimulationService.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/MeshUploadReader.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/RuntimeAdditiveSimulationProfileProvider.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 978,
+      "commit": "8ec87e40c1104485537823bb5059833f2735cc9e",
+      "authoredAt": "2026-09-20T14:56:40+07:00",
+      "subject": "fix: price ABS heated-enclosure energy",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/8ec87e40c1104485537823bb5059833f2735cc9e",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingModels.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 979,
+      "commit": "5a3f24d9ecf4723ac49670e241c6c19d37b540fd",
+      "authoredAt": "2026-09-20T14:56:47+07:00",
+      "subject": "refactor: distill additive quote summaries",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/5a3f24d9ecf4723ac49670e241c6c19d37b540fd",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationUiSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 980,
+      "commit": "07845568583107d38aab31ee8d1ef87e094ea57c",
+      "authoredAt": "2026-09-20T16:00:12+07:00",
+      "subject": "fix: align additive quotes with workbook pricing",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/07845568583107d38aab31ee8d1ef87e094ea57c",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveOrderPricingEndpointTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveQuoteTickets.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingModels.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PrintTimeCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 981,
+      "commit": "55af497f6083946738987fb0a4eb2f2ac68d3a47",
+      "authoredAt": "2026-09-20T16:00:21+07:00",
+      "subject": "fix: reconcile additive quote summaries",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/55af497f6083946738987fb0a4eb2f2ac68d3a47",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationExperienceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewStateBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 982,
+      "commit": "31e8f5d28d11f903687c4e540441b19bbfbfe102",
+      "authoredAt": "2026-09-20T16:18:12+07:00",
+      "subject": "fix: keep additive unit prices manufacturing-only",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/31e8f5d28d11f903687c4e540441b19bbfbfe102",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 983,
+      "commit": "68aab629a4133fbe4e31aed378141f9fc7233fb2",
+      "authoredAt": "2026-09-20T17:24:52+07:00",
+      "subject": "fix: honor filament cooling limits in FDM simulation",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/68aab629a4133fbe4e31aed378141f9fc7233fb2",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationMotionTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/runtime-fdm-profiles.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/RuntimeAdditiveSimulationProfileProvider.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/FdmSimulationEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/FeatureMotionEstimator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 984,
+      "commit": "03254079a98245509e73a41e143ff75bf536449b",
+      "authoredAt": "2026-09-20T18:23:46+07:00",
+      "subject": "fix: adapt additive order review layout",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/03254079a98245509e73a41e143ff75bf536449b",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationBuildPreferenceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewStateBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 985,
+      "commit": "e5432817078e133604239ebfe2b806465ed8e436",
+      "authoredAt": "2026-09-20T20:08:44+07:00",
+      "subject": "fix: derive additive pricing from slice settings",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/e5432817078e133604239ebfe2b806465ed8e436",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/AdditiveOrderCostCalculatorTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveOrderPricingEndpointTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveQuoteTicketServiceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationAuthenticatedProfilePageTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveOrderCostCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveQuoteTicketService.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveQuoteTickets.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveSimulationService.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PrintTimeCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 986,
+      "commit": "a8c358f338e6d6853517d1c546061c338f5895f8",
+      "authoredAt": "2026-09-20T20:08:51+07:00",
+      "subject": "fix: reconcile additive quote summary and print time",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/a8c358f338e6d6853517d1c546061c338f5895f8",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 987,
+      "commit": "5320f8ea6cf9ffdeb1c3f2bf51c75b3511f525a1",
+      "authoredAt": "2026-09-20T21:54:14+07:00",
+      "subject": "fix: round additive unit prices to ten baht",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/5320f8ea6cf9ffdeb1c3f2bf51c75b3511f525a1",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 988,
+      "commit": "3b5ccc361f26a97467a462a0da01bc0021aac098",
+      "authoredAt": "2026-09-20T22:04:23+07:00",
+      "subject": "fix: clarify additive quote recalculation state",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/3b5ccc361f26a97467a462a0da01bc0021aac098",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 989,
+      "commit": "a3c5c4a53907e03ac202620cc051393c20fc28e3",
+      "authoredAt": "2026-09-20T22:39:27+07:00",
+      "subject": "fix: price geometry-derived additive supports",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/a3c5c4a53907e03ac202620cc051393c20fc28e3",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationModelWorkerSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ResinBuildProfileEvidenceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/FdmBuildProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingEngine.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingModels.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PrintTimeCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/ResinBuildProfileEvidence.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 990,
+      "commit": "7f010ba7742e96367bdf5039dd03e994fadcfa1b",
+      "authoredAt": "2026-09-20T23:26:58+07:00",
+      "subject": "fix: localize remaining validation errors",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/7f010ba7742e96367bdf5039dd03e994fadcfa1b",
+      "classifications": [
+        {
+          "path": "Maliev.Web/Pages/Account/SetInitialPassword.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Resources/Pages/Account/SetInitialPassword.th.resx",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Resources/Pages/InstantQuotation/3D-Printing.th.resx",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 991,
+      "commit": "3f090e9488d91790636558d3ce59c7f046efa1d8",
+      "authoredAt": "2026-09-20T23:27:00+07:00",
+      "subject": "fix: keep quote controls reachable on compact layouts",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/3f090e9488d91790636558d3ce59c7f046efa1d8",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 992,
+      "commit": "b75d73e4c06426a948b4eb07fc3fde50f45ea87c",
+      "authoredAt": "2026-09-20T23:27:01+07:00",
+      "subject": "test: align injection FAQ contract with published content",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/b75d73e4c06426a948b4eb07fc3fde50f45ea87c",
+      "classifications": [
+        {
+          "path": "Maliev.Web/tests/ServicePresentation.Tests.ps1",
+          "owners": [
+            "Legacy.Maliev.Web"
           ],
           "disposition": "migration-required",
           "decision": null
