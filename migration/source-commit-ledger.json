@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-23T01:08:17.5102276+00:00",
+  "generatedAt": "2026-09-23T15:12:08.1002511+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "027e733e8e7a5abebf975598fda86589ca034b32",
+  "sourceCheckpoint": "3e95e397f7180356f0b5a8acfeed0119d1db62ad",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
       "mainSha": "4cc64bd9b419b3a73307af6265d2e59a37eb0e20",
@@ -85,11 +85,11 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/1dc5ee13bb4aeada575c9fcfb34a8ce62be22d6c"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "dcfa568e6e41ca9d958d26b5d78d4da443ba1239",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/dcfa568e6e41ca9d958d26b5d78d4da443ba1239"
+      "mainSha": "b94d82181b89ea9498bc36294ce6ac5a43bae2e8",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/b94d82181b89ea9498bc36294ce6ac5a43bae2e8"
     }
   },
-  "nonMergeCommitCount": 1028,
+  "nonMergeCommitCount": 1047,
   "records": [
     {
       "ordinal": 1,
@@ -84875,6 +84875,753 @@
           "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
           "owners": [
             "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1029,
+      "commit": "57654d9ecea01c99b947e48bc759fb9a37dcf388",
+      "authoredAt": "2026-09-23T09:47:42+07:00",
+      "subject": "fix: refine additive quotation layout and bulk savings",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/57654d9ecea01c99b947e48bc759fb9a37dcf388",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewStateBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1030,
+      "commit": "f72f263a33d7f9ef0c06d696c59395b5d5a78b60",
+      "authoredAt": "2026-09-23T09:47:50+07:00",
+      "subject": "fix: smooth thickness heatmap across shared facets",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/f72f263a33d7f9ef0c06d696c59395b5d5a78b60",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/JavaScript/wall-thickness.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/wall-thickness.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1031,
+      "commit": "3f766fa00f23fffda6c15cab2ba231117c6eee50",
+      "authoredAt": "2026-09-23T10:37:26+07:00",
+      "subject": "Highlight only thin-wall defects in 3D quote preview",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/3f766fa00f23fffda6c15cab2ba231117c6eee50",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/wall-thickness-presentation.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/wall-thickness-presentation.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1032,
+      "commit": "ae7ca00ed5318d9041f022a874d36bb6c53e85a9",
+      "authoredAt": "2026-09-22T22:39:56+07:00",
+      "subject": "Add color scan and deviation report proof",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/ae7ca00ed5318d9041f022a874d36bb6c53e85a9",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ScanningComparisonBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Scanning.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/scanning-comparison.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/scanning-comparison.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/deviation-report-cad.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/deviation-report-map.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/deviation-report-mesh.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/statue-color-scan-1500.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/statue-color-scan-480.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/statue-color-scan-900.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/statue-raw-scan-1500.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/statue-raw-scan-480.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/scanning/proof/statue-raw-scan-900.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1033,
+      "commit": "d364df8f4a323ac7cd96efd17c0f7726d903b679",
+      "authoredAt": "2026-09-23T09:43:23+07:00",
+      "subject": "Restore scan to CAD proof and guide scanning outcomes",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/d364df8f4a323ac7cd96efd17c0f7726d903b679",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ScanningComparisonBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Scanning.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/scanning-comparison.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1034,
+      "commit": "b8877ed45bc868e0148dd558cbd60d00c3e53de7",
+      "authoredAt": "2026-09-23T09:49:37+07:00",
+      "subject": "Describe optional Gaussian splat PLY color-scan output",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/b8877ed45bc868e0148dd558cbd60d00c3e53de7",
+      "classifications": [
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Scanning.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1035,
+      "commit": "2c2e547e428446024805315617e9828ed9b7de39",
+      "authoredAt": "2026-09-23T10:00:22+07:00",
+      "subject": "Blend onsite scanning cards into dark section",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/2c2e547e428446024805315617e9828ed9b7de39",
+      "classifications": [
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/service-pages.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1036,
+      "commit": "c7b9dfe167f994e8cf895a537f047227856b19b2",
+      "authoredAt": "2026-09-23T10:32:41+07:00",
+      "subject": "Organize scanning outputs into animated accessible tabs",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/c7b9dfe167f994e8cf895a537f047227856b19b2",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ScanningComparisonBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Scanning.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/scanning-comparison.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/scanning-proof-tabs.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1037,
+      "commit": "eef114c7e95cbd9378f700710525c58c8cc7cffc",
+      "authoredAt": "2026-09-23T10:51:08+07:00",
+      "subject": "Correct CNC format guidance for SolidWorks uploads",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/eef114c7e95cbd9378f700710525c58c8cc7cffc",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/CncQuotationRouteSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncQuotationSubmissionContractTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncQuotationUiBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncSeoContractSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CNC-Machining.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CNC-Machining.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/CNC-Machining.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1038,
+      "commit": "15d2d6a9ed04ee85d4f27905c0dd0335f228ac1f",
+      "authoredAt": "2026-09-23T11:07:56+07:00",
+      "subject": "Refine scanning tab labels and fade transition",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/15d2d6a9ed04ee85d4f27905c0dd0335f228ac1f",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ScanningComparisonBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Scanning.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/scanning-comparison.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1039,
+      "commit": "483a2fdb0beeafa014bb6b0a5ca1e85cd7bdbb74",
+      "authoredAt": "2026-09-23T12:17:11+07:00",
+      "subject": "Highlight both faces of thin walls in quotation preview",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/483a2fdb0beeafa014bb6b0a5ca1e85cd7bdbb74",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/wall-thickness.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/wall-thickness.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1040,
+      "commit": "1b3cda47e94604df1304930d48fcabf395626f31",
+      "authoredAt": "2026-09-23T12:16:29+07:00",
+      "subject": "Present cookie choices in accessible centered dialog",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/1b3cda47e94604df1304930d48fcabf395626f31",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/CookieConsentBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CookieConsentSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_CookieConsentPartial.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Resources/Pages/Shared/_CookieConsentPartial.th.resx",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/application-shell.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1041,
+      "commit": "9523c5a3cf8a9db6da459aa48dfde81636ebac88",
+      "authoredAt": "2026-09-23T12:26:18+07:00",
+      "subject": "Use black consent backdrop and borderless reject action",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/9523c5a3cf8a9db6da459aa48dfde81636ebac88",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/CookieConsentBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/application-shell.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1042,
+      "commit": "351825232f787ef988c7c058910520a14aa70123",
+      "authoredAt": "2026-09-23T13:31:49+07:00",
+      "subject": "Clip thin-wall highlights and blend thickness gradients",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/351825232f787ef988c7c058910520a14aa70123",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/wall-thickness.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/wall-thickness.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1043,
+      "commit": "f9c3ac3460925fe54833b87b209407efabba908c",
+      "authoredAt": "2026-09-23T13:50:00+07:00",
+      "subject": "Keep shared STEP slice crossings numerically consistent",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/f9c3ac3460925fe54833b87b209407efabba908c",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/JavaScript/additive-client-simulation.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/additive-quotation/additive-simulation.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1044,
+      "commit": "c88a4e93c28b7306a5f2c353ee2ed1b8677ff7f8",
+      "authoredAt": "2026-09-23T14:05:26+07:00",
+      "subject": "Show human-readable print durations in preliminary quotes",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/c88a4e93c28b7306a5f2c353ee2ed1b8677ff7f8",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPreliminaryQuotationBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1045,
+      "commit": "251bb70bf3e9e747d9437828f7df75983eebaab7",
+      "authoredAt": "2026-09-23T14:23:00+07:00",
+      "subject": "Keep quotation browser tests compatible with consent dialog",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/251bb70bf3e9e747d9437828f7df75983eebaab7",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPreliminaryQuotationBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1046,
+      "commit": "492577b8272a1286db48876840499078b27c0858",
+      "authoredAt": "2026-09-23T14:23:19+07:00",
+      "subject": "Avoid pruning unrelated Docker images during web deployment",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/492577b8272a1286db48876840499078b27c0858",
+      "classifications": [
+        {
+          "path": "Maliev.Web/deploy.ps1",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1047,
+      "commit": "3e95e397f7180356f0b5a8acfeed0119d1db62ad",
+      "authoredAt": "2026-09-23T21:45:20+07:00",
+      "subject": "test: cover server-owned transaction id with journey requests",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/3e95e397f7180356f0b5a8acfeed0119d1db62ad",
+      "classifications": [
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/CreateQuotationRequestAsync_UnitTest.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
           ],
           "disposition": "migration-required",
           "decision": null
