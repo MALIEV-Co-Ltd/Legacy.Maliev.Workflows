@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-22T01:11:47.9484082+00:00",
+  "generatedAt": "2026-09-23T01:08:17.5102276+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "3278660fcf59ab053ab88ca6967dd3067c302614",
+  "sourceCheckpoint": "027e733e8e7a5abebf975598fda86589ca034b32",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
       "mainSha": "4cc64bd9b419b3a73307af6265d2e59a37eb0e20",
@@ -85,11 +85,11 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/1dc5ee13bb4aeada575c9fcfb34a8ce62be22d6c"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "27423a3e03945489d7140e9d5176df42b73be051",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/27423a3e03945489d7140e9d5176df42b73be051"
+      "mainSha": "dcfa568e6e41ca9d958d26b5d78d4da443ba1239",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/dcfa568e6e41ca9d958d26b5d78d4da443ba1239"
     }
   },
-  "nonMergeCommitCount": 1006,
+  "nonMergeCommitCount": 1028,
   "records": [
     {
       "ordinal": 1,
@@ -83995,6 +83995,876 @@
       "classifications": [
         {
           "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1007,
+      "commit": "ba886067587c947ea11b090ef8aa473fbee2fb12",
+      "authoredAt": "2026-09-22T10:03:13+07:00",
+      "subject": "Improve customer details form layout",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/ba886067587c947ea11b090ef8aa473fbee2fb12",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1008,
+      "commit": "89ddd5a49ae7e781ca29225b8eae50fb9c2b1d0e",
+      "authoredAt": "2026-09-22T12:47:55+07:00",
+      "subject": "Update invoice payment details to SCB",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/89ddd5a49ae7e781ca29225b8eae50fb9c2b1d0e",
+      "classifications": [
+        {
+          "path": "Maliev.PdfService.Pdf/Events/InvoiceFooterEvent.cs",
+          "owners": [
+            "Legacy.Maliev.DocumentService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.PdfService.Tests/Pdfs/CreateInvoiceAsync_UnitTest.cs",
+          "owners": [
+            "Legacy.Maliev.DocumentService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1009,
+      "commit": "7387d9e88e4f1b1b254c48f5ab0933ec3bbf20d3",
+      "authoredAt": "2026-09-22T13:31:24+07:00",
+      "subject": "Localize SCB payment details on the website",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/7387d9e88e4f1b1b254c48f5ab0933ec3bbf20d3",
+      "classifications": [
+        {
+          "path": "Maliev.SqlServer/Deployments/2026-09-22-scb-payment-account.sql",
+          "owners": [
+            "Legacy.Maliev.DataMigration"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/BankPaymentLocalizationTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Areas/Member/Pages/Quotations/View.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_SupportedPaymentsPartial.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Resources/Areas/Member/Pages/Quotations/View.th.resx",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1010,
+      "commit": "ea0743c0c7e8653462eebe813af6c7a5dbfd8438",
+      "authoredAt": "2026-09-22T14:11:31+07:00",
+      "subject": "Fix additive quantity and support pricing",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/ea0743c0c7e8653462eebe813af6c7a5dbfd8438",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/additive-client-simulation.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/AdditiveOrderCostCalculator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/runtime-fdm-profiles.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/FeatureMotionEstimator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Simulation/ResolvedSimulationProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/additive-quotation/additive-simulation.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1011,
+      "commit": "b36d919905ab063911dc5352ebb003c97af9a8b0",
+      "authoredAt": "2026-09-22T16:06:09+07:00",
+      "subject": "Bound additive mesh simulation resources",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/b36d919905ab063911dc5352ebb003c97af9a8b0",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/JavaScript/additive-client-simulation.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/additive-quotation/additive-simulation.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1012,
+      "commit": "399c5d0a3c916cb3945c2511cee4ce7a65461f9b",
+      "authoredAt": "2026-09-22T16:06:22+07:00",
+      "subject": "Explain additive simulation review failures",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/399c5d0a3c916cb3945c2511cee4ce7a65461f9b",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1013,
+      "commit": "cebda874cb1065c3296ec0770bcce7d29932f1d9",
+      "authoredAt": "2026-09-22T18:13:25+07:00",
+      "subject": "Qualify commercial FDM material profiles",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/cebda874cb1065c3296ec0770bcce7d29932f1d9",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationIntegrationTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FilamentProfileCatalogTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.schema.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/esun-epa12-manufacturer-profile.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/runtime-fdm-profiles.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/data/printing-material-details.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1014,
+      "commit": "774e0c19c7a6e6f4e8009e0b69be2a71957d2204",
+      "authoredAt": "2026-09-22T19:12:48+07:00",
+      "subject": "docs: design process-aware wall thickness analysis",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/774e0c19c7a6e6f4e8009e0b69be2a71957d2204",
+      "classifications": [
+        {
+          "path": "docs/superpowers/specs/2026-09-22-instant-quotation-wall-thickness-analysis-design.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1015,
+      "commit": "07e92563f661354db12460f1687f5e03be70aa5b",
+      "authoredAt": "2026-09-22T19:28:21+07:00",
+      "subject": "docs: plan wall thickness analysis implementation",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/07e92563f661354db12460f1687f5e03be70aa5b",
+      "classifications": [
+        {
+          "path": "docs/superpowers/plans/2026-09-22-instant-quotation-wall-thickness-analysis.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1016,
+      "commit": "663dd8c9c36eece39cd2f641895027ac926e1183",
+      "authoredAt": "2026-09-22T19:41:46+07:00",
+      "subject": "docs: add compact quotation summary scope",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/663dd8c9c36eece39cd2f641895027ac926e1183",
+      "classifications": [
+        {
+          "path": "docs/superpowers/plans/2026-09-22-instant-quotation-wall-thickness-analysis.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/superpowers/specs/2026-09-22-instant-quotation-wall-thickness-analysis-design.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1017,
+      "commit": "e69ffe1f7054c72ed0ea63c8313bca54ca54094e",
+      "authoredAt": "2026-09-22T19:59:20+07:00",
+      "subject": "feat: add bounded normal-ray thickness engine",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/e69ffe1f7054c72ed0ea63c8313bca54ca54094e",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/JavaScript/wall-thickness.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/package.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/wall-thickness.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1018,
+      "commit": "d9f4b0f3cef18f4df43ba8f3cd3f2c6d813289d6",
+      "authoredAt": "2026-09-22T20:05:40+07:00",
+      "subject": "feat: transport wall thickness evidence to the viewer",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/d9f4b0f3cef18f4df43ba8f3cd3f2c6d813289d6",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationGeometryAnalysisBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1019,
+      "commit": "976bcb0089ae52c6023567613a95ce9246dd59f8",
+      "authoredAt": "2026-09-22T20:12:37+07:00",
+      "subject": "feat: apply process-specific thickness policies",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/976bcb0089ae52c6023567613a95ce9246dd59f8",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPreliminaryQuotationSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/wall-thickness-presentation.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_ThreeJsJavaScriptsPartial.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/gulpfile.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/wall-thickness-presentation.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1020,
+      "commit": "81eda1540c56046d5bd80542badaeca249499666",
+      "authoredAt": "2026-09-22T20:21:08+07:00",
+      "subject": "feat: add advisory wall thickness heatmap",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/81eda1540c56046d5bd80542badaeca249499666",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationExperienceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Resources/Pages/InstantQuotation/3D-Printing.th.resx",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1021,
+      "commit": "fad52019c898ebe63c39eb0f30e65b0fb59126ca",
+      "authoredAt": "2026-09-22T20:27:16+07:00",
+      "subject": "test: cover wall thickness quotation experience",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/fad52019c898ebe63c39eb0f30e65b0fb59126ca",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1022,
+      "commit": "20fe822f80cb8f04d671897281a96a9c7dc33510",
+      "authoredAt": "2026-09-22T20:42:33+07:00",
+      "subject": "test: expand compact summary for detail assertions",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/20fe822f80cb8f04d671897281a96a9c7dc33510",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1023,
+      "commit": "b6f9eacea2669c7fcf0f619dc0c96f2f104ca861",
+      "authoredAt": "2026-09-22T21:05:43+07:00",
+      "subject": "test: recognize compact summary metrics wrapper",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/b6f9eacea2669c7fcf0f619dc0c96f2f104ca861",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationUiPolishSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1024,
+      "commit": "c690f466e53868443ea0cf82caa460bcbcc8598f",
+      "authoredAt": "2026-09-22T21:07:23+07:00",
+      "subject": "style: normalize quotation test files",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/c690f466e53868443ea0cf82caa460bcbcc8598f",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationExperienceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationGeometryAnalysisBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPreliminaryQuotationSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationUiPolishSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationWallThicknessSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1025,
+      "commit": "7e76659f875eeaa745aeed1f8ea5508f88bcbaee",
+      "authoredAt": "2026-09-22T21:25:31+07:00",
+      "subject": "fix: simplify dense meshes for additive pricing",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/7e76659f875eeaa745aeed1f8ea5508f88bcbaee",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/JavaScript/additive-client-simulation.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/additive-quotation/additive-simulation.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1026,
+      "commit": "7aa95d1111528d3d875d8001a43676118974c1d0",
+      "authoredAt": "2026-09-22T21:25:42+07:00",
+      "subject": "fix: contain additive analysis status text",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/7aa95d1111528d3d875d8001a43676118974c1d0",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1027,
+      "commit": "c4dd00b323a350f06a27afbce03dcbbcc56e16fb",
+      "authoredAt": "2026-09-22T21:41:39+07:00",
+      "subject": "fix: clarify additive material pricing progress",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/c4dd00b323a350f06a27afbce03dcbbcc56e16fb",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1028,
+      "commit": "027e733e8e7a5abebf975598fda86589ca034b32",
+      "authoredAt": "2026-09-22T22:51:10+07:00",
+      "subject": "fix: redesign additive quote summary dock",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/027e733e8e7a5abebf975598fda86589ca034b32",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationExperienceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
           "owners": [
             "Legacy.Maliev.Web"
           ],
