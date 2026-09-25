@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-23T15:12:08.1002511+00:00",
+  "generatedAt": "2026-09-25T14:45:11.1990179+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "3e95e397f7180356f0b5a8acfeed0119d1db62ad",
+  "sourceCheckpoint": "63d68317f7ae12def6b7caceca9883a7b75475df",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
       "mainSha": "4cc64bd9b419b3a73307af6265d2e59a37eb0e20",
@@ -41,8 +41,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/1270d63295a53f79aee265e57949e793ccb6516d"
     },
     "Legacy.Maliev.DataMigration": {
-      "mainSha": "baf187a96b8f218ca8a0d693033895b1c809a7b5",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/baf187a96b8f218ca8a0d693033895b1c809a7b5"
+      "mainSha": "d2626278ce4f3cbaafc6aa4b38ace69a49813897",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/d2626278ce4f3cbaafc6aa4b38ace69a49813897"
     },
     "Legacy.Maliev.DocumentService": {
       "mainSha": "36bb52747cec7854db2349f8a63d771c9479b2af",
@@ -53,8 +53,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.EmployeeService/commit/101e0dc8009174b24c3013011b5393aa1ca66bee"
     },
     "Legacy.Maliev.FileService": {
-      "mainSha": "992135d8d49adc6747ce5495a4386e88ace9de1d",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.FileService/commit/992135d8d49adc6747ce5495a4386e88ace9de1d"
+      "mainSha": "fe6c87b36374dea1909cadbbda583f007094d54b",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.FileService/commit/fe6c87b36374dea1909cadbbda583f007094d54b"
     },
     "Legacy.Maliev.Intranet": {
       "mainSha": "a94c9cb472ce0c5fce323ebbff1a9c03705f2bd8",
@@ -73,23 +73,23 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ProcurementService/commit/931feb5c6ec8f71ce95bbf093478429d299af130"
     },
     "Legacy.Maliev.QuotationService": {
-      "mainSha": "89a6d653302561fedc5756cf0843458971d50a7b",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/commit/89a6d653302561fedc5756cf0843458971d50a7b"
+      "mainSha": "df3364219e200d20e72586b73f3a46af24d6684a",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/commit/df3364219e200d20e72586b73f3a46af24d6684a"
     },
     "Legacy.Maliev.ServiceDefaults": {
       "mainSha": "c6074f9b8dd880eb18870f7dc9ff7a64a9d5e9a9",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/c6074f9b8dd880eb18870f7dc9ff7a64a9d5e9a9"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "1dc5ee13bb4aeada575c9fcfb34a8ce62be22d6c",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/1dc5ee13bb4aeada575c9fcfb34a8ce62be22d6c"
+      "mainSha": "62cc8a1f26b09942af874205d3df13f819c65b26",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/62cc8a1f26b09942af874205d3df13f819c65b26"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "b94d82181b89ea9498bc36294ce6ac5a43bae2e8",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/b94d82181b89ea9498bc36294ce6ac5a43bae2e8"
+      "mainSha": "666f32542d8c20a98a8bd37b5886bea7cbb6535c",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/666f32542d8c20a98a8bd37b5886bea7cbb6535c"
     }
   },
-  "nonMergeCommitCount": 1047,
+  "nonMergeCommitCount": 1061,
   "records": [
     {
       "ordinal": 1,
@@ -85622,6 +85622,1628 @@
           "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/CreateQuotationRequestAsync_UnitTest.cs",
           "owners": [
             "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1048,
+      "commit": "3b8bb496dd03c32ee31e99519ce1a746cce6ec92",
+      "authoredAt": "2026-09-24T08:47:51+07:00",
+      "subject": "Fix quotation browser test baselines",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/3b8bb496dd03c32ee31e99519ce1a746cce6ec92",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/CncDetectedThreadBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/SharedUiDeploymentRegressionSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1049,
+      "commit": "faf702a7f7990aaca6b60c652bae64fbc62987f3",
+      "authoredAt": "2026-09-24T09:31:33+07:00",
+      "subject": "Restore additive STEP and batch order pricing",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/faf702a7f7990aaca6b60c652bae64fbc62987f3",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationGeometryAnalysisBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1050,
+      "commit": "d852d3ef0ea45bba51bb29de557784b5e5fffae6",
+      "authoredAt": "2026-09-24T10:53:36+07:00",
+      "subject": "Add employee qualification outcome readback",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/d852d3ef0ea45bba51bb29de557784b5e5fffae6",
+      "classifications": [
+        {
+          "path": "Maliev.QuotationRequestService.Api/Controllers/QuotationRequestsController.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Common/Models/QualificationOutcomeReadback.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationOutcomeReadbackTests.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/superpowers/plans/2026-09-24-qualified-outcomes-and-measurement-runtime.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1051,
+      "commit": "8e133abe65078c6a0bbca1d43473c6546ed6284f",
+      "authoredAt": "2026-09-24T10:57:50+07:00",
+      "subject": "Add qualified quotation scorecard validation",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/8e133abe65078c6a0bbca1d43473c6546ed6284f",
+      "classifications": [
+        {
+          "path": "docs/superpowers/plans/2026-09-24-qualified-outcomes-and-measurement-runtime.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/README.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/WireFixtures/Program.cs",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/WireFixtures/WireFixtures.csproj",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/fixtures/qualification-empty.json",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/fixtures/qualification-mixed.json",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/outcome_receipts.py",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/tests/test_outcome_receipts.py",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1052,
+      "commit": "adf8c36b49171e6e15e0c6b9d9de982a598387be",
+      "authoredAt": "2026-09-24T11:01:41+07:00",
+      "subject": "Verify one-time consented lead delivery",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/adf8c36b49171e6e15e0c6b9d9de982a598387be",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/MeasurementRuntimeBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/_CookieConsentPartial.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1053,
+      "commit": "61df92fb171a5c1c65a46a07cd70777d87e1a46e",
+      "authoredAt": "2026-09-24T11:18:42+07:00",
+      "subject": "Normalize outcome and measurement test formatting",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/61df92fb171a5c1c65a46a07cd70777d87e1a46e",
+      "classifications": [
+        {
+          "path": "Maliev.QuotationRequestService.Common/Models/QualificationOutcomeReadback.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationOutcomeReadbackTests.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/MeasurementRuntimeBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1054,
+      "commit": "da58002047bcea0d00d0769deb99173ef21bdf81",
+      "authoredAt": "2026-09-24T11:30:21+07:00",
+      "subject": "Close qualified outcome review gaps",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/da58002047bcea0d00d0769deb99173ef21bdf81",
+      "classifications": [
+        {
+          "path": "Maliev.QuotationRequestService.Api/Controllers/QuotationRequestsController.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationOutcomeReadbackTests.cs",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationBrowserFixture.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/MeasurementRuntimeBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/README.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/outcome_receipts.py",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "tools/analytics/tests/test_outcome_receipts.py",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1055,
+      "commit": "3b7777ec3b4a666502cf1ea4f87a8afeedf50441",
+      "authoredAt": "2026-09-24T12:35:22+07:00",
+      "subject": "Keep CNC browser fixtures clear of consent modal",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/3b7777ec3b4a666502cf1ea4f87a8afeedf50441",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/CncQuotationUiBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationBrowserFixture.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1056,
+      "commit": "4bde312241c2e063e6768f510b92ee2f60b2b94b",
+      "authoredAt": "2026-09-24T12:41:53+07:00",
+      "subject": "Avoid pruning unrelated images during quotation deployment",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/4bde312241c2e063e6768f510b92ee2f60b2b94b",
+      "classifications": [
+        {
+          "path": "Maliev.QuotationRequestService.Api/deploy.ps1",
+          "owners": [
+            "Legacy.Maliev.QuotationService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1057,
+      "commit": "1e45a63becfc696459fc6527ef4c85980fb059cc",
+      "authoredAt": "2026-09-24T12:56:02+07:00",
+      "subject": "Keep disabled CNC quotation links fail closed",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/1e45a63becfc696459fc6527ef4c85980fb059cc",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/CncQuotationRouteSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/CNC-Machining.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1058,
+      "commit": "eb52167166e12d832ea6c800795a8357d526f759",
+      "authoredAt": "2026-09-25T11:07:43+07:00",
+      "subject": "Clarify 3D printing quotation routes",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/eb52167166e12d832ea6c800795a8357d526f759",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/css/service-pages.css",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/superpowers/plans/2026-09-25-3d-printing-route-clarity.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1059,
+      "commit": "fd37fbd03bc767f026a625fd6a91107ada91a96f",
+      "authoredAt": "2026-09-25T13:14:06+07:00",
+      "subject": "Prevent member order detail failure when material is unavailable",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/fd37fbd03bc767f026a625fd6a91107ada91a96f",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/MemberOrderMissingMaterialTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Areas/Member/Pages/Orders/View.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1060,
+      "commit": "915a880f13a9aa6ec7034d13dc986ec46ae11488",
+      "authoredAt": "2026-09-25T15:39:03+07:00",
+      "subject": "Remove unfinished CNC instant quotation and restore Web test reliability",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/915a880f13a9aa6ec7034d13dc986ec46ae11488",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/ApplicationPageMigrationSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncCalibrationReplayBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncCatalogBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncCommercialCalibrationTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncDetectedThreadBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncGeometryBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncHandleOperationsBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncMachineCapabilityBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncOperationReviewBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncPlanningBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncQuotationAssetSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncQuotationFeatureFlagTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncQuotationFormBindingIntegrationTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncQuotationRouteSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncQuotationSubmissionContractTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncQuotationUiBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncReachBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncReviewResponsiveBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncSeoContractSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncStockPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncUploadAdmissionMiddlewareTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncUploadReceiptStoreTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/CncWorkerAssetVersionTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/DeploymentStaticAssetSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationAjaxSubmissionSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationBrowserFixture.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationFinalPriceSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationGeometryAnalysisBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationInhalerCorpusBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationLayoutGeometryTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationModelWorkerSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPageSeparationSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPreviewShadingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewStateBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationReviewSummarySourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationSupportedFormatSubmissionTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationTabletLayoutTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationThumbnailMaterialTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationUiPolishSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-access.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-ball-contact.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-ball-handoff-allocation.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-ball-rest-policy.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-bracket-operations.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-cad-surfaces.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-circular-refinement.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-comparison-pricing.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-contour-evidence.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-curved-classification.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-curved-operations.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-curved-ownership.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-curved-review-guards.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-curved-stock-planning.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-cutter-contact.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-detected-thread-requirements.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-distance-field.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-feature-graph.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-feature-operation-guards.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-final-audit-regressions.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-general-ball-handoff.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-linked-hole-setups.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-local-thread-features.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-manufacturing-evidence-architecture.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-outside-distance.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-outward-ball-contact.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-parallel-wall-contact.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-plan-contracts.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-plan-integration.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-plan-validator.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-process-compiler.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-real-axial-acceptance.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-round-contact.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-setup-ownership.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-setup-planner.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-sloped-contact.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-solid-field.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-spot-drill-catalog.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-thread-extent-evidence.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-threaded-plate-operations.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-tool-coverage.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-tool-library.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-topology.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/cnc-worker-cad-hints.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/JavaScript/fixtures/cnc-legacy-planning.test-helper.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/MeasurementTrackingSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PublicFormSubmissionBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ScanningComparisonBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ScanningPreparationBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ServiceResponsiveImageBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/axial-threaded-part.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/box-20x30x40.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/counterbore-pocket-bracket.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/flat-plate-100x100x4.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/handle-counterbore-recesses.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/high-confidence-block-10x30x40.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/mirrored-counterbore-pocket-bracket.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/round-disc-23x23x5.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/threaded-cover-plate.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/Cnc/top-flip-bracket.step",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/CncUploadAdmissionMiddleware.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Maliev.Web.csproj",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CNC-Machining.AuthenticatedProfile.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CNC-Machining.ProfilePersistence.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CNC-Machining.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CNC-Machining.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CncFileAdmissionValidator.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/CncUploadReceiptStore.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/CNC-Machining.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/CNC-Machining.cshtml.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Shared/LeadAnalyticsEventQueue.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/CncCommercialCalibration.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Resources/Pages/InstantQuotation/CNC-Machining.th.resx",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/SecurityHeaderPolicy.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Startup.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/appsettings.Development.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/appsettings.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/deploy.ps1",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/gulpfile.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/package.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-ball-rest.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-cad-surfaces.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-engine.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-feature-graph.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-fixture-catalog.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-fixture-clearance.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-geometry.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-machine-capability.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-manufacturing-evidence.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-material-catalog.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-plan-contracts.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-plan-validator.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-planning.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-process-compiler.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-quotation-config.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-quotation.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-reach.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-setup-planner.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-spatial-field.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-stock.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-tool-library.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/cnc-quotation/cnc-topology.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1061,
+      "commit": "63d68317f7ae12def6b7caceca9883a7b75475df",
+      "authoredAt": "2026-09-25T21:31:30+07:00",
+      "subject": "Keep valid closed STL contours quotable in browser simulation",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/63d68317f7ae12def6b7caceca9883a7b75475df",
+      "classifications": [
+        {
+          "path": "Maliev.Web.Tests/JavaScript/additive-simulation-contours.test.cjs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/SecurityHeaderPolicy.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/additive-quotation/additive-simulation.worker.js",
+          "owners": [
+            "Legacy.Maliev.Web"
           ],
           "disposition": "migration-required",
           "decision": null
