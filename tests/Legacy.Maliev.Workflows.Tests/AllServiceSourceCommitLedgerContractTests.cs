@@ -70,7 +70,7 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     {
         using var document = Load("migration/source-commit-ledger.json");
         var root = document.RootElement;
-        Assert.Equal(1, root.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal(2, root.GetProperty("schemaVersion").GetInt32());
         Assert.Equal("MALIEV-Co-Ltd/maliev-web", root.GetProperty("sourceRepository").GetString());
         Assert.Matches(Sha, root.GetProperty("sourceCheckpoint").GetString()!);
         var targets = root.GetProperty("legacyTargets");
@@ -85,7 +85,10 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         }
 
         var records = root.GetProperty("records").EnumerateArray().ToArray();
-        Assert.Equal(root.GetProperty("nonMergeCommitCount").GetInt32(), records.Length);
+        Assert.Equal(root.GetProperty("commitCount").GetInt32(), records.Length);
+        Assert.Equal(records.Length, root.GetProperty("nonMergeCommitCount").GetInt32() +
+            root.GetProperty("mergeCommitCount").GetInt32());
+        Assert.True(root.GetProperty("mergeCommitCount").GetInt32() > 0);
         Assert.NotEmpty(records);
 
         var commits = new HashSet<string>(StringComparer.Ordinal);
@@ -99,7 +102,9 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             Assert.Equal($"https://github.com/MALIEV-Co-Ltd/maliev-web/commit/{commit}", record.GetProperty("sourceEvidence").GetString());
 
             _ = record.GetProperty("authoredAt").GetDateTimeOffset();
-            foreach (var parent in record.GetProperty("parents").EnumerateArray())
+            var parents = record.GetProperty("parents").EnumerateArray().ToArray();
+            Assert.Equal(parents.Length > 1, record.GetProperty("isMerge").GetBoolean());
+            foreach (var parent in parents)
             {
                 Assert.Matches(Sha, parent.GetString()!);
             }
@@ -142,6 +147,7 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             "3e38f9691b1c502755f1ab2b00ed90f8261eafef",
             "7435f6b8fde7cb06c439532f5aac0f8a31778175",
             "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
+            "3644a0d7850dcb82208887ae41d7ca931ea4e60e",
         })
         {
             Assert.Contains(records, record => record.GetProperty("commit").GetString() == commit);
@@ -155,6 +161,91 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             record.GetProperty("commit").GetString() == "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db");
         Assert.All(dependency.GetProperty("classifications").EnumerateArray(), classification =>
             Assert.Equal("approved-retirement", classification.GetProperty("disposition").GetString()));
+        Assert.True(Assert.Single(records, record =>
+            record.GetProperty("commit").GetString() == "3644a0d7850dcb82208887ae41d7ca931ea4e60e")
+            .GetProperty("isMerge").GetBoolean());
+    }
+
+    [Fact]
+    public void Resolution_companion_tracks_every_commit_without_claiming_unproven_parity()
+    {
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var source = ownership.RootElement;
+        var root = resolutions.RootElement;
+        Assert.Equal(1, root.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal(source.GetProperty("sourceRepository").GetString(),
+            root.GetProperty("sourceRepository").GetString());
+        Assert.Equal(source.GetProperty("sourceCheckpoint").GetString(),
+            root.GetProperty("sourceCheckpoint").GetString());
+        var commits = source.GetProperty("records").EnumerateArray().ToArray();
+        var records = root.GetProperty("records").EnumerateArray().ToArray();
+        Assert.Equal(commits.Length, root.GetProperty("sourceCommitCount").GetInt32());
+        Assert.Equal(commits.Length, records.Length);
+        Assert.Equal(commits.Length,
+            root.GetProperty("fullyResolvedCommitCount").GetInt32() +
+            root.GetProperty("unresolvedCommitCount").GetInt32());
+        Assert.False(root.GetProperty("complete").GetBoolean());
+        Assert.True(root.GetProperty("unresolvedCommitCount").GetInt32() > 0);
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (var index = 0; index < commits.Length; index++)
+        {
+            var sourceCommit = commits[index];
+            var record = records[index];
+            var sha = record.GetProperty("sourceSha").GetString()!;
+            Assert.Equal(sourceCommit.GetProperty("commit").GetString(), sha);
+            Assert.True(seen.Add(sha));
+            Assert.Equal(sourceCommit.GetProperty("isMerge").GetBoolean(),
+                record.GetProperty("isMerge").GetBoolean());
+            Assert.Contains(record.GetProperty("status").GetString(),
+                new[] { "pending", "partial", "blocked", "migrated", "approved-retirement" });
+            var expectedOwners = sourceCommit.GetProperty("classifications").EnumerateArray()
+                .Where(item => item.GetProperty("disposition").GetString() == "migration-required")
+                .SelectMany(item => item.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!))
+                .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+            var actualOwners = record.GetProperty("ownerResolutions").EnumerateObject()
+                .Select(item => item.Name).Order(StringComparer.Ordinal).ToArray();
+            Assert.Equal(expectedOwners, actualOwners);
+            foreach (var owner in record.GetProperty("ownerResolutions").EnumerateObject())
+            {
+                var result = owner.Value;
+                Assert.Contains(result.GetProperty("status").GetString(),
+                    new[] { "pending", "blocked", "migrated" });
+                if (result.GetProperty("status").GetString() == "migrated")
+                {
+                    Assert.NotEmpty(result.GetProperty("issueUrls").EnumerateArray());
+                    Assert.NotEmpty(result.GetProperty("prUrls").EnumerateArray());
+                    Assert.Matches(Sha, result.GetProperty("mergedTargetSha").GetString()!);
+                    Assert.NotEmpty(result.GetProperty("validationEvidenceUrls").EnumerateArray());
+                }
+            }
+            var retirement = record.GetProperty("retirementApproval");
+            if (retirement.ValueKind != JsonValueKind.Null &&
+                retirement.GetProperty("status").GetString() == "approved")
+            {
+                Assert.False(string.IsNullOrWhiteSpace(retirement.GetProperty("reason").GetString()));
+                Assert.StartsWith("https://", retirement.GetProperty("evidenceUrl").GetString());
+            }
+        }
+
+        foreach (var sha in new[]
+        {
+            "c88a4e93c28b7306a5f2c353ee2ed1b8677ff7f8",
+            "3f090e9488d91790636558d3ce59c7f046efa1d8",
+            "ce8a2f4037bedf51df1aedde4aef531c2faff3c7",
+            "d46b4d6a3fca8148792da1033c77d60d22d7b9d9",
+            "49294cf81ec1940c433d9092af0b96f050298930",
+            "027e733e8e7a5abebf975598fda86589ca034b32",
+        })
+        {
+            var migrated = Assert.Single(records, record => record.GetProperty("sourceSha").GetString() == sha);
+            Assert.Equal("migrated", migrated.GetProperty("status").GetString());
+            var web = migrated.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
+            Assert.Equal("migrated", web.GetProperty("status").GetString());
+            Assert.Contains(web.GetProperty("issueUrls").EnumerateArray(),
+                url => url.GetString() == "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/276");
+        }
     }
 
     [Fact]
@@ -167,9 +258,18 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.DoesNotContain("git -C $SourceRepository checkout", script, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("git -C $SourceRepository reset", script, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("git -C $SourceRepository clean", script, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("rev-list --reverse --no-merges", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Invoke-SourceGit diff --name-only $parents[0] $commit", script, StringComparison.Ordinal);
+        Assert.Contains("Invoke-SourceGit ls-remote origin refs/heads/main", script, StringComparison.Ordinal);
         Assert.Contains("git -C $repositoryPath ls-remote origin refs/heads/main", script, StringComparison.Ordinal);
         Assert.DoesNotContain("git -C $repositoryPath fetch", script, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("$mapping.architecturalTargets", script, StringComparison.Ordinal);
+
+        var resolutionScript = File.ReadAllText(Path.Combine(Root, "scripts", "New-SourceCommitResolutionLedger.ps1"));
+        Assert.Contains("git -C $SourceRepository ls-remote origin refs/heads/main", resolutionScript, StringComparison.Ordinal);
+        Assert.DoesNotContain("git -C $SourceRepository fetch", resolutionScript, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("git -C $SourceRepository reset", resolutionScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("merge-base --is-ancestor", resolutionScript, StringComparison.Ordinal);
     }
 
     private static JsonDocument Load(string relativePath) =>
