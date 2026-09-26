@@ -26,7 +26,9 @@ ancestor SHAs, and successful exact-main validation. Source
 #186, while `22b4fa5064e223b3460bbe87fca48aca96b4f0ee` and
 `1cbc27f152f7f00a3e7e712935f52ab883c8ad71` are covered by Intranet
 #187 / PR #188; the first of those also has a Workflows documentation owner
-covered by #68 / PR #67. The other 1,078 commits
+covered by #68 / PR #67. Source `7851975ee1da8fd4aaea23b6f17a5db56206f4d6`
+has Web behavior through PR #186 and a dated Workflows evidence record through
+#71 / PR #72. The other 1,077 commits
 remain pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
