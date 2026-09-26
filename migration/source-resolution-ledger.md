@@ -17,9 +17,10 @@ Mixed commits cannot be complete until both kinds of resolution are proven.
 
 The backfill verifies six Web-only source commits through issue #276, six
 more recent CTR/qualification commits across Web, Intranet, and Workflows,
-and source commit `fd37fbd03bc767f026a625fd6a91107ada91a96f` through
-Web issue #313 / PR #314. Each has owning issues, merged PRs, protected-main
-ancestor SHAs, and successful PR-validation jobs. The other 1,083 commits
+and source commits `fd37fbd03bc767f026a625fd6a91107ada91a96f` (Web
+#313 / PR #314) and `1e45a63becfc696459fc6527ef4c85980fb059cc` (Web
+#316 / PR #318). Each has owning issues, merged PRs, protected-main
+ancestor SHAs, and successful PR-validation jobs. The other 1,082 commits
 remain pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
