@@ -1,8 +1,9 @@
-"""Validate aggregate-only Legacy API receipts; never infer qualification or Ads attribution."""
+"""Validate PII-free Legacy outcome receipts; never infer Ads attribution."""
 
 import argparse
 import json
 import re
+import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -63,6 +64,8 @@ def validate_payload(payload, source, from_utc, to_utc):
     """Allowlist the exact Legacy PascalCase wire contract before retaining source data."""
     start, end = utc(from_utc), utc(to_utc)
     require(start < end and end - start <= timedelta(days=31), "Invalid reporting window")
+    if source == "qualification":
+        return validate_qualification_payload(payload, start, end)
     require(source in ("quotation", "invoice"), "Unknown aggregate source")
     availability = [
         "TechnicalConversionAvailability",
@@ -134,6 +137,55 @@ def validate_payload(payload, source, from_utc, to_utc):
     return totals
 
 
+def validate_qualification_payload(payload, start, end):
+    """Count only validated current qualification projections; retain no row data."""
+    keys(payload, ["fromUtc", "toUtc", "requests"])
+    require(utc(payload["fromUtc"]) == start and utc(payload["toUtc"]) == end, "Source window mismatch")
+    require(isinstance(payload["requests"], list), "Requests array required")
+    states = {"unreviewed", "qualified", "not_qualified", "duplicate", "stale", "incomplete"}
+    totals = {"persistedQuotation": 0, "identityCompleteQuotation": 0,
+              "qualifiedQuotation": 0, "qualifiedIdentityCompleteQuotation": 0}
+    previous_order = None
+    request_ids = set()
+    identity_pairs = set()
+    base_fields = {"requestId", "createdUtc", "state"}
+    identity_fields = {"transactionId", "journeyId"}
+    for row in payload["requests"]:
+        require(isinstance(row, dict) and set(row) in (base_fields, base_fields | identity_fields),
+                "Invalid qualification row fields")
+        request_id = count(row["requestId"])
+        require(request_id > 0 and request_id not in request_ids, "Invalid or duplicate request identifier")
+        request_ids.add(request_id)
+        created = utc(row["createdUtc"])
+        require(start <= created < end, "Request outside window")
+        order = (created, request_id)
+        require(previous_order is None or previous_order < order, "Requests not uniquely ordered")
+        previous_order = order
+        state = row["state"]
+        require(isinstance(state, str) and state in states, "Invalid qualification state")
+        identity_complete = set(row) == base_fields | identity_fields
+        if identity_complete:
+            transaction_id = row["transactionId"]
+            journey_id = row["journeyId"]
+            require(transaction_id == f"request-{request_id}", "Mismatched transaction identifier")
+            require(isinstance(journey_id, str), "Invalid journey identifier")
+            try:
+                parsed_journey_id = uuid.UUID(journey_id)
+            except (ValueError, AttributeError):
+                raise InvalidReceipt("Invalid journey identifier") from None
+            require(parsed_journey_id.int != 0 and str(parsed_journey_id) == journey_id,
+                    "Invalid journey identifier")
+            pair = (transaction_id, journey_id)
+            require(pair not in identity_pairs, "Duplicate reconciliation identity")
+            identity_pairs.add(pair)
+        totals["persistedQuotation"] += 1
+        totals["identityCompleteQuotation"] += int(identity_complete)
+        qualified = state == "qualified"
+        totals["qualifiedQuotation"] += int(qualified)
+        totals["qualifiedIdentityCompleteQuotation"] += int(qualified and identity_complete)
+    return totals
+
+
 def consume(receipt, source, from_utc, to_utc, now_utc, max_age_hours=24):
     """Invalid, failed, missing, or stale receipts carry no numerical facts."""
     unavailable = {"availability": "unavailable", "count": None}
@@ -170,7 +222,7 @@ def consume(receipt, source, from_utc, to_utc, now_utc, max_age_hours=24):
             availability="available",
             reason=None,
             capturedAtUtc=receipt["capturedAtUtc"],
-            days=receipt["payload"]["Days"],
+            days=receipt["payload"].get("Days"),
             counts=totals,
         )
     except (InvalidReceipt, TypeError, OverflowError):
@@ -193,6 +245,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--quotation", type=Path)
     parser.add_argument("--invoice", type=Path)
+    parser.add_argument("--qualification", type=Path)
     parser.add_argument("--from-utc", required=True)
     parser.add_argument("--to-utc", required=True)
     parser.add_argument("--max-age-hours", type=int, default=24)
@@ -208,7 +261,7 @@ def main():
     except (InvalidReceipt, TypeError):
         parser.error("Use an increasing UTC window up to 31 days and positive freshness limit")
     results = []
-    for source in ("quotation", "invoice"):
+    for source in ("quotation", "invoice", "qualification"):
         path = getattr(args, source)
         try:
             value = load_json(path.read_text(encoding="utf-8-sig")) if path else None
@@ -216,7 +269,8 @@ def main():
             value = {}
         results.append(consume(value, source, args.from_utc, args.to_utc, now, args.max_age_hours))
     args.output.write_text(json_text({"capturedAtUtc": now, "sources": results}) + "\n", encoding="utf-8")
-    return 0 if all(item["availability"] == "available" for item in results) else 2
+    required_results = results if args.qualification is not None else results[:2]
+    return 0 if all(item["availability"] == "available" for item in required_results) else 2
 
 
 if __name__ == "__main__":
