@@ -15,10 +15,11 @@ owner has issue, merged PR, protected-main ancestor SHA, and validation URLs,
 and every candidate retirement has an explicit reason and approval URL.
 Mixed commits cannot be complete until both kinds of resolution are proven.
 
-The initial backfill verifies six Web-only source commits through issue #276,
-their merged PRs, protected-main ancestor SHAs, and successful PR-validation
-jobs. The other 1,090 commits remain pending; this ledger is deliberately not
-a claim of full migration parity.
+The backfill verifies six Web-only source commits through issue #276 and six
+more recent CTR/qualification commits across Web, Intranet, and Workflows.
+Each has owning issues, merged PRs, protected-main ancestor SHAs, and
+successful PR-validation jobs. The other 1,084 commits remain pending; this
+ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
