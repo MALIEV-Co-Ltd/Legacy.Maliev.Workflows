@@ -6,6 +6,14 @@ requests, read credentials or browser sessions, access databases, identify a
 customer or infer Ads attribution. Qualification counts are current employee-owned
 projections, not an Ads-qualified-customer or campaign-performance claim.
 
+An authorized employee collector obtains the quotation outcome readback through
+the Intranet BFF at `/Operations/OutcomeReadback?source=quotation&fromUtc=<UTC>&toUtc=<UTC>`.
+The compatibility route `/Analytics/OutcomeReadback` reaches the same handler.
+Both routes require an authenticated employee session and the source-specific
+read permission; the BFF uses that session's access token for its downstream
+request. It sends `Cache-Control: no-store` and returns aggregate-only data.
+This validator does not call either route or acquire an employee session.
+
 The receipt envelope is an operational handoff owned by the authorized
 collector. Its `payload` is the original parsed Legacy API JSON body:
 
