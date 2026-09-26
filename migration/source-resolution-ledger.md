@@ -33,7 +33,9 @@ has Web technical-filament pricing behavior through #338 / PR #186. Source
 `d852d3ef0ea45bba51bb29de557784b5e5fffae6` has its
 QuotationRequestService producer through QuotationService #52 / PR #53 and
 its dated historical qualification plan through Workflows #74 / PR #75.
-The other 1,075 commits
+Source `8e133abe65078c6a0bbca1d43473c6546ed6284f` has its qualified
+quotation scorecard fixtures and validation through Workflows #59 / PR #60.
+The other 1,074 commits
 remain pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
