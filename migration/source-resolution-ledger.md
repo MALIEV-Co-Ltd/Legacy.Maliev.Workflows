@@ -19,8 +19,9 @@ The backfill verifies six Web-only source commits through issue #276, six
 more recent CTR/qualification commits across Web, Intranet, and Workflows,
 and source commits `fd37fbd03bc767f026a625fd6a91107ada91a96f` (Web
 #313 / PR #314) and `1e45a63becfc696459fc6527ef4c85980fb059cc` (Web
-#316 / PR #318). Each has owning issues, merged PRs, protected-main
-ancestor SHAs, and successful PR-validation jobs. The other 1,082 commits
+#316 / PR #318), and `63d68317f7ae12def6b7caceca9883a7b75475df` (Web
+#319 / PR #321). Each has owning issues, merged PRs, protected-main
+ancestor SHAs, and successful exact-main validation. The other 1,081 commits
 remain pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
