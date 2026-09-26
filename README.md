@@ -9,7 +9,9 @@ non-merge commit in the read-only `maliev-web` source history. Each changed
 path is assigned to one or more canonical Legacy repositories, or to an
 explicit approved retirement/source-tooling disposition, by
 `migration/source-path-owners.json`. The generated artifact also pins every
-owning repository's `origin/main` SHA and evidence URL at generation time.
+owning repository's live remote `origin/main` SHA and evidence URL at generation
+time. Each source record carries its full SHA, parent SHAs, subject, and
+path-level disposition so grouped migration issues cannot obscure a commit.
 
 Refresh it locally from committed Git objects only:
 
