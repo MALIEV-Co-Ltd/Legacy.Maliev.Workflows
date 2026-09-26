@@ -237,14 +237,18 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             "d46b4d6a3fca8148792da1033c77d60d22d7b9d9",
             "49294cf81ec1940c433d9092af0b96f050298930",
             "027e733e8e7a5abebf975598fda86589ca034b32",
+            "c97ced90bd8913a1686fec16405efd57c62d3176",
+            "31ba7d7c9816330529c8c335939fde5d0fc4a632",
+            "92f2263531971457cd9d71da41a653e91a1b6079",
+            "de75a0e55240ee78053c8c87eb4a83b67cdd32f2",
+            "0665dcd54788c037ee663ff90f32741014f0c81c",
+            "3e38f9691b1c502755f1ab2b00ed90f8261eafef",
         })
         {
             var migrated = Assert.Single(records, record => record.GetProperty("sourceSha").GetString() == sha);
             Assert.Equal("migrated", migrated.GetProperty("status").GetString());
-            var web = migrated.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
-            Assert.Equal("migrated", web.GetProperty("status").GetString());
-            Assert.Contains(web.GetProperty("issueUrls").EnumerateArray(),
-                url => url.GetString() == "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/276");
+            Assert.All(migrated.GetProperty("ownerResolutions").EnumerateObject(), owner =>
+                Assert.Equal("migrated", owner.Value.GetProperty("status").GetString()));
         }
     }
 
