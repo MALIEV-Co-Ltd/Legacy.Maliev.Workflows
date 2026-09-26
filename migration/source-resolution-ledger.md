@@ -35,7 +35,10 @@ QuotationRequestService producer through QuotationService #52 / PR #53 and
 its dated historical qualification plan through Workflows #74 / PR #75.
 Source `8e133abe65078c6a0bbca1d43473c6546ed6284f` has its qualified
 quotation scorecard fixtures and validation through Workflows #59 / PR #60.
-The other 1,074 commits
+Source `1360173adfdd038cdb1f179cec886ac644a4bbc6` and
+`c544f7145c12592d8e6069b690cc704858ed9b7f` have Web 404 route/assets
+through PR #186 and browser interaction parity through #339 / PR #340,
+including the shipped physics-bundle export repair. The other 1,072 commits
 remain pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
