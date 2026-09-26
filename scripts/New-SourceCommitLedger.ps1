@@ -28,8 +28,11 @@ $ownerNames = @(
 foreach ($owner in $ownerNames) {
     $repositoryPath = Join-Path $LegacyRoot $owner
     if (-not (Test-Path -LiteralPath (Join-Path $repositoryPath '.git'))) { throw "Canonical Legacy repository was not found: $repositoryPath" }
-    $targetSha = ([string](& git -C $repositoryPath rev-parse origin/main 2>&1 | Select-Object -First 1)).Trim()
-    if ($LASTEXITCODE -ne 0 -or $targetSha -notmatch '^[0-9a-f]{40}$') { throw "Could not resolve $owner origin/main to a full commit SHA." }
+    $remoteMain = ([string](& git -C $repositoryPath ls-remote origin refs/heads/main 2>&1 | Select-Object -First 1)).Trim()
+    if ($LASTEXITCODE -ne 0 -or $remoteMain -notmatch '^([0-9a-f]{40})\s+refs/heads/main$') {
+        throw "Could not resolve $owner live origin/main to a full commit SHA."
+    }
+    $targetSha = $Matches[1]
     $legacyTargets[$owner] = [ordered]@{
         mainSha = $targetSha
         evidence = "https://github.com/MALIEV-Co-Ltd/$owner/commit/$targetSha"
@@ -41,7 +44,7 @@ $ordinal = 0
 $records = foreach ($commitValue in $commits) {
     $ordinal++
     $commit = $commitValue.Trim()
-    $metadata = ([string](Invoke-SourceGit show -s '--format=%aI%x09%s' $commit | Select-Object -First 1)) -split "`t", 2
+    $metadata = ([string](Invoke-SourceGit show -s '--format=%aI%x09%P%x09%s' $commit | Select-Object -First 1)) -split "`t", 3
     $paths = @(Invoke-SourceGit diff-tree --root --no-commit-id --name-only -r $commit | Where-Object { $_ })
     $classifications = foreach ($path in $paths) {
         $matches = @($mapping.rules | Where-Object { $path -match $_.pattern })
@@ -59,7 +62,8 @@ $records = foreach ($commitValue in $commits) {
         ordinal = $ordinal
         commit = $commit
         authoredAt = $metadata[0]
-        subject = $metadata[1]
+        parents = @($metadata[1] -split ' ' | Where-Object { $_ })
+        subject = $metadata[2]
         sourceEvidence = "https://github.com/$($mapping.sourceRepository)/commit/$commit"
         classifications = @($classifications)
     }
