@@ -1,9 +1,10 @@
-# Aggregate outcome receipt validator
+# Outcome receipt validator
 
 This tool consumes already authorized, aggregate-only HTTP receipts from the
-Legacy quotation and invoice outcome readbacks. It does not make network
+Legacy quotation, invoice, and employee qualification outcome readbacks. It does not make network
 requests, read credentials or browser sessions, access databases, identify a
-customer, infer Ads attribution, or establish whether a customer is qualified.
+customer or infer Ads attribution. Qualification counts are current employee-owned
+projections, not an Ads-qualified-customer or campaign-performance claim.
 
 The receipt envelope is an operational handoff owned by the authorized
 collector. Its `payload` is the original parsed Legacy API JSON body:
@@ -34,12 +35,19 @@ python tools/analytics/outcome_receipts.py --quotation <quotation-receipt.json> 
 
 The default freshness limit is 24 hours. Windows must be complete, increasing,
 UTC, at most 31 days, and exactly match each payload. Exit status is zero only
-when both sources are available; otherwise it is two. Missing, denied, invalid,
+when both quotation and invoice sources are available; otherwise it is two.
+Add `--qualification <qualification-receipt.json>` to require the third source
+as well. Missing, denied, invalid,
 future, and stale sources retain null counts and days. An explicit empty `Days`
 array is available and has zero totals.
 
-The input wire is intentionally PascalCase because Legacy service JSON options
-set `PropertyNamingPolicy = null`. Unknown fields, identifiers, wrong casing,
+Quotation and invoice payloads intentionally use PascalCase because their
+Legacy service JSON options set `PropertyNamingPolicy = null`. The employee
+qualification BFF payload uses exact camelCase `fromUtc`, `toUtc`, and
+`requests` fields. Its rows contain only `requestId`, `createdUtc`, `state`,
+and optional paired `transactionId`/`journeyId`; the validator produces bounded
+intersection counts and retains no request rows in output. Unknown fields,
+wrong casing,
 missing fields, nulls, wrong types, duplicate fields, unsupported currencies,
 and unreconciled counts fail closed without echoing source values. Decimal
 amounts remain exact and are never converted through binary floating point.
@@ -58,6 +66,9 @@ fixture preserves the approved source contract, but
 paid-invoice outcome DTO or route. The fixture harness therefore owns an
 explicit local contract model and must be updated when that producer boundary
 lands; passing fixture verification is not deployed invoice-readback evidence.
+The qualification fixture matches the authenticated Intranet BFF readback and
+QuotationRequestService current-projection contract. These fixtures are synthetic
+and do not prove that a live, authorized receipt has been collected.
 
 ## Validation
 
@@ -70,4 +81,4 @@ git diff --check
 ```
 
 Use `--write` only for a reviewed producer-wire change. No collection,
-deployment, qualification, or campaign-performance claim is configured here.
+deployment or campaign-performance claim is configured here.

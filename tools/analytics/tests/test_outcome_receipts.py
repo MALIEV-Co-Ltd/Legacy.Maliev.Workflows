@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import uuid
 from decimal import Decimal
 from pathlib import Path
 
@@ -161,6 +162,78 @@ class OutcomeReceiptTests(unittest.TestCase):
         value = receipt("quotation")
         value["payload"]["QualifiedCustomerAvailability"] = "available"
         self.assert_unavailable(value)
+
+    def test_qualification_counts_only_current_projection_intersections(self):
+        result = self.consume(receipt("qualification"), "qualification")
+        self.assertEqual("available", result["availability"])
+        self.assertEqual({"persistedQuotation": 4, "identityCompleteQuotation": 2,
+                          "qualifiedQuotation": 2, "qualifiedIdentityCompleteQuotation": 1},
+                         result["counts"])
+        self.assertIsNone(result["days"])
+        self.assertIsNone(result["qualifiedCustomer"]["count"])
+        self.assertIsNone(result["technicalConversion"]["count"])
+
+    def test_qualification_requires_exact_bounded_row_contract(self):
+        malformed = []
+        value = receipt("qualification")
+        value["payload"]["requests"][1]["transactionId"] = "request-42"
+        malformed.append(value)
+        value = receipt("qualification")
+        value["payload"]["requests"][0]["transactionId"] = "request-999"
+        malformed.append(value)
+        value = receipt("qualification")
+        value["payload"]["requests"][0]["journeyId"] = "not-a-guid"
+        malformed.append(value)
+        value = receipt("qualification")
+        value["payload"]["requests"][2]["requestId"] = 41
+        malformed.append(value)
+        value = receipt("qualification")
+        value["payload"]["requests"][0]["email"] = "private@example.com"
+        malformed.append(value)
+        value = receipt("qualification")
+        value["payload"]["requests"][0]["state"] = "accepted"
+        malformed.append(value)
+        value = receipt("qualification")
+        value["payload"]["requests"].reverse()
+        malformed.append(value)
+        value = receipt("qualification")
+        value["payload"]["requests"][0]["createdUtc"] = "2026-08-20T00:00:00Z"
+        malformed.append(value)
+        value = receipt("qualification")
+        value["payload"]["Requests"] = value["payload"].pop("requests")
+        malformed.append(value)
+        for bad in malformed:
+            with self.subTest(index=malformed.index(bad)):
+                result = self.assert_unavailable(bad, "qualification")
+                self.assertNotIn("private", outcomes.json_text(result))
+        for row in fixture("qualification")["requests"]:
+            if "journeyId" in row:
+                self.assertEqual(str(uuid.UUID(row["journeyId"])), row["journeyId"])
+
+    def test_cli_qualification_is_optional_but_requested_source_must_validate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            quotation = root / "quotation.json"
+            invoice = root / "invoice.json"
+            qualification = root / "qualification.json"
+            output = root / "result.json"
+            for source, path in (("quotation", quotation), ("invoice", invoice),
+                                 ("qualification", qualification)):
+                path.write_text(outcomes.json_text(receipt(source)), encoding="utf-8")
+            command = [sys.executable, str(ROOT / "outcome_receipts.py"),
+                       "--quotation", str(quotation), "--invoice", str(invoice),
+                       "--from-utc", FROM, "--to-utc", TO, "--max-age-hours", "10000",
+                       "--output", str(output)]
+            legacy = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(0, legacy.returncode, legacy.stderr)
+            self.assertEqual("missing_receipt", outcomes.load_json(output.read_text())["sources"][2]["reason"])
+            requested = subprocess.run(command + ["--qualification", str(qualification)],
+                                       capture_output=True, text=True)
+            self.assertEqual(0, requested.returncode, requested.stderr)
+            qualification.write_text("{}", encoding="utf-8")
+            invalid = subprocess.run(command + ["--qualification", str(qualification)],
+                                     capture_output=True, text=True)
+            self.assertEqual(2, invalid.returncode, invalid.stderr)
         value = receipt("quotation")
         value["payload"]["days"] = value["payload"].pop("Days")
         self.assert_unavailable(value)
@@ -180,9 +253,9 @@ class OutcomeReceiptTests(unittest.TestCase):
                 text=True,
             )
             self.assertEqual(2, run.returncode, run.stderr)
-            self.assertTrue(
-                all(item["counts"] is None for item in outcomes.load_json(output.read_text())["sources"])
-            )
+            sources = outcomes.load_json(output.read_text())["sources"]
+            self.assertEqual(["quotation", "invoice", "qualification"], [item["source"] for item in sources])
+            self.assertTrue(all(item["counts"] is None for item in sources))
 
 
 if __name__ == "__main__":
