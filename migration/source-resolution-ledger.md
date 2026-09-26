@@ -21,7 +21,12 @@ and source commits `fd37fbd03bc767f026a625fd6a91107ada91a96f` (Web
 #313 / PR #314) and `1e45a63becfc696459fc6527ef4c85980fb059cc` (Web
 #316 / PR #318), and `63d68317f7ae12def6b7caceca9883a7b75475df` (Web
 #319 / PR #321). Each has owning issues, merged PRs, protected-main
-ancestor SHAs, and successful exact-main validation. The other 1,081 commits
+ancestor SHAs, and successful exact-main validation. Source
+`b80a47f85ac064c66464bbb83c4329e3b5149e44` is covered by Web #337 / PR
+#186, while `22b4fa5064e223b3460bbe87fca48aca96b4f0ee` and
+`1cbc27f152f7f00a3e7e712935f52ab883c8ad71` are covered by Intranet
+#187 / PR #188; the first of those also has a Workflows documentation owner
+covered by #68 / PR #67. The other 1,078 commits
 remain pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
