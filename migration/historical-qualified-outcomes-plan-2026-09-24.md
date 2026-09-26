@@ -30,8 +30,16 @@ and [PR #53](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/pul
 at `c37e9d7c1aefc7ac44b1338197aa6c4f9d5090db`; exact-main
 [CI run 36220124573](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/actions/runs/36220124573)
 passed. The [outcome receipt guide](../tools/analytics/README.md) documents
-the present offline validator and explicit unavailable states. Later source
-commits that implement or test the scorecard and browser consent still need
-their own source-ledger dispositions; this document does not resolve them by
-association. Nor does passing code CI prove a live, authorized receipt was
-collected or that production-derived database parity is current.
+the present offline validator and explicit unavailable states. The later
+source scorecard commit
+[`8e133abe65078c6a0bbca1d43473c6546ed6284f`](https://github.com/MALIEV-Co-Ltd/maliev-web/commit/8e133abe65078c6a0bbca1d43473c6546ed6284f)
+made paired transaction/journey emission and production-serializer fixtures
+explicit. Its Workflows validator, fixtures, CLI tests, and guide are covered
+by [issue #59](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/59)
+and [PR #60](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/pull/60)
+at `33c63bb068e6678fb755e55e13b040bde9200173`; exact-main
+[CI run 36224534263](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/actions/runs/36224534263)
+passed. Browser consent commits require their own source-ledger dispositions;
+they are not resolved by association. Passing code CI does not prove a live,
+authorized receipt was collected or that production-derived database parity
+is current.
