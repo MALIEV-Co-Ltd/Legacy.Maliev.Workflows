@@ -160,7 +160,17 @@ through PR #186 and browser interaction parity through #339 / PR #340,
 including the shipped physics-bundle export repair. Source
 `eb52167166e12d832ea6c800795a8357d526f759` has Web route behavior
 through #315 / PR #317 and a dated Workflows decision record through #80 / PR
-#81. Six 3D-scanning proof and accessible-tab source commits
+#81.
+
+Source `a73acf2e4de9a611c7eda22cf6dbdae333d231cf` is a separate dated
+3D-printing CTR/funnel implementation plan. Workflows #77 / PR #133 preserve
+its measurement, qualification-readback, and no-release decisions in
+`historical-3d-printing-ctr-plan-2026-09-26.md`; the protected-main merge is
+`538faed560f40164df77327583d4ea6d0f169d5e` with successful exact-main
+CI run 36342823633. This resolves the source authoring artifact as historical
+context, not as live CTR, qualification, or Aspire acceptance proof.
+
+Six 3D-scanning proof and accessible-tab source commits
 (`ae7ca00ed5318d9041f022a874d36bb6c53e85a9`,
 `d364df8f4a323ac7cd96efd17c0f7726d903b679`,
 `b8877ed45bc868e0148dd558cbd60d00c3e53de7`,
