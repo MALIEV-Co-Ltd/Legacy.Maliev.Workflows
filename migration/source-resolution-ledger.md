@@ -77,8 +77,14 @@ runtime or real-upload browser acceptance. Source
 `3b8bfe3658a1205b4811d063d44bec8cfa88d895` has its Intranet linked
 request-to-quotation provenance through #192 / PR #193, merged main
 `337b0e2e02ad074eb83af1697c6fd7e064f46153` and exact-main CI
-36290275905. Its DataMigration and QuotationService owners remain pending, so
-the source commit is partial, not complete. The other 1,055 commits remain
+36290275905. The QuotationService first-acceptance outcome, deterministic
+event key, employee readback, and PostgreSQL adoption are on protected main
+through #21 / PRs #23 and #32, with merged main
+`bd201a5cd93fc862669a87f7f1bfd94086ba1047` and successful current-main
+CI 36279902615. This resolves that source-code owner, not #21's separate
+production-derived Aspire acceptance gate. DataMigration's Quotation schema
+alignment remains pending under #94 and #132, so the source commit is partial,
+not complete. The other 1,055 commits remain
 pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
