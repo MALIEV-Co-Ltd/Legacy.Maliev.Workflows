@@ -33,9 +33,21 @@ main `4be2bc83dcc9eb49739aebbfb6bb91d24d20b509`; exact-main CI run
 36296023712 passed. The target preserves optional `JourneyId` on create,
 read, list, and idempotent replay, does not change it on update, and adds a
 nullable PostgreSQL UUID with a filtered index and contract/upgrade tests.
-Workflows #111 tracks this owner-level resolution. The DataMigration and Web
-owners remain pending independent evidence, and the source commit is not
-complete.
+Workflows #111 tracks the QuotationService resolution. The Web owner is also
+covered by Web #259 / PR #260, merged at
+`17626967d0eb93142e1cf517038c01af4e1381b6`, an ancestor of protected
+main `02e0226c45e8d117d58726ebc70b3994f48c9d59`; exact-main CI run
+36320839013 passed. The Web implementation sends a stable non-PII journey GUID
+through manual and instant quotation submissions, requires the API response to
+echo that GUID, and queues the returned persisted journey identifier only
+after a successful response. The Web client validates its request/response
+contract, while Web tests cover the quotation client and `journey_id`
+analytics payload. Workflows #113 tracks this source-SHA
+mapping specifically: Web #259 / PR #260 were implemented against the later
+related source commit `3ce9936b6e39f41c000e542f005a18645f445a8a`, so
+their source SHA alone was not assumed to prove this earlier commit. The
+DataMigration owner remains pending independent evidence; the source commit
+is still not complete.
 
 Three cookie-consent source commits
 (`1b3cda47e94604df1304930d48fcabf395626f31`,
