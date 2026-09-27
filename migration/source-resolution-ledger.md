@@ -290,6 +290,15 @@ mobile, keyboard, and Thai/English presentation. PR CI 35895552158 and
 protected Web main CI 36320839013 passed. Workflows #127 tracks both full
 SHAs individually; no deployment or database parity is inferred.
 
+Source `eef114c7e95cbd9378f700710525c58c8cc7cffc` corrects the CNC
+SolidWorks upload guidance. Web #282 / PR #285 makes English and Thai public
+copy, dropzone, client rejection, and server rejection agree that SLDPRT
+must be exported to STEP, with focused CNC and full Web regression coverage.
+The merged target is `3de5bcb5cb5f4e46a83596d906c74ed92dccbe8d`, an
+ancestor of protected Web main; required PR CI 35878993230 and exact-main
+CI 36320839013 passed. Workflows #130 records this source SHA separately.
+This is not a claim of deployment or production-data parity.
+
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
 against live `origin/main`, checks exact reachability/order, and verifies each
