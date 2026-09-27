@@ -89,6 +89,14 @@ approved retirement: owner-authored and merged Intranet PR #182 documents that
 the original `js-yaml` lockfile patch has no npm/Gulp dependency graph in the
 migrated .NET application; Intranet issue #181 is closed with that evidence.
 This adds no Node dependency or runtime behavior. Source
+`e78ab85594e688aed223f54ef31c7b6df399a735` has the identical stable
+Git patch ID (`a37c998b5c69e15cd528ae3e8ef2d7369e448a79`) as earlier
+source `be7443919e54a66c933bc49af8c79d2a9ab0f1cf`. The qualification
+workflow was migrated through Intranet #172 / PR #173, merged at
+`a94c9cb472ce0c5fce323ebbff1a9c03705f2bd8` with successful exact-head
+CI. Intranet #195 records the duplicate SHA independently; no second runtime
+patch is needed. Separate aggregate qualification and authenticated
+production-derived Aspire acceptance remains open under Intranet #183. Source
 `7f010ba7742e96367bdf5039dd03e994fadcfa1b` has its password-setup
 email/token validation localization through Web #294 / PR #295 and its
 instant-quotation tax/building guidance through Web #276 / PR #347. Both are
