@@ -25,6 +25,18 @@ owner has issue, merged PR, protected-main ancestor SHA, and validation URLs,
 and every candidate retirement has an explicit reason and approval URL.
 Mixed commits cannot be complete until both kinds of resolution are proven.
 
+Source commit `7ebe7e4bf83a435ecb18afc29cf263424ed2bb74` persists
+quotation-request journey attribution. Its QuotationService owner is migrated
+through QuotationService #35 / PR #36, merged at
+`55a9689bca494b8bdd0deab4aee2ed9ea83f30c3` and present in protected
+main `4be2bc83dcc9eb49739aebbfb6bb91d24d20b509`; exact-main CI run
+36296023712 passed. The target preserves optional `JourneyId` on create,
+read, list, and idempotent replay, does not change it on update, and adds a
+nullable PostgreSQL UUID with a filtered index and contract/upgrade tests.
+Workflows #111 tracks this owner-level resolution. The DataMigration and Web
+owners remain pending independent evidence, and the source commit is not
+complete.
+
 Three cookie-consent source commits
 (`1b3cda47e94604df1304930d48fcabf395626f31`,
 `9523c5a3cf8a9db6da459aa48dfde81636ebac88`, and
