@@ -49,8 +49,14 @@ through #315 / PR #317 and a dated Workflows decision record through #80 / PR
 `c7b9dfe167f994e8cf895a537f047227856b19b2`, and
 `15d2d6a9ed04ee85d4f27905c0dd0335f228ac1f`) have their Web owner
 through #283 / PR #288, merged main `25d570adff80f7f9cd50c295c3511b9efc9e186b`
-and successful exact-main CI run 35891559390. The other 1,065 commits remain
-pending; this ledger is deliberately not a claim of full migration parity.
+and successful exact-main CI run 35891559390. Source
+`da58002047bcea0d00d0769deb99173ef21bdf81` has its one-sided
+qualification identity boundary through QuotationService #57 / PR #58
+(exact-main CI 36279902615), persisted-lead consent browser lifecycle through
+Web #341 / PR #342 (exact-main CI 36282184647), and optional qualification
+receipt CLI behavior through Workflows #59 / PR #60 (exact-main CI
+36224534263). The other 1,064 commits remain pending; this ledger is
+deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
