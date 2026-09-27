@@ -278,6 +278,18 @@ check. Workflows #123 tracks this full SHA independently. The separate source
 TOC-ordering change `cea523b0f06df9be7ef091d6ef8abd7a6ccb6552` is
 still pending under Web #353, and this entry does not claim deployment.
 
+Two customer-details presentation commits have separate resolution records:
+`2e2d482eb49d43cb2c46c21e50b0746a7776af44` moves the order ledger and
+customer form into the redesigned panes, while
+`ba886067587c947ea11b090ef8aa473fbee2fb12` improves the scrollable form,
+thumbnail crop, and responsive action note. Web #279 / PR #291 names both
+source SHAs and ports the target-native layout in merged commit
+`3cd65b0822b15938bf0b23cb52b2de4d722d76b5`; it keeps all 27 posted
+form-name entries, action, and antiforgery behavior and tests desktop, tablet,
+mobile, keyboard, and Thai/English presentation. PR CI 35895552158 and
+protected Web main CI 36320839013 passed. Workflows #127 tracks both full
+SHAs individually; no deployment or database parity is inferred.
+
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
 against live `origin/main`, checks exact reachability/order, and verifies each
