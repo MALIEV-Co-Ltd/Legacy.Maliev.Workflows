@@ -244,6 +244,17 @@ unchanged. The original commit's generated documentation and historical
 package reference do not represent additional behavior. After this single
 SHA resolution, 1,024 of 1,096 source commits remain pending.
 
+Source `b75d73e4c06426a948b4eb07fc3fde50f45ea87c` changes only the
+original Web injection-molding FAQ assertion from six to seven entries.
+Legacy Web already asserts seven rendered FAQ details and seven FAQ schema
+questions in `LowVolumeInjectionMoldingParityTests.cs`. Web PR #182 introduced
+those assertions in merged commit
+`304d4372e930d902fede3620cf8e8500925067b4`, which is an ancestor of
+protected main `02e0226c45e8d117d58726ebc70b3994f48c9d59`; exact-main
+CI run 36320839013 passed. Workflows #121 records this source SHA separately.
+This is an already-implemented test-contract resolution, not a claim of
+deployment or full production-data parity.
+
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
 against live `origin/main`, checks exact reachability/order, and verifies each
