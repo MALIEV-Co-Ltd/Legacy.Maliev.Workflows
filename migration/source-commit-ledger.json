@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-27T21:25:05.0804180+00:00",
+  "generatedAt": "2026-09-27T21:39:00.6125515+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "legacyTargets": {
@@ -41,8 +41,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/def78a74147e4e6fad6b6d4cc35e07fae16fa5f8"
     },
     "Legacy.Maliev.DataMigration": {
-      "mainSha": "a0030c3fd0e17fba077c3be5c2af301cc540a26e",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/a0030c3fd0e17fba077c3be5c2af301cc540a26e"
+      "mainSha": "59b0a69a5d262273103a47204ce88976e3c1e1a5",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/59b0a69a5d262273103a47204ce88976e3c1e1a5"
     },
     "Legacy.Maliev.DocumentService": {
       "mainSha": "851e4b46b6824ad189ed9037004e950f39b70e39",
@@ -85,8 +85,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/c4e9df26f639c0c5a93fb8afffde464f11d917c9"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "206caff1b6de8581dd2ef2a1440b5d3041c74d5e",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/206caff1b6de8581dd2ef2a1440b5d3041c74d5e"
+      "mainSha": "1e9726301f3cc42c7c8a4dc690a5bfe0a1937bec",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/1e9726301f3cc42c7c8a4dc690a5bfe0a1937bec"
     }
   },
   "commitCount": 1096,
@@ -10856,7 +10856,6 @@
         {
           "path": "Maliev.Service.WebApi/IWebApiService.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -10865,7 +10864,6 @@
         {
           "path": "Maliev.Service.WebApi/Maliev.Service.WebApi.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -10874,7 +10872,6 @@
         {
           "path": "Maliev.Service.WebApi/Maliev.Service.WebApi.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -10883,7 +10880,6 @@
         {
           "path": "Maliev.Service.WebApi/Model/ApiResponse.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -10892,7 +10888,6 @@
         {
           "path": "Maliev.Service.WebApi/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -10901,7 +10896,6 @@
         {
           "path": "Maliev.Service.WebApi/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -10910,7 +10904,6 @@
         {
           "path": "Maliev.Service.WebApi/WebApiService.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72925,7 +72918,6 @@
         {
           "path": "Maliev.Service.WebApi/DependencyFailureLogEvent.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72934,7 +72926,6 @@
         {
           "path": "Maliev.Service.WebApi/Maliev.Service.WebApi.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72943,7 +72934,6 @@
         {
           "path": "Maliev.Service.WebApi/Maliev.Service.WebApi.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72952,7 +72942,6 @@
         {
           "path": "Maliev.Service.WebApi/WebApiService.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74177,7 +74166,6 @@
         {
           "path": "Maliev.NativeLogging/ExceptionHandlerApplicationBuilderExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74186,7 +74174,6 @@
         {
           "path": "Maliev.NativeLogging/LoggingBuilderExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74195,7 +74182,6 @@
         {
           "path": "Maliev.NativeLogging/Maliev.NativeLogging.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74756,7 +74742,6 @@
         {
           "path": "Maliev.Service.WebApi/DependencyFailureDetails.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74765,7 +74750,6 @@
         {
           "path": "Maliev.Service.WebApi/DependencyFailureLogEvent.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74774,7 +74758,6 @@
         {
           "path": "Maliev.Service.WebApi/Maliev.Service.WebApi.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74783,7 +74766,6 @@
         {
           "path": "Maliev.Service.WebApi/Maliev.Service.WebApi.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74792,7 +74774,6 @@
         {
           "path": "Maliev.Service.WebApi/WebApiService.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -75565,7 +75546,6 @@
         {
           "path": "Maliev.NativeLogging/LoggingBuilderExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -75574,7 +75554,6 @@
         {
           "path": "Maliev.NativeLogging/MalievJsonConsoleFormatter.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -75607,7 +75586,6 @@
         {
           "path": "Maliev.Service.WebApi/DependencyFailureDetails.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -75616,7 +75594,6 @@
         {
           "path": "Maliev.Service.WebApi/WebApiService.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -89814,7 +89791,6 @@
         {
           "path": "Maliev.Service.WebApi/Maliev.Service.WebApi.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -89823,7 +89799,6 @@
         {
           "path": "Maliev.Service.WebApi/Maliev.Service.WebApi.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -90421,7 +90396,6 @@
         {
           "path": "Maliev.NativeLogging/ExceptionHandlerApplicationBuilderExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -90430,7 +90404,6 @@
         {
           "path": "Maliev.NativeLogging/LoggingBuilderExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -90439,7 +90412,6 @@
         {
           "path": "Maliev.NativeLogging/Maliev.NativeLogging.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -90448,7 +90420,6 @@
         {
           "path": "Maliev.NativeLogging/MalievJsonConsoleFormatter.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",

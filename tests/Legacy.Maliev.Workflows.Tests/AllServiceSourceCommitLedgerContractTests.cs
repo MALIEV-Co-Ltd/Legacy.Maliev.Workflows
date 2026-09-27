@@ -66,6 +66,100 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     }
 
     [Fact]
+    public void Native_logging_and_WebApi_history_has_exact_reviewed_owner_transitions()
+    {
+        string[] reviewedShas =
+        [
+            "5fac706a7983a6d359b39acbd670e6800afe020e",
+            "3d6506285a58671651d046e97a35fbb8885cea4f",
+            "9e51e6c5da29de8e617b65b59d46882cde6d3b64",
+            "7b311e4e7f0dd80be0441abc2625dab295179f1a",
+            "03dc9a1271c16e6535934445e9dd6e3f30e8fffe",
+            "5ac7d045c51194edd9e64d8564f1b726b001be34",
+        ];
+        string[] ownerSetTransitions =
+        [
+            "3d6506285a58671651d046e97a35fbb8885cea4f",
+            "7b311e4e7f0dd80be0441abc2625dab295179f1a",
+            "5ac7d045c51194edd9e64d8564f1b726b001be34",
+        ];
+        using var mapping = Load("migration/source-path-owners.json");
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var rules = mapping.RootElement.GetProperty("rules").EnumerateArray().ToArray();
+        foreach (var path in new[]
+        {
+            "Maliev.NativeLogging/LoggingBuilderExtensions.cs",
+            "Maliev.Service.WebApi/WebApiService.cs",
+            "Maliev.Service.WebApi/Maliev.Service.WebApi.xml",
+        })
+        {
+            var rule = Assert.Single(rules, candidate => Regex.IsMatch(path, candidate.GetProperty("pattern").GetString()!));
+            Assert.Equal(["Legacy.Maliev.ServiceDefaults"],
+                rule.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!).ToArray());
+        }
+
+        var sharedRule = Assert.Single(rules, candidate =>
+            Regex.IsMatch("Maliev.Common/Shared.cs", candidate.GetProperty("pattern").GetString()!));
+        Assert.Equal(
+            ["Legacy.Maliev.CompatibilityContracts", "Legacy.Maliev.ServiceDefaults"],
+            sharedRule.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!).ToArray());
+
+        var affected = ownership.RootElement.GetProperty("records").EnumerateArray()
+            .Where(record => record.GetProperty("classifications").EnumerateArray().Any(classification =>
+                classification.GetProperty("path").GetString() is { } path &&
+                (path.StartsWith("Maliev.NativeLogging/", StringComparison.Ordinal) ||
+                 path.StartsWith("Maliev.Service.WebApi/", StringComparison.Ordinal))))
+            .ToArray();
+        Assert.Equal(reviewedShas.Order(StringComparer.Ordinal),
+            affected.Select(record => record.GetProperty("commit").GetString()!).Order(StringComparer.Ordinal));
+        foreach (var record in affected)
+        {
+            foreach (var classification in record.GetProperty("classifications").EnumerateArray().Where(classification =>
+                classification.GetProperty("path").GetString() is { } path &&
+                (path.StartsWith("Maliev.NativeLogging/", StringComparison.Ordinal) ||
+                 path.StartsWith("Maliev.Service.WebApi/", StringComparison.Ordinal))))
+            {
+                Assert.Equal(["Legacy.Maliev.ServiceDefaults"],
+                    classification.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!).ToArray());
+            }
+        }
+
+        var transitioned = resolutions.RootElement.GetProperty("records").EnumerateArray()
+            .Where(record => record.TryGetProperty("ownerSetTransition", out _)).ToArray();
+        Assert.Equal(ownerSetTransitions.Order(StringComparer.Ordinal),
+            transitioned.Select(record => record.GetProperty("sourceSha").GetString()!).Order(StringComparer.Ordinal));
+        foreach (var record in transitioned)
+        {
+            var transition = record.GetProperty("ownerSetTransition");
+            Assert.Equal("Legacy.Maliev.CompatibilityContracts", transition.GetProperty("removedOwner").GetString());
+            Assert.Equal("Legacy.Maliev.ServiceDefaults", transition.GetProperty("retainedOwner").GetString());
+            Assert.Equal("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/138",
+                transition.GetProperty("issueUrl").GetString());
+            var priorIssueUrls = transition.GetProperty("priorIssueUrls").EnumerateArray()
+                .Select(item => item.GetString()!).ToArray();
+            Assert.Equal(record.GetProperty("sourceSha").GetString() ==
+                "7b311e4e7f0dd80be0441abc2625dab295179f1a"
+                    ? ["https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/138"]
+                    : [], priorIssueUrls);
+            Assert.False(record.GetProperty("ownerResolutions").TryGetProperty("Legacy.Maliev.CompatibilityContracts", out _));
+            var serviceDefaults = record.GetProperty("ownerResolutions")
+                .GetProperty("Legacy.Maliev.ServiceDefaults");
+            Assert.Equal(record.GetProperty("sourceSha").GetString() ==
+                "7b311e4e7f0dd80be0441abc2625dab295179f1a" ? "migrated" : "pending",
+                serviceDefaults.GetProperty("status").GetString());
+        }
+        foreach (var sha in reviewedShas.Except(ownerSetTransitions, StringComparer.Ordinal))
+        {
+            var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+                candidate => candidate.GetProperty("sourceSha").GetString() == sha);
+            Assert.True(record.GetProperty("ownerResolutions")
+                .TryGetProperty("Legacy.Maliev.CompatibilityContracts", out _));
+            Assert.False(record.TryGetProperty("ownerSetTransition", out _));
+        }
+    }
+
+    [Fact]
     public void Historical_ctr_plan_preserves_source_identity_and_non_release_boundary()
     {
         var record = File.ReadAllText(Path.Combine(Root, "migration", "historical-3d-printing-ctr-plan-2026-09-26.md"));

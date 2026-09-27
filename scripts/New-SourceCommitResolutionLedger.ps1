@@ -52,7 +52,29 @@ function Assert-EvidenceUrls([object[]] $Urls, [string] $Suffix) {
     }
 }
 
+# Workflows #138 reviewed six path mappings. Only three commits lose the
+# CompatibilityContracts owner entirely; mixed commits retain that valid owner.
+$reviewedOwnerTransitions = @{}
+@(
+    '3d6506285a58671651d046e97a35fbb8885cea4f',
+    '7b311e4e7f0dd80be0441abc2625dab295179f1a',
+    '5ac7d045c51194edd9e64d8564f1b726b001be34'
+) | ForEach-Object {
+    $reviewedOwnerTransitions[$_] = [ordered]@{
+        removedOwner = 'Legacy.Maliev.CompatibilityContracts'
+        retainedOwner = 'Legacy.Maliev.ServiceDefaults'
+        issueUrl = 'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/138'
+        priorIssueUrls = @()
+        reason = 'Native logging and WebApi diagnostics are not CompatibilityContracts APIs; the retained ServiceDefaults owner still requires independent migration evidence.'
+    }
+    if ($_ -ceq '7b311e4e7f0dd80be0441abc2625dab295179f1a') {
+        $reviewedOwnerTransitions[$_].priorIssueUrls = @(
+            'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/138')
+    }
+}
+
 $resolvedCount = 0
+$reviewedTransitionCount = 0
 $records = foreach ($source in $ledger.records) {
     $owners = @($source.classifications | Where-Object { $_.disposition -ceq 'migration-required' } |
         ForEach-Object { $_.owners } | Where-Object { $_ } | Sort-Object -Unique -CaseSensitive)
@@ -103,7 +125,41 @@ $records = foreach ($source in $ledger.records) {
         }
         $ownerResolutions[$owner] = $item
     }
-    if ($old -and (@($old.ownerResolutions.Keys | Sort-Object -CaseSensitive) -join '|') -cne ($owners -join '|')) {
+    $transition = $reviewedOwnerTransitions[$source.commit]
+    if ($transition) {
+        $reviewedTransitionCount++
+        if (-not $old -or -not @($source.classifications | Where-Object {
+            $_.path -match '^Maliev\.(?:NativeLogging|Service\.WebApi)/'
+        }).Count -or $owners -cnotcontains $transition.retainedOwner -or
+            $owners -ccontains $transition.removedOwner) {
+            throw "The reviewed owner transition does not match the source classification for $($source.commit)."
+        }
+        $oldOwners = @($old.ownerResolutions.Keys | Sort-Object -CaseSensitive)
+        $newOwners = @($owners | Sort-Object -CaseSensitive)
+        if ($old.ownerResolutions.ContainsKey($transition.removedOwner)) {
+            $expectedOldOwners = @(($newOwners + $transition.removedOwner) | Sort-Object -Unique -CaseSensitive)
+            $removed = $old.ownerResolutions[$transition.removedOwner]
+            if (($oldOwners -join '|') -cne ($expectedOldOwners -join '|') -or
+                $removed.status -cne 'pending' -or
+                (@($removed.issueUrls) -join '|') -cne (@($transition.priorIssueUrls) -join '|') -or
+                @($removed.prUrls | Where-Object { $_ }).Count -ne 0 -or
+                @($removed.validationEvidenceUrls | Where-Object { $_ }).Count -ne 0 -or
+                -not [string]::IsNullOrEmpty([string]$removed.mergedTargetSha) -or
+                $old.ownerSetTransition) {
+                throw "Removed owner has evidence or unexpected history for $($source.commit)."
+            }
+        }
+        elseif (($oldOwners -join '|') -cne ($newOwners -join '|') -or
+            $old.ownerSetTransition.removedOwner -cne $transition.removedOwner -or
+            $old.ownerSetTransition.retainedOwner -cne $transition.retainedOwner -or
+            $old.ownerSetTransition.issueUrl -cne $transition.issueUrl -or
+            (@($old.ownerSetTransition.priorIssueUrls) -join '|') -cne
+                (@($transition.priorIssueUrls) -join '|') -or
+            $old.ownerSetTransition.reason -cne $transition.reason) {
+            throw "The reviewed owner transition provenance changed for $($source.commit)."
+        }
+    }
+    elseif ($old -and (@($old.ownerResolutions.Keys | Sort-Object -CaseSensitive) -join '|') -cne ($owners -join '|')) {
         throw "The owner set changed for $($source.commit); review its evidence manually."
     }
 
@@ -137,13 +193,18 @@ $records = foreach ($source in $ledger.records) {
         if ($owners.Count -gt 0) { 'migrated' } else { 'approved-retirement' }
     } elseif ($anyResolved) { 'partial' } elseif ($anyBlocked) { 'blocked' } else { 'pending' }
     if ($status -in @('migrated', 'approved-retirement')) { $resolvedCount++ }
-    [ordered]@{
+    $record = [ordered]@{
         sourceSha = $source.commit
         isMerge = [bool]$source.isMerge
         status = $status
         ownerResolutions = $ownerResolutions
         retirementApproval = $retirement
     }
+    if ($transition) { $record.ownerSetTransition = $transition }
+    $record
+}
+if ($reviewedTransitionCount -ne $reviewedOwnerTransitions.Count) {
+    throw 'The exact three reviewed owner-set transitions were not present in the complete source ledger.'
 }
 $sourceShaSet = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 foreach ($record in $records) { $null = $sourceShaSet.Add($record.sourceSha) }
