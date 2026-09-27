@@ -265,6 +265,19 @@ CI run 35908136674 passed; the commit is an ancestor of protected Web main
 additive simulation and tier behavior remains tracked separately by Web #275;
 this entry does not imply its completion, deployment, or database parity.
 
+Source `a785bcd6bcb07740b879b8f74c519a14282848d4` removes unsupported
+native CAD formats from the public 3D-printing quote guide and standardizes
+Thai scanning comparison copy. Web #351 / PR #352 replaced the guide with
+the same formats accepted by the instant-quotation upload/viewer contract,
+and added EN/TH rendered-SSR and component regressions. The target Thai
+scanning heading already matched; the PR adds a rendered regression proving
+that equivalence. PR #352 merged as
+`51fd6e76aa11b46c2654e42fae65c83ece402958` after required CI run
+36332704456 passed; exact-main CI run 36333622139 provides the post-merge
+check. Workflows #123 tracks this full SHA independently. The separate source
+TOC-ordering change `cea523b0f06df9be7ef091d6ef8abd7a6ccb6552` is
+still pending under Web #353, and this entry does not claim deployment.
+
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
 against live `origin/main`, checks exact reachability/order, and verifies each
