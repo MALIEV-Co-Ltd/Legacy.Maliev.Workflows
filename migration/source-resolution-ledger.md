@@ -19,13 +19,17 @@ The 3D-printing pricing-integrity release has ten Web owner resolutions through
 Web #256 / PR #258, merged main `ad393a5c5c74174a2a8f8989d0bf03263c20e42d`
 and successful PR CI run 34948586706. These include eight Web-only commits and
 the Web side of source `60d3677264e046fd73028ff3ccb75097d153bedb` and
-merge `2d126d1d55a3240e40678136e6aa621c7f10ed47`. The latter two stay
-pending overall because their separate Workflows documentation/test ownership
-has not been evidenced; Workflows #100 tracks that owner. Source design and plan commits
+merge `2d126d1d55a3240e40678136e6aa621c7f10ed47`. Their separate
+Workflows ownership, plus source design and plan commits
 `d957038a208b2cbdf1604010a6d82f1d74f1a06c` and
-`2128395c31a1ebfe94f9d0ced846bdc861fe62f4` also remain pending for
-Workflows; Web implementation evidence is not silently treated as their
-documentation migration.
+`2128395c31a1ebfe94f9d0ced846bdc861fe62f4`, is resolved through
+Workflows #100 / PR #102, merged at
+`3542bf908fc345a2151314fbcb95455deb3cb818` with successful CI run
+36320209418. The dated design, validation intent, and no-deployment
+boundary are preserved in
+`migration/historical-additive-pricing-integrity-2026-09-14.md` and its
+contract test. Web implementation evidence alone was not used to resolve
+the Workflows owner.
 
 The backfill verifies six Web-only source commits through issue #276, six
 more recent CTR/qualification commits across Web, Intranet, and Workflows,
