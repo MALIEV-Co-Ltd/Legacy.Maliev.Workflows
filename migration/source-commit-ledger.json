@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-27T17:30:05.3364131+00:00",
+  "generatedAt": "2026-09-27T18:54:31.6021570+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "legacyTargets": {
@@ -13,8 +13,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AppHost/commit/e2a7c7d5907df98b1ad3a1f60cef80175d67a0db"
     },
     "Legacy.Maliev.AuthService": {
-      "mainSha": "5a172190bc6afd3280e2afc1d7c3e1cb50c9d01c",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/5a172190bc6afd3280e2afc1d7c3e1cb50c9d01c"
+      "mainSha": "43e27f937242d8424a543759e5b2af6eaa05cc88",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/43e27f937242d8424a543759e5b2af6eaa05cc88"
     },
     "Legacy.Maliev.CareerService": {
       "mainSha": "a1802d4e2a3bf5bdbaeaf2320be00e5e19157375",
@@ -41,8 +41,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/def78a74147e4e6fad6b6d4cc35e07fae16fa5f8"
     },
     "Legacy.Maliev.DataMigration": {
-      "mainSha": "a0b9e85f2b5ad14f5d300b72300c83a84ad4cfc7",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/a0b9e85f2b5ad14f5d300b72300c83a84ad4cfc7"
+      "mainSha": "e31e75b573cd15b81a6820acd82aacf131e2b716",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/e31e75b573cd15b81a6820acd82aacf131e2b716"
     },
     "Legacy.Maliev.DocumentService": {
       "mainSha": "851e4b46b6824ad189ed9037004e950f39b70e39",
@@ -81,12 +81,12 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/c8f931de99cf8aa95b5fe2769cac1d73358dc653"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "b99b628dd125b8fc52c8b3be94a55fd11af1f6ce",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/b99b628dd125b8fc52c8b3be94a55fd11af1f6ce"
+      "mainSha": "0511ef7a066b0870d49972d87dd378a99b47f633",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/0511ef7a066b0870d49972d87dd378a99b47f633"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "32a4bed6b58143c2c8d47801d3075c43fc2498fa",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/32a4bed6b58143c2c8d47801d3075c43fc2498fa"
+      "mainSha": "10c547984a87e65ec56bd13d72963f6db732352e",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/10c547984a87e65ec56bd13d72963f6db732352e"
     }
   },
   "commitCount": 1096,
@@ -100540,10 +100540,10 @@
         {
           "path": "docs/superpowers/plans/2026-09-26-3d-printing-ctr-funnel.md",
           "owners": [
-            null
+            "Legacy.Maliev.Workflows"
           ],
-          "disposition": "source-tooling-only",
-          "decision": "The source implementation plan is an authoring artifact; its deliverables are tracked by Web #322/#323, QuotationService #52, and Intranet #177."
+          "disposition": "migration-required",
+          "decision": null
         }
       ]
     },
