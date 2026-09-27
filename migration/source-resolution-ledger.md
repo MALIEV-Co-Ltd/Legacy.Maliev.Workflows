@@ -88,8 +88,15 @@ not complete. Source `4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db` is an
 approved retirement: owner-authored and merged Intranet PR #182 documents that
 the original `js-yaml` lockfile patch has no npm/Gulp dependency graph in the
 migrated .NET application; Intranet issue #181 is closed with that evidence.
-This adds no Node dependency or runtime behavior. The other 1,054 commits remain
-pending; this ledger is deliberately not a claim of full migration parity.
+This adds no Node dependency or runtime behavior. Source
+`7f010ba7742e96367bdf5039dd03e994fadcfa1b` has its password-setup
+email/token validation localization through Web #294 / PR #295 and its
+instant-quotation tax/building guidance through Web #276 / PR #347. Both are
+on protected Web main `c1c4211aa81ef14651e06da0a71e862f430be5a6`
+with successful exact-main CI run 36312107291. Web #276 remains open for
+broader uploaded-part acceptance; that is separate from this source commit's
+specific localization changes. The other 1,050 commits remain pending;
+this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
