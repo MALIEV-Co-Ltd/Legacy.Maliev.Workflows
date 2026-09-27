@@ -145,8 +145,9 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             Assert.False(record.GetProperty("ownerResolutions").TryGetProperty("Legacy.Maliev.CompatibilityContracts", out _));
             var serviceDefaults = record.GetProperty("ownerResolutions")
                 .GetProperty("Legacy.Maliev.ServiceDefaults");
-            Assert.Equal(record.GetProperty("sourceSha").GetString() ==
-                "7b311e4e7f0dd80be0441abc2625dab295179f1a" ? "migrated" : "pending",
+            Assert.Equal(record.GetProperty("sourceSha").GetString() is
+                "7b311e4e7f0dd80be0441abc2625dab295179f1a" or
+                "5ac7d045c51194edd9e64d8564f1b726b001be34" ? "migrated" : "pending",
                 serviceDefaults.GetProperty("status").GetString());
         }
         foreach (var sha in reviewedShas.Except(ownerSetTransitions, StringComparer.Ordinal))
@@ -157,6 +158,53 @@ public sealed class AllServiceSourceCommitLedgerContractTests
                 .TryGetProperty("Legacy.Maliev.CompatibilityContracts", out _));
             Assert.False(record.TryGetProperty("ownerSetTransition", out _));
         }
+    }
+
+    [Fact]
+    public void Source_7b311_is_resolved_only_after_all_five_owners_have_merged_evidence()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "7b311e4e7f0dd80be0441abc2625dab295179f1a");
+
+        Assert.Equal("migrated", record.GetProperty("status").GetString());
+        var owners = record.GetProperty("ownerResolutions").EnumerateObject().ToArray();
+        Assert.Equal(5, owners.Length);
+        Assert.All(owners, owner =>
+        {
+            Assert.Equal("migrated", owner.Value.GetProperty("status").GetString());
+            Assert.Matches(Sha, owner.Value.GetProperty("mergedTargetSha").GetString()!);
+            Assert.NotEmpty(owner.Value.GetProperty("validationEvidenceUrls").EnumerateArray());
+        });
+
+        var web = Assert.Single(owners, owner => owner.Name == "Legacy.Maliev.Web").Value;
+        Assert.Equal("caf92bdbb89acd18819f22f82d218632ac67f360",
+            web.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36352974809",
+            web.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+    }
+
+    [Fact]
+    public void Source_5ac7_shared_logging_owner_is_proven_without_claiming_consumer_parity()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "5ac7d045c51194edd9e64d8564f1b726b001be34");
+
+        Assert.Equal("partial", record.GetProperty("status").GetString());
+        var owners = record.GetProperty("ownerResolutions");
+        var defaults = owners.GetProperty("Legacy.Maliev.ServiceDefaults");
+        Assert.Equal("migrated", defaults.GetProperty("status").GetString());
+        Assert.Equal("d22f0e6f95254b10cf4fe891c8dce5df7c419f3f",
+            defaults.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/pull/47",
+            defaults.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains(owners.EnumerateObject(), owner =>
+            owner.Name != "Legacy.Maliev.ServiceDefaults" &&
+            owner.Value.GetProperty("status").GetString() == "pending");
+        Assert.Equal("pending", record.GetProperty("retirementApproval").GetProperty("status").GetString());
     }
 
     [Fact]
