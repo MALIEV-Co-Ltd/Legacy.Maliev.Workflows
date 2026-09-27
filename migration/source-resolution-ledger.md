@@ -55,7 +55,20 @@ qualification identity boundary through QuotationService #57 / PR #58
 (exact-main CI 36279902615), persisted-lead consent browser lifecycle through
 Web #341 / PR #342 (exact-main CI 36282184647), and optional qualification
 receipt CLI behavior through Workflows #59 / PR #60 (exact-main CI
-36224534263). The other 1,064 commits remain pending; this ledger is
+36224534263). Eight Web-only wall-thickness advisory source commits
+(`e69ffe1f7054c72ed0ea63c8313bca54ca54094e`,
+`d9f4b0f3cef18f4df43ba8f3cd3f2c6d813289d6`,
+`976bcb0089ae52c6023567613a95ce9246dd59f8`,
+`81eda1540c56046d5bd80542badaeca249499666`,
+`f72f263a33d7f9ef0c06d696c59395b5d5a78b60`,
+`3f766fa00f23fffda6c15cab2ba231117c6eee50`,
+`483a2fdb0beeafa014bb6b0a5ca1e85cd7bdbb74`, and
+`351825232f787ef988c7c058910520a14aa70123`) have their bounded
+worker, evidence transport, process policy, heatmap, and thin-surface
+presentation through Web #281 / PR #292, merged main
+`94931cea28e1d1c95b9a788a2d2d94afdab2a8e0` and successful exact-main
+CI run 35900642700. This is advisory target parity, not production upload
+end-to-end proof. The other 1,056 commits remain pending; this ledger is
 deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
