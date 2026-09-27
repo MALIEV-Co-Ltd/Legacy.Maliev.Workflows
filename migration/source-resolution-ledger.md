@@ -68,8 +68,13 @@ worker, evidence transport, process policy, heatmap, and thin-surface
 presentation through Web #281 / PR #292, merged main
 `94931cea28e1d1c95b9a788a2d2d94afdab2a8e0` and successful exact-main
 CI run 35900642700. This is advisory target parity, not production upload
-end-to-end proof. The other 1,056 commits remain pending; this ledger is
-deliberately not a claim of full migration parity.
+end-to-end proof. Source `c690f466e53868443ea0cf82caa460bcbcc8598f`
+changes only final newlines in nine Web test files; Web #281 / PR #292
+explicitly records the normalized target regression tests, with merged main
+`94931cea28e1d1c95b9a788a2d2d94afdab2a8e0` and exact-main CI
+35900642700. This formatting-only resolution does not establish additional
+runtime or real-upload browser acceptance. The other 1,055 commits remain
+pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
