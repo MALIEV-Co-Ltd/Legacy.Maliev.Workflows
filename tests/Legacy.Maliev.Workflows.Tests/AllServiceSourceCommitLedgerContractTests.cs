@@ -38,7 +38,7 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     [InlineData("Maliev.Intranet/deploy.ps1", "approved-retirement", null)]
     [InlineData("Maliev.Intranet/package-lock.json", "approved-retirement", null)]
     [InlineData("tools/Validate-DeploymentScripts.ps1", "approved-retirement", null)]
-    [InlineData("docs/superpowers/plans/2026-09-26-3d-printing-ctr-funnel.md", "source-tooling-only", null)]
+    [InlineData("docs/superpowers/plans/2026-09-26-3d-printing-ctr-funnel.md", "migration-required", "Legacy.Maliev.Workflows")]
     [InlineData("docs/seo/2026-09-26-3d-printing-ctr-decision-pack.md", "migration-required", "Legacy.Maliev.Web")]
     public void Recent_source_paths_have_one_explicit_owner_or_retirement(
         string path,
@@ -63,6 +63,15 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         {
             Assert.False(string.IsNullOrWhiteSpace(rule.GetProperty("decision").GetString()));
         }
+    }
+
+    [Fact]
+    public void Historical_ctr_plan_preserves_source_identity_and_non_release_boundary()
+    {
+        var record = File.ReadAllText(Path.Combine(Root, "migration", "historical-3d-printing-ctr-plan-2026-09-26.md"));
+        Assert.Contains("a73acf2e4de9a611c7eda22cf6dbdae333d231cf", record, StringComparison.Ordinal);
+        Assert.Contains("did not authorize publication", record, StringComparison.Ordinal);
+        Assert.Contains("persisted quotation", record, StringComparison.Ordinal);
     }
 
     [Fact]

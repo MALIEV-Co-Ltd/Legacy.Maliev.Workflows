@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-27T17:35:46.6158711+00:00",
+  "generatedAt": "2026-09-27T18:55:36.2008105+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "sourceCommitCount": 1096,
@@ -21850,15 +21850,16 @@
       "sourceSha": "a73acf2e4de9a611c7eda22cf6dbdae333d231cf",
       "isMerge": false,
       "status": "pending",
-      "ownerResolutions": {},
-      "retirementApproval": {
-        "status": "pending",
-        "paths": [
-          "docs/superpowers/plans/2026-09-26-3d-printing-ctr-funnel.md"
-        ],
-        "reason": null,
-        "evidenceUrl": null
-      }
+      "ownerResolutions": {
+        "Legacy.Maliev.Workflows": {
+          "status": "pending",
+          "issueUrls": [],
+          "prUrls": [],
+          "mergedTargetSha": null,
+          "validationEvidenceUrls": []
+        }
+      },
+      "retirementApproval": null
     },
     {
       "sourceSha": "c97ced90bd8913a1686fec16405efd57c62d3176",
