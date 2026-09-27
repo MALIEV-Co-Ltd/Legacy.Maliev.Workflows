@@ -60,6 +60,17 @@ CI run 36320839013. Workflows #115 tracks the full-SHA resolution. This
 Web-only commit has no additional mapped owner; the record is complete as a
 code migration, without asserting deployment or production-data parity.
 
+Source `7c416cc8cfd27ef7440e7c046529011630276807` switches the site's
+Latin typography to Outfit. Web #261 / PR #262 explicitly migrate this
+Web-only source commit: self-hosted Outfit 400/500/600 Latin and Latin-ext
+assets and license replace Inter, Noto Sans Thai remains for Thai text, and
+site/error CSS plus generated bundles and font-delivery contracts are updated.
+PR #262 merged at `1a31a06b48dee6aa1ab7ecf2d81e122b3c62c3b0`, an
+ancestor of protected Web main `02e0226c45e8d117d58726ebc70b3994f48c9d59`;
+exact-main CI run 36320839013 passed. Workflows #117 tracks this full-SHA
+resolution. This is code and shipped-asset parity, not proof of visual
+acceptance or an application deployment.
+
 Three cookie-consent source commits
 (`1b3cda47e94604df1304930d48fcabf395626f31`,
 `9523c5a3cf8a9db6da459aa48dfde81636ebac88`, and
