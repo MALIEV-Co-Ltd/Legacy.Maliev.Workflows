@@ -41,14 +41,15 @@ through PR #186 and browser interaction parity through #339 / PR #340,
 including the shipped physics-bundle export repair. Source
 `eb52167166e12d832ea6c800795a8357d526f759` has Web route behavior
 through #315 / PR #317 and a dated Workflows decision record through #80 / PR
-#81. Five 3D-scanning proof and accessible-tab source commits
+#81. Six 3D-scanning proof and accessible-tab source commits
 (`ae7ca00ed5318d9041f022a874d36bb6c53e85a9`,
 `d364df8f4a323ac7cd96efd17c0f7726d903b679`,
 `b8877ed45bc868e0148dd558cbd60d00c3e53de7`,
+`2c2e547e428446024805315617e9828ed9b7de39`,
 `c7b9dfe167f994e8cf895a537f047227856b19b2`, and
 `15d2d6a9ed04ee85d4f27905c0dd0335f228ac1f`) have their Web owner
 through #283 / PR #288, merged main `25d570adff80f7f9cd50c295c3511b9efc9e186b`
-and successful exact-main CI run 35891559390. The other 1,066 commits remain
+and successful exact-main CI run 35891559390. The other 1,065 commits remain
 pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
