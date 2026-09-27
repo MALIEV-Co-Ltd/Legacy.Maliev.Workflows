@@ -255,6 +255,16 @@ CI run 36320839013 passed. Workflows #121 records this source SHA separately.
 This is an already-implemented test-contract resolution, not a claim of
 deployment or full production-data parity.
 
+Source `f83453b48d1ad9d365de7d4e09d8afc1b4093c3a` preserves rounded
+customer-facing additive line prices through order totals. Web #298 / PR #301
+ported that behavior and its pricing, ticket, and submission regressions in
+merged commit `77d6ac58db29cc2d63ccdb1db3111cac7a86605e`. Required PR
+CI run 35908136674 passed; the commit is an ancestor of protected Web main
+`02e0226c45e8d117d58726ebc70b3994f48c9d59`, whose exact-main CI run
+36320839013 passed. Workflows #124 records this specific source SHA. Broader
+additive simulation and tier behavior remains tracked separately by Web #275;
+this entry does not imply its completion, deployment, or database parity.
+
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
 against live `origin/main`, checks exact reachability/order, and verifies each
