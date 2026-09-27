@@ -160,9 +160,19 @@ independently resolved through Web #276 / PR #348 on protected Web main
 (expanded detail and keyboard-scroll assertions), and
 `b6f9eacea2669c7fcf0f619dc0c96f2f104ca861` (native dock equivalent of
 the source-only metrics wrapper test). Exact-head CI run 36314839372 passed;
-Web #276 remains open for broader real-upload acceptance. The other 1,046
-commits remain pending; this ledger is deliberately not a claim of full
-migration parity.
+Web #276 remains open for broader real-upload acceptance. This evidence is
+deliberately not a claim of full migration parity.
+
+Source `7f70e8e758e6faf3bb9d809f3c8937c32c4c72cf` fixes signed GCS
+downloads using a basename attachment filename. FileService #27 / PR #28
+migrated that behavior with slash/backslash normalization, header-safe
+Content-Disposition encoding, and Thai `filename*` support. The target is on
+protected FileService main `74cd4deb594482ee933f396ff639b4389a8926c8`,
+and exact-main CI run 36327086782 passed. The existing route, clean-metadata
+authorization, seven-day maximum, V4 signing, and ADC/WIF boundary remain
+unchanged. The original commit's generated documentation and historical
+package reference do not represent additional behavior. After this single
+SHA resolution, 1,024 of 1,096 source commits remain pending.
 
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
