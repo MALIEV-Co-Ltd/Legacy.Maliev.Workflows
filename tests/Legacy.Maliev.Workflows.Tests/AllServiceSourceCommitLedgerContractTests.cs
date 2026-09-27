@@ -243,6 +243,7 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             "de75a0e55240ee78053c8c87eb4a83b67cdd32f2",
             "0665dcd54788c037ee663ff90f32741014f0c81c",
             "3e38f9691b1c502755f1ab2b00ed90f8261eafef",
+            "89ddd5a49ae7e781ca29225b8eae50fb9c2b1d0e",
         })
         {
             var migrated = Assert.Single(records, record => record.GetProperty("sourceSha").GetString() == sha);
