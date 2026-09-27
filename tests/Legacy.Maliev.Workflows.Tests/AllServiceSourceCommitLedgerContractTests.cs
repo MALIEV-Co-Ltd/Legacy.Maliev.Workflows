@@ -219,6 +219,18 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             appHost.GetProperty("mergedTargetSha").GetString());
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AppHost/actions/runs/36356967445",
             appHost.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        var country = owners.GetProperty("Legacy.Maliev.CountryService");
+        Assert.Equal("migrated", country.GetProperty("status").GetString());
+        Assert.Equal("f4577b8d08ef2e58d07a3e56a012876209fa7a1c",
+            country.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CountryService/actions/runs/36358731086",
+            country.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        var intranet = owners.GetProperty("Legacy.Maliev.Intranet");
+        Assert.Equal("migrated", intranet.GetProperty("status").GetString());
+        Assert.Equal("e245c1a544ee520acff0f517d3206c9439fe68ac",
+            intranet.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/actions/runs/36357239217",
+            intranet.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
         Assert.Contains(owners.EnumerateObject(), owner =>
             owner.Name != "Legacy.Maliev.ServiceDefaults" &&
             owner.Value.GetProperty("status").GetString() == "pending");
@@ -241,6 +253,25 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/365",
             web.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36355748835",
+            web.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+    }
+
+    [Fact]
+    public void Source_adf8_web_consent_regression_is_resolved_only_after_exact_main_validation()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "adf8c36b49171e6e15e0c6b9d9de982a598387be");
+
+        Assert.Equal("migrated", record.GetProperty("status").GetString());
+        var web = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
+        Assert.Equal("migrated", web.GetProperty("status").GetString());
+        Assert.Equal("35a0d5a72e97f5820cb9820ba975650df34a61d3",
+            web.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/367",
+            web.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36358523237",
             web.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
     }
 
