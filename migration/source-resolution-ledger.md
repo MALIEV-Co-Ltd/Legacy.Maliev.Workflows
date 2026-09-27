@@ -1,5 +1,15 @@
 # Source-commit resolution ledger (#56)
 
+`source-page-acceptance.json` separately inventories all 79 Razor Pages with a
+first-line `@page` directive at source `4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db`
+(35 Web, 44 Intranet). Every page is deliberately `unverified`: a source-file
+mapping, an existing Legacy route, and a passing unit suite do not prove
+authenticated workflow, responsive, localization, or persisted-data parity.
+`scripts/Test-SourcePageAcceptance.ps1` compares both source page-tree Git IDs
+and the exact path set to live source `origin/main` without modifying it. This
+is a source-page census for issue #98, not the complete route, API, role, or
+feature acceptance matrix; those remain pending.
+
 `source-commit-ledger.json` inventories every source commit reachable from the
 observed `maliev-web` main, including merges. Merge paths are the first-parent
 tree delta, so merge-time conflict resolutions are not silently omitted. Path
