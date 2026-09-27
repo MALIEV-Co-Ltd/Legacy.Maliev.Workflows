@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-27T13:47:43.9084493+00:00",
+  "generatedAt": "2026-09-27T14:09:30.3774866+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "sourceCommitCount": 1096,
-  "fullyResolvedCommitCount": 67,
-  "unresolvedCommitCount": 1029,
+  "fullyResolvedCommitCount": 68,
+  "unresolvedCommitCount": 1028,
   "complete": false,
   "records": [
     {
@@ -20547,14 +20547,21 @@
     {
       "sourceSha": "89ddd5a49ae7e781ca29225b8eae50fb9c2b1d0e",
       "isMerge": false,
-      "status": "pending",
+      "status": "migrated",
       "ownerResolutions": {
         "Legacy.Maliev.DocumentService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DocumentService/issues/27"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DocumentService/pull/11"
+          ],
+          "mergedTargetSha": "a56a2cadb55aba93026cb5b7dbb8bb0e94597df5",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DocumentService/issues/27#issuecomment-5787185805",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DocumentService/actions/runs/36226713938"
+          ]
         }
       },
       "retirementApproval": null
