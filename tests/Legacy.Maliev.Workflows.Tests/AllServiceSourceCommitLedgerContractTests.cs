@@ -245,6 +245,8 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             "3e38f9691b1c502755f1ab2b00ed90f8261eafef",
             "89ddd5a49ae7e781ca29225b8eae50fb9c2b1d0e",
             "3e95e397f7180356f0b5a8acfeed0119d1db62ad",
+            "7ebbc97b0b93c6f71b8b5079ebd404e42c259338",
+            "99462c12c33fc62da281fc90fc61a8ee458d0d7a",
         })
         {
             var migrated = Assert.Single(records, record => record.GetProperty("sourceSha").GetString() == sha);
@@ -252,6 +254,15 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             Assert.All(migrated.GetProperty("ownerResolutions").EnumerateObject(), owner =>
                 Assert.Equal("migrated", owner.Value.GetProperty("status").GetString()));
         }
+
+        var qualificationContract = Assert.Single(records, record =>
+            record.GetProperty("sourceSha").GetString() == "362308b605ff94878f684258ade46c67ae0b08ee");
+        Assert.Equal("partial", qualificationContract.GetProperty("status").GetString());
+        var qualifications = qualificationContract.GetProperty("ownerResolutions");
+        Assert.Equal("migrated", qualifications.GetProperty("Legacy.Maliev.QuotationService")
+            .GetProperty("status").GetString());
+        Assert.Equal("pending", qualifications.GetProperty("Legacy.Maliev.DataMigration")
+            .GetProperty("status").GetString());
     }
 
     [Fact]
