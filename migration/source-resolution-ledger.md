@@ -73,7 +73,12 @@ changes only final newlines in nine Web test files; Web #281 / PR #292
 explicitly records the normalized target regression tests, with merged main
 `94931cea28e1d1c95b9a788a2d2d94afdab2a8e0` and exact-main CI
 35900642700. This formatting-only resolution does not establish additional
-runtime or real-upload browser acceptance. The other 1,055 commits remain
+runtime or real-upload browser acceptance. Source
+`3b8bfe3658a1205b4811d063d44bec8cfa88d895` has its Intranet linked
+request-to-quotation provenance through #192 / PR #193, merged main
+`337b0e2e02ad074eb83af1697c6fd7e064f46153` and exact-main CI
+36290275905. Its DataMigration and QuotationService owners remain pending, so
+the source commit is partial, not complete. The other 1,055 commits remain
 pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
