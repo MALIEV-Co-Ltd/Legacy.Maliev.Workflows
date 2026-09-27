@@ -84,7 +84,11 @@ through #21 / PRs #23 and #32, with merged main
 CI 36279902615. This resolves that source-code owner, not #21's separate
 production-derived Aspire acceptance gate. DataMigration's Quotation schema
 alignment remains pending under #94 and #132, so the source commit is partial,
-not complete. The other 1,055 commits remain
+not complete. Source `4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db` is an
+approved retirement: owner-authored and merged Intranet PR #182 documents that
+the original `js-yaml` lockfile patch has no npm/Gulp dependency graph in the
+migrated .NET application; Intranet issue #181 is closed with that evidence.
+This adds no Node dependency or runtime behavior. The other 1,054 commits remain
 pending; this ledger is deliberately not a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
