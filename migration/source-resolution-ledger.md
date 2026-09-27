@@ -15,6 +15,17 @@ owner has issue, merged PR, protected-main ancestor SHA, and validation URLs,
 and every candidate retirement has an explicit reason and approval URL.
 Mixed commits cannot be complete until both kinds of resolution are proven.
 
+Three cookie-consent source commits
+(`1b3cda47e94604df1304930d48fcabf395626f31`,
+`9523c5a3cf8a9db6da459aa48dfde81636ebac88`, and
+`251bb70bf3e9e747d9437828f7df75983eebaab7`) have Web runtime parity
+through #284 / PR #286 and a completed EN/TH, light/dark, desktop/mobile
+native-dialog browser regression through PR #349, merged main
+`02e0226c45e8d117d58726ebc70b3994f48c9d59`. Exact-head CI runs
+35882259414 and 36319804683 passed. This verifies the migrated browser
+test matrix; it does not claim authenticated production consent telemetry or
+a Legacy application deployment.
+
 The 3D-printing pricing-integrity release has ten Web owner resolutions through
 Web #256 / PR #258, merged main `ad393a5c5c74174a2a8f8989d0bf03263c20e42d`
 and successful PR CI run 34948586706. These include eight Web-only commits and
