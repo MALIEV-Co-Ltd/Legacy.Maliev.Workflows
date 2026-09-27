@@ -71,6 +71,30 @@ exact-main CI run 36320839013 passed. Workflows #117 tracks this full-SHA
 resolution. This is code and shipped-asset parity, not proof of visual
 acceptance or an application deployment.
 
+Workflows #119 records three separate Web-only public-surface commits, each
+with its own source SHA, target issue, merged PR, and protected-main evidence:
+
+- `14a7f42608526b1773643e8050a2ec9c775e6723`: per-part quotation
+  thumbnails and settled additive processing state through Web #255 / PR #257,
+  merged at `3913dc07d8af3120a6fd6832559ab71acea4b154`. The target takes
+  `viewer.snapshot(partId)` rather than a snapshot of whichever part is active;
+  the focused interop contract tests this distinction.
+- `96392ed2a1913cb0c95bf8adc4668d35cc8137ff`: Thai service-page intent,
+  quote-ready printing/CNC file guidance, and static-SSR/rollback metadata
+  through Web #266 / PR #267, merged at
+  `051b42f4bc21522ab452fd0a595d0db36363de96`.
+- `5928c0198ca32731514f97d1e1ff7c83cd2393be`: nationwide parcel and
+  appointment guidance with a qualified THB 100 shipping starting price,
+  visible content, and FAQ/SEO contracts through Web #277 / PR #278, merged
+  at `1dc5ee13bb4aeada575c9fcfb34a8ce62be22d6c`.
+
+All three merges are ancestors of protected Web main
+`02e0226c45e8d117d58726ebc70b3994f48c9d59`, and exact-main CI run
+36320839013 passed. Web #277 also mentions three other source commits; those
+remain pending because PR #278 does not independently cite their full SHAs.
+These records prove migrated code and contract coverage, not visual acceptance,
+deployment, or current production data.
+
 Three cookie-consent source commits
 (`1b3cda47e94604df1304930d48fcabf395626f31`,
 `9523c5a3cf8a9db6da459aa48dfde81636ebac88`, and
