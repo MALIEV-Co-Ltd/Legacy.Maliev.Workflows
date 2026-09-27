@@ -15,6 +15,18 @@ owner has issue, merged PR, protected-main ancestor SHA, and validation URLs,
 and every candidate retirement has an explicit reason and approval URL.
 Mixed commits cannot be complete until both kinds of resolution are proven.
 
+The 3D-printing pricing-integrity release has ten Web owner resolutions through
+Web #256 / PR #258, merged main `ad393a5c5c74174a2a8f8989d0bf03263c20e42d`
+and successful PR CI run 34948586706. These include eight Web-only commits and
+the Web side of source `60d3677264e046fd73028ff3ccb75097d153bedb` and
+merge `2d126d1d55a3240e40678136e6aa621c7f10ed47`. The latter two stay
+pending overall because their separate Workflows documentation/test ownership
+has not been evidenced; Workflows #100 tracks that owner. Source design and plan commits
+`d957038a208b2cbdf1604010a6d82f1d74f1a06c` and
+`2128395c31a1ebfe94f9d0ced846bdc861fe62f4` also remain pending for
+Workflows; Web implementation evidence is not silently treated as their
+documentation migration.
+
 The backfill verifies six Web-only source commits through issue #276, six
 more recent CTR/qualification commits across Web, Intranet, and Workflows,
 and source commits `fd37fbd03bc767f026a625fd6a91107ada91a96f` (Web
