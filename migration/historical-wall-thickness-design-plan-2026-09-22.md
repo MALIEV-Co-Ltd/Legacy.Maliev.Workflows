@@ -37,14 +37,18 @@ default while keeping total, lead time, Review, and engineer contact visible,
 with an accessible details toggle and no repricing. The target-native summary
 dock in [Web PR #293](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/293)
 and its [later refinement in PR #332](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/332)
-cover parts of that decision; [exact-main CI 36256901402](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36256901402)
-succeeded for #332. In the inspected
-[Web main snapshot `e5328fc`](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/blob/e5328fc650b985b861d2fa00d4eeb3a35da8d902/Legacy.Maliev.Web/Components/Pages/InstantQuotation/InstantQuotationWorkflow.razor),
-the collapsed `<details>` summary shows the total and leaves Review and
-engineer contact available, but the actual lead-time value is inside the
-hidden details. Therefore this record does **not** claim complete compact-
-summary parity or resolve `663dd8c9`. All three source-commit resolution
-entries remain pending in this documentation PR. The design and plan entries
-can be reviewed after this Workflows artifact has merged and passed
-protected-main CI; the compact-summary amendment additionally needs the
-lead-time visibility gap resolved or an explicit owner-approved disposition.
+established the Blazor presentation. [Web PR #346](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/346)
+then placed the actual lead-time value in the collapsed `<summary>`, kept
+the total and localized Show/Hide disclosure visible, and left Review,
+engineer contact, and both legal links outside the hidden detail content.
+Its [exact-main CI 36296081818](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36296081818)
+passed with browser tests for collapsed/expanded behavior and narrow widths.
+This is target-native code and browser-fixture evidence, not a claim that a
+live priced upload journey or a deployed application was verified.
+
+This Workflows record first merged at
+[`02734c7496f7a82c2681857ed0ade0cb8b41aa38`](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/02734c7496f7a82c2681857ed0ade0cb8b41aa38)
+with [exact-main CI 36285262361](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/actions/runs/36285262361).
+Together with the Web evidence above, the three dated documentation commits
+have a preserved Workflows disposition. Their original Razor/Three.js file
+paths and runnable commands were not copied into the migrated runtime.
