@@ -26,6 +26,18 @@ native-dialog browser regression through PR #349, merged main
 test matrix; it does not claim authenticated production consent telemetry or
 a Legacy application deployment.
 
+Source merge `4d9954c086c391698399b9a089f64dd57fbf5a95` was reviewed
+against its first parent independently. Its five-file delta changes the
+cookie dialog and Thai resource, application-shell CSS, and source/browser
+tests. The native modal, localized optional-cookie choices, centered
+responsive presentation, dismissal/persistence, and consent timing are
+represented by Web #350, merged PRs #286/#349, and successful exact-main
+Web CI run 36320839013 at
+`02e0226c45e8d117d58726ebc70b3994f48c9d59`. Unrelated source merge
+`07203ead903be395aeb3f56c13c562b58cc77392` also contains scanning/CNC
+changes and remains pending its own disposition; it is not inferred from
+the cookie consent merge.
+
 The 3D-printing pricing-integrity release has ten Web owner resolutions through
 Web #256 / PR #258, merged main `ad393a5c5c74174a2a8f8989d0bf03263c20e42d`
 and successful PR CI run 34948586706. These include eight Web-only commits and
