@@ -276,7 +276,12 @@ that equivalence. PR #352 merged as
 36332704456 passed; exact-main CI run 36333622139 provides the post-merge
 check. Workflows #123 tracks this full SHA independently. The separate source
 TOC-ordering change `cea523b0f06df9be7ef091d6ef8abd7a6ccb6552` is
-still pending under Web #353, and this entry does not claim deployment.
+tracked separately by Web #353 and Workflows #129. Web PR #354 places the
+in-page TOC after quick facts and before the quotation guide, preserves the
+anchor targets, and tests rendered English/Thai order. It merged as
+`b99b628dd125b8fc52c8b3be94a55fd11af1f6ce`; required PR CI 36335175684
+and exact-main CI 36336302750 passed. This resolves that source SHA as code
+parity only, without claiming deployment or production-data parity.
 
 Two customer-details presentation commits have separate resolution records:
 `2e2d482eb49d43cb2c46c21e50b0746a7776af44` moves the order ledger and
