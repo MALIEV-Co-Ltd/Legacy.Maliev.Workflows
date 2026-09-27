@@ -95,8 +95,17 @@ instant-quotation tax/building guidance through Web #276 / PR #347. Both are
 on protected Web main `c1c4211aa81ef14651e06da0a71e862f430be5a6`
 with successful exact-main CI run 36312107291. Web #276 remains open for
 broader uploaded-part acceptance; that is separate from this source commit's
-specific localization changes. The other 1,050 commits remain pending;
-this ledger is deliberately not a claim of full migration parity.
+specific localization changes. Four more Web-only source commits are now
+independently resolved through Web #276 / PR #348 on protected Web main
+`92d3f273b53a26754c35b982cb7c163749d5b320`: `03254079a98245509e73a41e143ff75bf536449b`
+(native review fields and actions), `7aa95d1111528d3d875d8001a43676118974c1d0`
+(bounded bilingual analysis status), `20fe822f80cb8f04d671897281a96a9c7dc33510`
+(expanded detail and keyboard-scroll assertions), and
+`b6f9eacea2669c7fcf0f619dc0c96f2f104ca861` (native dock equivalent of
+the source-only metrics wrapper test). Exact-head CI run 36314839372 passed;
+Web #276 remains open for broader real-upload acceptance. The other 1,046
+commits remain pending; this ledger is deliberately not a claim of full
+migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
