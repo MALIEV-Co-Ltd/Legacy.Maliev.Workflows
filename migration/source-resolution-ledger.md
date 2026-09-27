@@ -38,8 +38,11 @@ quotation scorecard fixtures and validation through Workflows #59 / PR #60.
 Source `1360173adfdd038cdb1f179cec886ac644a4bbc6` and
 `c544f7145c12592d8e6069b690cc704858ed9b7f` have Web 404 route/assets
 through PR #186 and browser interaction parity through #339 / PR #340,
-including the shipped physics-bundle export repair. The other 1,072 commits
-remain pending; this ledger is deliberately not a claim of full migration parity.
+including the shipped physics-bundle export repair. Source
+`eb52167166e12d832ea6c800795a8357d526f759` has Web route behavior
+through #315 / PR #317 and a dated Workflows decision record through #80 / PR
+#81. The other 1,071 commits remain pending; this ledger is deliberately not
+a claim of full migration parity.
 
 The generator preserves previously reviewed entries, rejects removed source
 commits or changed owner/retirement sets, verifies the source checkpoint
