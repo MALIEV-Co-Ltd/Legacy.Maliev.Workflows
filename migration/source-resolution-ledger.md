@@ -49,6 +49,17 @@ their source SHA alone was not assumed to prove this earlier commit. The
 DataMigration owner remains pending independent evidence; the source commit
 is still not complete.
 
+Source `3ce9936b6e39f41c000e542f005a18645f445a8a` is a separate Web-only
+CNC attribution commit. Web #259 / PR #260 explicitly migrate its API-owned
+`request-{id}` transaction IDs for manual, instant-3D, and CNC quotation,
+including `instant_cnc_quote` / `cnc_machining`, validated journey GUIDs,
+finder attribution, and contained analytics failure. PR #260's merge
+`17626967d0eb93142e1cf517038c01af4e1381b6` is in protected Web main
+`02e0226c45e8d117d58726ebc70b3994f48c9d59`, with successful exact-main
+CI run 36320839013. Workflows #115 tracks the full-SHA resolution. This
+Web-only commit has no additional mapped owner; the record is complete as a
+code migration, without asserting deployment or production-data parity.
+
 Three cookie-consent source commits
 (`1b3cda47e94604df1304930d48fcabf395626f31`,
 `9523c5a3cf8a9db6da459aa48dfde81636ebac88`, and
