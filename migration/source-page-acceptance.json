@@ -1,0 +1,565 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
+  "sourceCommit": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
+  "sourcePageTrees": {
+    "Maliev.Web/Pages": "c83bc2580b281232412ac46ff4854f2a382bdda6",
+    "Maliev.Intranet/Pages": "d9d8a0679f05d6f9a34f53194d56451414bcaadc"
+  },
+  "scope": "Razor Pages with a first-line @page directive; source inventory, not route or workflow acceptance",
+  "pages": [
+    {
+      "sourcePath": "Maliev.Intranet/Pages/AccessDenied.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Analytics/OutcomeReadback.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Customers/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Customers/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Customers/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Dashboard.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Employees/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Employees/EmailConfirmation.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Employees/ForgotPassword.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Employees/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Employees/ResetPassword.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Employees/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Error.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Finances/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Finances/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Finances/NetProfitChart.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Finances/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Finances/YearlyActivityChart.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Invoices/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Invoices/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Invoices/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Login.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Materials/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Materials/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Materials/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Operations/OutcomeReadback.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Orders/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Orders/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Orders/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/PurchaseOrders/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/PurchaseOrders/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/PurchaseOrders/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/QuotationRequests/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/QuotationRequests/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Quotations/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Quotations/Estimate.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Quotations/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Quotations/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Suppliers/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Suppliers/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Suppliers/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Travelers/Create.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Intranet/Pages/Travelers/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Intranet",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/About/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/About/SocialMedia.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/AccessDenied.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/ChangeEmailConfirmation.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/EmailConfirmation.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/ForgotPassword.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/Login.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/ResetPassword.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/SetInitialPassword.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Account/Signup.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Career/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Career/View.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Contact/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Contact/Line.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Error.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/InstantQuotation/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Legal/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Legal/NoWeapons.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Legal/NonDisclosureAgreement.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Legal/PrivacyPolicy.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Legal/TermsConditions.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Quotation/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/3D-Design.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/3D-Scanning.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/CNC-Machining.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/Custom-Manufacturing.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/Finishing-And-Color.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/Index.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/Low-Volume-Injection-Molding.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Services/Silicone-Casting.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    },
+    {
+      "sourcePath": "Maliev.Web/Pages/Sitemap.cshtml",
+      "ownerRepository": "Legacy.Maliev.Web",
+      "status": "unverified",
+      "targetRoute": null,
+      "evidence": []
+    }
+  ]
+}
