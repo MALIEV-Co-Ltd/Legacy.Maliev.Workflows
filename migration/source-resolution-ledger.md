@@ -35,6 +35,13 @@ failure-logging tests, formatting, dependency audit, and secret scan passed.
 This resolves only the Catalog owner of that source SHA. Other owners remain
 independently pending; no deployment or production data parity is implied.
 
+The AuthService owner of the same source SHA is resolved separately by
+AuthService PR #96, merged at
+`649f89898fdddbece38d2ae7a151c55cd077528f` with exact-main CI
+36378234171. It pins the redacted shared middleware and tests bounded
+correlation identifiers, safe fallback, generic 500 responses, and incident
+correlation. This does not resolve the other f0640fe owners.
+
 Source commit `7ebe7e4bf83a435ecb18afc29cf263424ed2bb74` persists
 quotation-request journey attribution. Its QuotationService owner is migrated
 through QuotationService #35 / PR #36, merged at
