@@ -21,19 +21,48 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         var owners = record.GetProperty("ownerResolutions");
         var shared = owners.GetProperty("Legacy.Maliev.ServiceDefaults");
         Assert.Equal("migrated", shared.GetProperty("status").GetString());
-        Assert.Equal("cfc8053d316c55353841092429985a9f76f17d8d",
+        Assert.Equal("5c5f9479313710fa576f83d3b396442997a2fcf4",
             shared.GetProperty("mergedTargetSha").GetString());
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/162",
             shared.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
-        foreach (int pullRequest in new[] { 32, 45, 49 })
+        foreach (int pullRequest in new[] { 32, 45, 49, 50 })
         {
             Assert.Contains($"https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/pull/{pullRequest}",
                 shared.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
         }
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/actions/runs/36359872119",
             shared.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/actions/runs/36377717135",
+            shared.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        var auth = owners.GetProperty("Legacy.Maliev.AuthService");
+        Assert.Equal("pending", auth.GetProperty("status").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/96",
+            auth.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
         Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.Web").GetProperty("status").GetString());
         Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.OrderService").GetProperty("status").GetString());
+    }
+
+    [Theory]
+    [InlineData("0e7e95216bc4c73495d3e64ae910f88d26f139b9")]
+    [InlineData("e1cfd932ef2aee6a909a61c96d3df6803ceb6184")]
+    [InlineData("b1c233dd42899b24821d69b773ea24bd9a84c9f2")]
+    [InlineData("a0227738295a3bd39b7a56987534d22bc087cc94")]
+    [InlineData("f007faa5054fae855104d954b8d207af7d0a5d95")]
+    [InlineData("0c667c3173165c2b11cd2c71dfcb4523bfcbdd17")]
+    [InlineData("9c1bc774fe8c5e9c12af08f22b532222c0182776")]
+    [InlineData("68aab629a4133fbe4e31aed378141f9fc7233fb2")]
+    [InlineData("ea0743c0c7e8653462eebe813af6c7a5dbfd8438")]
+    public void Fdm_source_commits_remain_individually_tracked_without_false_completion(string sourceSha)
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() == sourceSha);
+
+        Assert.Equal("pending", record.GetProperty("status").GetString());
+        var web = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
+        Assert.Equal("pending", web.GetProperty("status").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/164",
+            web.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
     }
 
     [Theory]
