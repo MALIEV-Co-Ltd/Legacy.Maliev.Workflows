@@ -63,6 +63,23 @@ issuer, audience, key, algorithm, and route tests. It merged at
 passed. Both builds had zero warnings/errors and their full affected suites
 passed. These are two owner resolutions, not whole-commit completion.
 
+CatalogService #25 / PR #26 (`fcf02d30453ff1402edd59228729aba4cd405b7e`,
+exact-main CI `36433603183`) and ContactService #24 / PR #25
+(`14449bb228b17135632579c1c8fa867b39f1e595`, CI `36433615000`)
+resolve the split Country/Currency/Material and Message validator owners.
+CountryService #28 / PR #29 (`aadff644213bd53328d3e2a07f699cfb6f36f46e`,
+CI `36432571798`), DocumentService #32 / PR #33
+(`0ac95bbbd1b16408ddb989dfe3b7fbe0d348c6c8`, CI `36433403221`),
+and EmployeeService #22 / PR #23 (`7b15f78958626b4d929082f250ee5257d2dc7240`,
+CI `36431868154`) independently pin the validated RS256 shared validator
+and test production issuer, audience, signing key, and algorithm rejection.
+DocumentService also supplies non-secret issuer/audience defaults while its
+public key remains externally injected. Each owner passed its affected full
+suite and exact-main CI, with image publication gated off. The source SHA
+remains partial: Customer, File, Notification, Order, Procurement, Quotation,
+ServiceDefaults, and Workflows owners plus the separate retirement decision
+still need evidence under Workflows #191 and their service-specific issues.
+
 Workflows #195 / PR #196 added redacted publication-time detection of JWT
 signing material in `.resx` and generated resource comments (merged
 `512d1acca3e2fe70dd341a6324b9a8237f3de2e0`, exact-main CI `36426293884`).

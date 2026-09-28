@@ -104,9 +104,18 @@ public sealed class AllServiceSourceCommitLedgerContractTests
                 continue;
             }
             transitions++;
-            Assert.Equal("pending", contact.GetProperty("status").GetString());
-            Assert.Empty(contact.GetProperty("issueUrls").EnumerateArray());
-            Assert.Empty(contact.GetProperty("prUrls").EnumerateArray());
+            if (sha == "cbac7d7155da2208c77d56103b6a2cb19196fc83")
+            {
+                Assert.Equal("migrated", contact.GetProperty("status").GetString());
+                Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ContactService/pull/25",
+                    contact.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+            }
+            else
+            {
+                Assert.Equal("pending", contact.GetProperty("status").GetString());
+                Assert.Empty(contact.GetProperty("issueUrls").EnumerateArray());
+                Assert.Empty(contact.GetProperty("prUrls").EnumerateArray());
+            }
             var transition = resolution.GetProperty("messageOwnerTransition");
             Assert.Equal("Legacy.Maliev.ContactService", transition.GetProperty("addedOwner").GetString());
             Assert.Equal("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/193",
