@@ -31,8 +31,9 @@ for ($i = 0; $i -lt $reachable.Count; $i++) {
 }
 
 $previousBySha = @{}
+$previous = $null
 if (Test-Path -LiteralPath $OutputPath) {
-    $previous = Get-Content -LiteralPath $OutputPath -Raw | ConvertFrom-Json -AsHashtable
+    $previous = Get-Content -LiteralPath $OutputPath -Raw | ConvertFrom-Json -AsHashtable -DateKind String
     if ($previous.schemaVersion -ne 1 -or $previous.sourceRepository -cne $ledger.sourceRepository) {
         throw 'The existing resolution ledger has an unsupported schema or source.'
     }
@@ -395,6 +396,17 @@ $result = [ordered]@{
     unresolvedCommitCount = @($records).Count - $resolvedCount
     complete = ($resolvedCount -eq @($records).Count)
     records = @($records)
+}
+if ($previous -and $previous.schemaVersion -eq $result.schemaVersion -and
+    $previous.sourceRepository -ceq $result.sourceRepository -and
+    $previous.sourceCheckpoint -ceq $result.sourceCheckpoint -and
+    $previous.sourceCommitCount -eq $result.sourceCommitCount -and
+    $previous.fullyResolvedCommitCount -eq $result.fullyResolvedCommitCount -and
+    $previous.unresolvedCommitCount -eq $result.unresolvedCommitCount -and
+    $previous.complete -eq $result.complete -and
+    ($previous.records | ConvertTo-Json -Depth 30 -Compress) -ceq
+        ($result.records | ConvertTo-Json -Depth 30 -Compress)) {
+    $result.generatedAt = $previous.generatedAt
 }
 $finalMainResult = & git -C $SourceRepository ls-remote origin refs/heads/main
 $finalGitExit = $LASTEXITCODE
