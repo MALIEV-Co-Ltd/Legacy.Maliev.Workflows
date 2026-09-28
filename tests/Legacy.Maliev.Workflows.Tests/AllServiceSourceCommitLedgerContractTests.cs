@@ -10,6 +10,142 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     private static readonly Regex Sha = new("^[0-9a-f]{40}$", RegexOptions.CultureInvariant);
 
     [Fact]
+    public void MessageService_history_is_Contact_owned_without_reassigning_Email_or_prior_evidence()
+    {
+        string[] reviewedShas =
+        [
+            "5fac706a7983a6d359b39acbd670e6800afe020e",
+            "3a393215d883fa35e1461f69c876bf2ead7ce36e",
+            "0822636e5e2d46e4db20a79d27037aab426d85aa",
+            "3a104503328cc3c0d57ff9ae2deafba06d1e46d5",
+            "72eb9f1949176392141951d35e6e06f7c30af4c2",
+            "5458b7ddc81a15d72087fa69fb4cfcc27ae75747",
+            "53f4baf373ef04a3ed5ab5c1ef39bd61404c5258",
+            "93f9f99522fbe6c128acb5d049f2b448e07dba95",
+            "90f34b389c298d1ce85abe2ae7ac92877dbbf7af",
+            "00ec830615c15b5e4e227046712247b11df0100f",
+            "2aab25eb07894fc0267b03b85bad96490219d2fa",
+            "7d6f46f53cbab853ca9c25e385af067cfff6238a",
+            "cbac7d7155da2208c77d56103b6a2cb19196fc83",
+            "eb8ed86672bd9afccc6560b547b734d0fcd7363b",
+            "a649db99a27bda65274fe1b18866ae226d3c69cf",
+            "03eaff1194c3ae2a54ceefeae31deffaff90436f",
+            "72163e9ae11f39f6579423841a2e20529b986fab",
+            "f8921b1b1d5846eeaff999af10b640011655d1d4",
+            "143f53ba0a1c81c78d252864ca131d42ed79dc1b",
+            "f0640fe0719b2eb6becda378bff08153d955be07",
+            "9e51e6c5da29de8e617b65b59d46882cde6d3b64",
+            "c660de68b633618cb0c857a287020f5ed9c42683",
+            "a7d0a4517ef1cfef638763cb1092088a5932fa2f",
+            "03dc9a1271c16e6535934445e9dd6e3f30e8fffe",
+            "5ac7d045c51194edd9e64d8564f1b726b001be34",
+        ];
+        using var mapping = Load("migration/source-path-owners.json");
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var rules = mapping.RootElement.GetProperty("rules").EnumerateArray().ToArray();
+        foreach (var (path, owner) in new[]
+        {
+            ("Maliev.MessageService.Api/Startup.cs", "Legacy.Maliev.ContactService"),
+            ("Maliev.EmailService.Api/Program.cs", "Legacy.Maliev.NotificationService"),
+        })
+        {
+            var rule = Assert.Single(rules, item => Regex.IsMatch(path, item.GetProperty("pattern").GetString()!));
+            Assert.Equal(owner, Assert.Single(rule.GetProperty("owners").EnumerateArray()).GetString());
+        }
+
+        var sourceRecords = ownership.RootElement.GetProperty("records").EnumerateArray().ToArray();
+        var resolvedBySha = resolutions.RootElement.GetProperty("records").EnumerateArray()
+            .ToDictionary(item => item.GetProperty("sourceSha").GetString()!, StringComparer.Ordinal);
+        var affected = sourceRecords.Where(record => record.GetProperty("classifications").EnumerateArray()
+            .Any(item => item.GetProperty("path").GetString()!.StartsWith("Maliev.MessageService.", StringComparison.Ordinal)))
+            .ToArray();
+        Assert.Equal(25, affected.Length);
+        Assert.Equal(reviewedShas.Order(StringComparer.Ordinal), affected
+            .Select(record => record.GetProperty("commit").GetString()!).Order(StringComparer.Ordinal));
+        Assert.Equal(104, affected.Sum(record => record.GetProperty("classifications").EnumerateArray()
+            .Count(item => item.GetProperty("path").GetString()!.StartsWith("Maliev.MessageService.", StringComparison.Ordinal))));
+        Assert.Equal(103, affected.Sum(record => record.GetProperty("classifications").EnumerateArray()
+            .Count(item => item.GetProperty("path").GetString()!.StartsWith("Maliev.MessageService.", StringComparison.Ordinal)
+                && record.GetProperty("commit").GetString() != "f0640fe0719b2eb6becda378bff08153d955be07")));
+        var transitions = 0;
+        var removedNotification = 0;
+        var preservedPriorTransitions = 0;
+        foreach (var source in affected)
+        {
+            var sha = source.GetProperty("commit").GetString()!;
+            var classifications = source.GetProperty("classifications").EnumerateArray().ToArray();
+            foreach (var item in classifications.Where(item => item.GetProperty("path").GetString()!
+                .StartsWith("Maliev.MessageService.", StringComparison.Ordinal)))
+            {
+                Assert.Equal("Legacy.Maliev.ContactService",
+                    Assert.Single(item.GetProperty("owners").EnumerateArray()).GetString());
+            }
+            foreach (var item in classifications.Where(item => item.GetProperty("path").GetString()!
+                .StartsWith("Maliev.EmailService.", StringComparison.Ordinal)))
+            {
+                Assert.Equal("Legacy.Maliev.NotificationService",
+                    Assert.Single(item.GetProperty("owners").EnumerateArray()).GetString());
+            }
+            var resolution = resolvedBySha[sha];
+            var expectedOwners = classifications.Where(item => item.GetProperty("disposition").GetString() == "migration-required")
+                .SelectMany(item => item.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!))
+                .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+            Assert.Equal(expectedOwners, resolution.GetProperty("ownerResolutions").EnumerateObject()
+                .Select(item => item.Name).Order(StringComparer.Ordinal).ToArray());
+            var owners = resolution.GetProperty("ownerResolutions");
+            Assert.True(owners.TryGetProperty("Legacy.Maliev.ContactService", out var contact));
+            if (sha == "f0640fe0719b2eb6becda378bff08153d955be07")
+            {
+                Assert.False(resolution.TryGetProperty("messageOwnerTransition", out _));
+                Assert.Equal("migrated", contact.GetProperty("status").GetString());
+                Assert.Equal("migrated", owners.GetProperty("Legacy.Maliev.NotificationService")
+                    .GetProperty("status").GetString());
+                continue;
+            }
+            transitions++;
+            Assert.Equal("pending", contact.GetProperty("status").GetString());
+            Assert.Empty(contact.GetProperty("issueUrls").EnumerateArray());
+            Assert.Empty(contact.GetProperty("prUrls").EnumerateArray());
+            var transition = resolution.GetProperty("messageOwnerTransition");
+            Assert.Equal("Legacy.Maliev.ContactService", transition.GetProperty("addedOwner").GetString());
+            Assert.Equal("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/193",
+                transition.GetProperty("issueUrl").GetString());
+            var hasEmail = classifications.Any(item => item.GetProperty("path").GetString()!
+                .StartsWith("Maliev.EmailService.", StringComparison.Ordinal));
+            if (!hasEmail)
+            {
+                removedNotification++;
+                Assert.Equal("Legacy.Maliev.NotificationService", transition.GetProperty("removedOwner").GetString());
+                Assert.False(owners.TryGetProperty("Legacy.Maliev.NotificationService", out _));
+            }
+            else
+            {
+                Assert.Equal(JsonValueKind.Null, transition.GetProperty("removedOwner").ValueKind);
+                Assert.True(owners.TryGetProperty("Legacy.Maliev.NotificationService", out _));
+            }
+            if (resolution.TryGetProperty("ownerSetTransition", out _)) preservedPriorTransitions++;
+        }
+        Assert.Equal(24, transitions);
+        Assert.Equal(3, removedNotification);
+        Assert.Equal(16, preservedPriorTransitions);
+        var fiveAc = resolvedBySha["5ac7d045c51194edd9e64d8564f1b726b001be34"];
+        Assert.Equal("migrated", fiveAc.GetProperty("ownerResolutions")
+            .GetProperty("Legacy.Maliev.NotificationService").GetProperty("status").GetString());
+        Assert.Equal("79a9184649f749de67c9b644857ce216e34cd8cb", fiveAc.GetProperty("ownerResolutions")
+            .GetProperty("Legacy.Maliev.NotificationService").GetProperty("mergedTargetSha").GetString());
+        Assert.True(fiveAc.TryGetProperty("ownerSetTransition", out _));
+        var cbac = resolvedBySha["cbac7d7155da2208c77d56103b6a2cb19196fc83"];
+        var auth = cbac.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.AuthService");
+        Assert.Equal("migrated", auth.GetProperty("status").GetString());
+        Assert.Equal("28cbbcc1750ba30db516c7d7a63bf51ed4f4fa39", auth.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/1",
+            auth.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Equal("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+            cbac.GetProperty("ownerSetTransition").GetProperty("issueUrl").GetString());
+    }
+
+    [Fact]
     public void Source_31e8_manufacturing_unit_price_is_proven_without_closing_parent_pricing_issue()
     {
         const string sourceSha = "31e8f5d28d11f903687c4e540441b19bbfbfe102";

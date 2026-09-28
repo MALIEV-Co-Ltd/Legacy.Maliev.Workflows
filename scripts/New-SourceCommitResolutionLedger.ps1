@@ -31,8 +31,9 @@ for ($i = 0; $i -lt $reachable.Count; $i++) {
 }
 
 $previousBySha = @{}
+$previous = $null
 if (Test-Path -LiteralPath $OutputPath) {
-    $previous = Get-Content -LiteralPath $OutputPath -Raw | ConvertFrom-Json -AsHashtable
+    $previous = Get-Content -LiteralPath $OutputPath -Raw | ConvertFrom-Json -AsHashtable -DateKind String
     if ($previous.schemaVersion -ne 1 -or $previous.sourceRepository -cne $ledger.sourceRepository) {
         throw 'The existing resolution ledger has an unsupported schema or source.'
     }
@@ -56,6 +57,38 @@ function Assert-EvidenceUrls([object[]] $Urls, [string] $Suffix) {
 # CompatibilityContracts owner entirely; mixed commits retain that valid owner.
 $reviewedOwnerTransitions = @{}
 $reviewedTransitionPatterns = @{}
+# Workflows #193 pins the MessageService-only ownership correction. This is
+# independent of earlier LoggerService transitions on the same source commits.
+$reviewedMessageShas = @(
+    '5fac706a7983a6d359b39acbd670e6800afe020e',
+    '3a393215d883fa35e1461f69c876bf2ead7ce36e',
+    '0822636e5e2d46e4db20a79d27037aab426d85aa',
+    '3a104503328cc3c0d57ff9ae2deafba06d1e46d5',
+    '72eb9f1949176392141951d35e6e06f7c30af4c2',
+    '5458b7ddc81a15d72087fa69fb4cfcc27ae75747',
+    '53f4baf373ef04a3ed5ab5c1ef39bd61404c5258',
+    '93f9f99522fbe6c128acb5d049f2b448e07dba95',
+    '90f34b389c298d1ce85abe2ae7ac92877dbbf7af',
+    '00ec830615c15b5e4e227046712247b11df0100f',
+    '2aab25eb07894fc0267b03b85bad96490219d2fa',
+    '7d6f46f53cbab853ca9c25e385af067cfff6238a',
+    'cbac7d7155da2208c77d56103b6a2cb19196fc83',
+    'eb8ed86672bd9afccc6560b547b734d0fcd7363b',
+    'a649db99a27bda65274fe1b18866ae226d3c69cf',
+    '03eaff1194c3ae2a54ceefeae31deffaff90436f',
+    '72163e9ae11f39f6579423841a2e20529b986fab',
+    'f8921b1b1d5846eeaff999af10b640011655d1d4',
+    '143f53ba0a1c81c78d252864ca131d42ed79dc1b',
+    '9e51e6c5da29de8e617b65b59d46882cde6d3b64',
+    'c660de68b633618cb0c857a287020f5ed9c42683',
+    'a7d0a4517ef1cfef638763cb1092088a5932fa2f',
+    '03dc9a1271c16e6535934445e9dd6e3f30e8fffe',
+    '5ac7d045c51194edd9e64d8564f1b726b001be34'
+)
+$reviewedMessageSet = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+foreach ($sha in $reviewedMessageShas) {
+    if (-not $reviewedMessageSet.Add($sha)) { throw "Duplicate reviewed MessageService SHA $sha." }
+}
 @(
     '3d6506285a58671651d046e97a35fbb8885cea4f',
     '7b311e4e7f0dd80be0441abc2625dab295179f1a',
@@ -106,6 +139,7 @@ $reviewedTransitionPatterns = @{}
 
 $resolvedCount = 0
 $reviewedTransitionCount = 0
+$reviewedMessageCount = 0
 $formatOnlySha = '61df92fb171a5c1c65a46a07cd70777d87e1a46e'
 $formatOnlyPaths = @(
     'Maliev.QuotationRequestService.Common/Models/QualificationOutcomeReadback.cs',
@@ -218,15 +252,76 @@ $records = foreach ($source in $ledger.records) {
                 throw "Removed owner has evidence or unexpected history for $($source.commit)."
             }
         }
-        elseif (($oldOwners -join '|') -cne ($newOwners -join '|') -or
-            $old.ownerSetTransition.removedOwner -cne $transition.removedOwner -or
-            $old.ownerSetTransition.retainedOwner -cne $transition.retainedOwner -or
-            $old.ownerSetTransition.issueUrl -cne $transition.issueUrl -or
-            (@($old.ownerSetTransition.priorIssueUrls) -join '|') -cne
-                (@($transition.priorIssueUrls) -join '|') -or
-            $old.ownerSetTransition.reason -cne $transition.reason) {
-            throw "The reviewed owner transition provenance changed for $($source.commit)."
+        else {
+            $expectedPriorOwners = $newOwners
+            if ($reviewedMessageSet.Contains($source.commit) -and -not $old.messageOwnerTransition) {
+                $expectedPriorOwners = @($newOwners | Where-Object { $_ -cne 'Legacy.Maliev.ContactService' })
+                if (-not @($source.classifications | Where-Object {
+                    $_.path -notmatch '^Maliev\.MessageService\.' -and
+                    $_.owners -ccontains 'Legacy.Maliev.NotificationService'
+                }).Count) {
+                    $expectedPriorOwners = @($expectedPriorOwners + 'Legacy.Maliev.NotificationService' |
+                        Sort-Object -Unique -CaseSensitive)
+                }
+            }
+            if (($oldOwners -join '|') -cne ($expectedPriorOwners -join '|') -or
+                $old.ownerSetTransition.removedOwner -cne $transition.removedOwner -or
+                $old.ownerSetTransition.retainedOwner -cne $transition.retainedOwner -or
+                $old.ownerSetTransition.issueUrl -cne $transition.issueUrl -or
+                (@($old.ownerSetTransition.priorIssueUrls) -join '|') -cne
+                    (@($transition.priorIssueUrls) -join '|') -or
+                $old.ownerSetTransition.reason -cne $transition.reason) {
+                throw "The reviewed owner transition provenance changed for $($source.commit)."
+            }
         }
+    }
+    $messageTransition = $null
+    if ($reviewedMessageSet.Contains($source.commit)) {
+        $reviewedMessageCount++
+        $messagePaths = @($source.classifications | Where-Object { $_.path -match '^Maliev\.MessageService\.' })
+        $otherNotificationPaths = @($source.classifications | Where-Object {
+            $_.path -notmatch '^Maliev\.MessageService\.' -and
+            $_.owners -ccontains 'Legacy.Maliev.NotificationService'
+        })
+        $removedNotification = $otherNotificationPaths.Count -eq 0
+        $oldOwners = @($old.ownerResolutions.Keys | Sort-Object -CaseSensitive)
+        $newOwners = @($owners | Sort-Object -CaseSensitive)
+        $expectedOldOwners = @($newOwners | Where-Object { $_ -cne 'Legacy.Maliev.ContactService' })
+        if ($removedNotification) {
+            $expectedOldOwners = @($expectedOldOwners + 'Legacy.Maliev.NotificationService' |
+                Sort-Object -Unique -CaseSensitive)
+        }
+        if (-not $old -or $messagePaths.Count -eq 0 -or
+            @($messagePaths | Where-Object { $_.owners -cne 'Legacy.Maliev.ContactService' }).Count -ne 0 -or
+            $owners -cnotcontains 'Legacy.Maliev.ContactService') {
+            throw "The reviewed MessageService classification changed for $($source.commit)."
+        }
+        $messageTransition = [ordered]@{
+            addedOwner = 'Legacy.Maliev.ContactService'
+            removedOwner = if ($removedNotification) { 'Legacy.Maliev.NotificationService' } else { $null }
+            issueUrl = 'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/193'
+            reason = 'MessageService belongs to ContactService; NotificationService remains an owner only where this commit also changes EmailService.'
+        }
+        if ($old.messageOwnerTransition) {
+            if (($oldOwners -join '|') -cne ($newOwners -join '|') -or
+                ($old.messageOwnerTransition | ConvertTo-Json -Compress) -cne
+                    ($messageTransition | ConvertTo-Json -Compress)) {
+                throw "The reviewed MessageService transition provenance changed for $($source.commit)."
+            }
+        }
+        else {
+            if (($oldOwners -join '|') -cne ($expectedOldOwners -join '|') -or
+                ($removedNotification -and ($old.ownerResolutions['Legacy.Maliev.NotificationService'].status -cne 'pending' -or
+                    @($old.ownerResolutions['Legacy.Maliev.NotificationService'].issueUrls | Where-Object { $_ }).Count -ne 0 -or
+                    @($old.ownerResolutions['Legacy.Maliev.NotificationService'].prUrls | Where-Object { $_ }).Count -ne 0 -or
+                    @($old.ownerResolutions['Legacy.Maliev.NotificationService'].validationEvidenceUrls | Where-Object { $_ }).Count -ne 0 -or
+                    $old.ownerResolutions['Legacy.Maliev.NotificationService'].mergedTargetSha))) {
+                throw "Removed MessageService owner has evidence or unexpected history for $($source.commit)."
+            }
+        }
+    }
+    elseif ($old -and $old.messageOwnerTransition) {
+        throw "Unexpected MessageService transition for $($source.commit)."
     }
     elseif ($old -and (@($old.ownerResolutions.Keys | Sort-Object -CaseSensitive) -join '|') -cne ($owners -join '|')) {
         throw "The owner set changed for $($source.commit); review its evidence manually."
@@ -276,10 +371,14 @@ $records = foreach ($source in $ledger.records) {
         retirementApproval = $retirement
     }
     if ($transition) { $record.ownerSetTransition = $transition }
+    if ($messageTransition) { $record.messageOwnerTransition = $messageTransition }
     $record
 }
 if ($reviewedTransitionCount -ne $reviewedOwnerTransitions.Count) {
     throw 'The exact reviewed owner-set transitions were not present in the complete source ledger.'
+}
+if ($reviewedMessageCount -ne $reviewedMessageSet.Count) {
+    throw 'The exact reviewed MessageService commits were not present in the complete source ledger.'
 }
 $sourceShaSet = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 foreach ($record in $records) { $null = $sourceShaSet.Add($record.sourceSha) }
@@ -297,6 +396,17 @@ $result = [ordered]@{
     unresolvedCommitCount = @($records).Count - $resolvedCount
     complete = ($resolvedCount -eq @($records).Count)
     records = @($records)
+}
+if ($previous -and $previous.schemaVersion -eq $result.schemaVersion -and
+    $previous.sourceRepository -ceq $result.sourceRepository -and
+    $previous.sourceCheckpoint -ceq $result.sourceCheckpoint -and
+    $previous.sourceCommitCount -eq $result.sourceCommitCount -and
+    $previous.fullyResolvedCommitCount -eq $result.fullyResolvedCommitCount -and
+    $previous.unresolvedCommitCount -eq $result.unresolvedCommitCount -and
+    $previous.complete -eq $result.complete -and
+    ($previous.records | ConvertTo-Json -Depth 30 -Compress) -ceq
+        ($result.records | ConvertTo-Json -Depth 30 -Compress)) {
+    $result.generatedAt = $previous.generatedAt
 }
 $finalMainResult = & git -C $SourceRepository ls-remote origin refs/heads/main
 $finalGitExit = $LASTEXITCODE

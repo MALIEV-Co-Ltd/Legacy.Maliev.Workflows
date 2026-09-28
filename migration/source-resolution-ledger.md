@@ -21,6 +21,17 @@ tree delta, so merge-time conflict resolutions are not silently omitted. Path
 ownership and a proposed retirement classification are **not** proof that a
 change is migrated, validated, or approved for retirement.
 
+Workflows #193 corrects the source owner map: `Maliev.MessageService.*` belongs
+to ContactService, while `Maliev.EmailService.*` remains NotificationService.
+At the pinned source checkpoint this covers 25 commits and 104 Message paths;
+103 path classifications change (the `f0640fe` Startup path was already
+Contact-owned). Twenty-four commits receive an independent
+`messageOwnerTransition` review record. Three Message-only commits lose a
+pending Notification owner; mixed Email/Message commits retain Notification
+and all existing migration evidence. Earlier `ownerSetTransition` records are
+preserved separately. New Contact owner entries remain pending unless already
+independently evidenced; this mapping correction is not migration acceptance.
+
 `source-commit-resolutions.json` gives every full source SHA an independent
 resolution. Each owning Legacy repository starts `pending`. A candidate
 retirement also starts `pending`, even where the path rule says
