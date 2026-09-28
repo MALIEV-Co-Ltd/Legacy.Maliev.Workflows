@@ -313,7 +313,9 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         }
 
         var transitioned = resolutions.RootElement.GetProperty("records").EnumerateArray()
-            .Where(record => record.TryGetProperty("ownerSetTransition", out _)).ToArray();
+            .Where(record => record.TryGetProperty("ownerSetTransition", out var transition) &&
+                transition.GetProperty("issueUrl").GetString() ==
+                "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/138").ToArray();
         Assert.Equal(ownerSetTransitions.Order(StringComparer.Ordinal),
             transitioned.Select(record => record.GetProperty("sourceSha").GetString()!).Order(StringComparer.Ordinal));
         foreach (var record in transitioned)
@@ -337,13 +339,84 @@ public sealed class AllServiceSourceCommitLedgerContractTests
                 "5ac7d045c51194edd9e64d8564f1b726b001be34" ? "migrated" : "pending",
                 serviceDefaults.GetProperty("status").GetString());
         }
-        foreach (var sha in reviewedShas.Except(ownerSetTransitions, StringComparer.Ordinal))
+        foreach (var sha in reviewedShas.Except(ownerSetTransitions, StringComparer.Ordinal)
+            .Except(["9e51e6c5da29de8e617b65b59d46882cde6d3b64"], StringComparer.Ordinal))
         {
             var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
                 candidate => candidate.GetProperty("sourceSha").GetString() == sha);
             Assert.True(record.GetProperty("ownerResolutions")
                 .TryGetProperty("Legacy.Maliev.CompatibilityContracts", out _));
             Assert.False(record.TryGetProperty("ownerSetTransition", out _));
+        }
+    }
+
+    [Fact]
+    public void LoggerService_history_has_exact_reviewed_message_contract_owner_boundary()
+    {
+        string[] loggerShas =
+        [
+            "5fac706a7983a6d359b39acbd670e6800afe020e",
+            "3a393215d883fa35e1461f69c876bf2ead7ce36e",
+            "72eb9f1949176392141951d35e6e06f7c30af4c2",
+            "5458b7ddc81a15d72087fa69fb4cfcc27ae75747",
+            "53f4baf373ef04a3ed5ab5c1ef39bd61404c5258",
+            "93f9f99522fbe6c128acb5d049f2b448e07dba95",
+            "90f34b389c298d1ce85abe2ae7ac92877dbbf7af",
+            "00ec830615c15b5e4e227046712247b11df0100f",
+            "2aab25eb07894fc0267b03b85bad96490219d2fa",
+            "7d6f46f53cbab853ca9c25e385af067cfff6238a",
+            "cbac7d7155da2208c77d56103b6a2cb19196fc83",
+            "eb8ed86672bd9afccc6560b547b734d0fcd7363b",
+            "a649db99a27bda65274fe1b18866ae226d3c69cf",
+            "03eaff1194c3ae2a54ceefeae31deffaff90436f",
+            "72163e9ae11f39f6579423841a2e20529b986fab",
+            "f8921b1b1d5846eeaff999af10b640011655d1d4",
+            "ee2bb593830c0b8aa30874d162ba2edee1596fea",
+            "143f53ba0a1c81c78d252864ca131d42ed79dc1b",
+            "abc057c985053c983ff3a23a78dcfe3ba1d0b2be",
+            "f0640fe0719b2eb6becda378bff08153d955be07",
+            "9e51e6c5da29de8e617b65b59d46882cde6d3b64",
+        ];
+        using var mapping = Load("migration/source-path-owners.json");
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var rules = mapping.RootElement.GetProperty("rules").EnumerateArray().ToArray();
+        var loggerRule = Assert.Single(rules, rule => Regex.IsMatch(
+            "Maliev.LoggerService.NLog/RequestFailureLogEvent.cs", rule.GetProperty("pattern").GetString()!));
+        Assert.Equal(["Legacy.Maliev.ServiceDefaults"],
+            loggerRule.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!).ToArray());
+        var affected = ownership.RootElement.GetProperty("records").EnumerateArray()
+            .Where(record => record.GetProperty("classifications").EnumerateArray().Any(classification =>
+                classification.GetProperty("path").GetString()?.StartsWith(
+                    "Maliev.LoggerService.", StringComparison.Ordinal) == true))
+            .ToArray();
+        Assert.Equal(loggerShas.Order(StringComparer.Ordinal),
+            affected.Select(record => record.GetProperty("commit").GetString()!).Order(StringComparer.Ordinal));
+        foreach (var record in affected)
+        {
+            Assert.All(record.GetProperty("classifications").EnumerateArray().Where(classification =>
+                classification.GetProperty("path").GetString()?.StartsWith(
+                    "Maliev.LoggerService.", StringComparison.Ordinal) == true), classification =>
+                Assert.Equal(["Legacy.Maliev.ServiceDefaults"],
+                    classification.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!).ToArray()));
+            var resolution = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+                candidate => candidate.GetProperty("sourceSha").GetString() ==
+                    record.GetProperty("commit").GetString());
+            if (record.GetProperty("commit").GetString() is
+                "5fac706a7983a6d359b39acbd670e6800afe020e" or
+                "72eb9f1949176392141951d35e6e06f7c30af4c2" or
+                "90f34b389c298d1ce85abe2ae7ac92877dbbf7af")
+            {
+                Assert.True(resolution.GetProperty("ownerResolutions")
+                    .TryGetProperty("Legacy.Maliev.CompatibilityContracts", out _));
+                continue;
+            }
+            Assert.False(resolution.GetProperty("ownerResolutions")
+                .TryGetProperty("Legacy.Maliev.CompatibilityContracts", out _));
+            var transition = resolution.GetProperty("ownerSetTransition");
+            Assert.Equal("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+                transition.GetProperty("issueUrl").GetString());
+            Assert.Equal("Legacy.Maliev.ServiceDefaults", transition.GetProperty("retainedOwner").GetString());
         }
     }
 

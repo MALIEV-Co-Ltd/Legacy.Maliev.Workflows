@@ -64,8 +64,18 @@ service-specific error/trace contracts; their protected-main Release builds,
 affected test suites, and gated CI passed. NotificationService #31 / PR #33
 (`32d21588`, exact-main CI 36392560478) covers only the Email path, so its
 owner remains **partial** until MessageService #32 is resolved. Intranet,
-CompatibilityContracts, Web, Workflows, and the proposed PredictionService
+Web, Workflows, and the proposed PredictionService
 retirement remain pending. No app deployment or data parity is implied.
+
+Workflows #173 reviews the LoggerService ownership boundary separately.
+`Maliev.LoggerService.*` contains the retired HTTP logger/API and NLog behavior,
+not retained message-wire contracts. The 21 source commits touching that path
+are enumerated exactly in the generator and contract test: 18 lose the false
+CompatibilityContracts owner while retaining ServiceDefaults, each with a
+per-SHA owner-set transition. `5fac706a`, `72eb9f19`, and `90f34b38` retain
+CompatibilityContracts because they also change actual shared/middleware
+paths. No owner-set correction itself proves a ServiceDefaults runtime
+migration or completes any other owner of these commits.
 
 Source commit `7ebe7e4bf83a435ecb18afc29cf263424ed2bb74` persists
 quotation-request journey attribution. Its QuotationService owner is migrated

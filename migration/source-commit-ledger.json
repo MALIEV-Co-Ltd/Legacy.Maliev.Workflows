@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-28T08:06:45.1098948+00:00",
+  "generatedAt": "2026-09-28T08:22:17.2670802+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "legacyTargets": {
@@ -41,8 +41,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/cebf45e8e1eeb600d760a565f8b0970c7f434148"
     },
     "Legacy.Maliev.DataMigration": {
-      "mainSha": "66cd6f98227c2ba2d6008ca9fa679202dd122e17",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/66cd6f98227c2ba2d6008ca9fa679202dd122e17"
+      "mainSha": "9499267df020c1cadda41f63b3772c09b7a3ad47",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/9499267df020c1cadda41f63b3772c09b7a3ad47"
     },
     "Legacy.Maliev.DocumentService": {
       "mainSha": "f309f6a89878600eb8dc721acf73817aa658e54d",
@@ -85,8 +85,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/04d53410fd0c6c42273909dcce399512c11cac66"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "d6af44a4625c513dbe49180a944b1d8b857c3def",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/d6af44a4625c513dbe49180a944b1d8b857c3def"
+      "mainSha": "b36271a9574656b08e667870e1a3d011ed46030a",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/b36271a9574656b08e667870e1a3d011ed46030a"
     }
   },
   "commitCount": 1096,
@@ -4375,7 +4375,6 @@
         {
           "path": "Maliev.LoggerService.Api/Controllers/LogsController.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4384,7 +4383,6 @@
         {
           "path": "Maliev.LoggerService.Api/Dockerfile",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4393,7 +4391,6 @@
         {
           "path": "Maliev.LoggerService.Api/Dockerfile.self-contained",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4402,7 +4399,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4411,7 +4407,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4420,7 +4415,6 @@
         {
           "path": "Maliev.LoggerService.Api/Program.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4429,7 +4423,6 @@
         {
           "path": "Maliev.LoggerService.Api/Properties/launchSettings.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4438,7 +4431,6 @@
         {
           "path": "Maliev.LoggerService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4447,7 +4439,6 @@
         {
           "path": "Maliev.LoggerService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4456,7 +4447,6 @@
         {
           "path": "Maliev.LoggerService.Api/appsettings.Development.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4465,7 +4455,6 @@
         {
           "path": "Maliev.LoggerService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4474,7 +4463,6 @@
         {
           "path": "Maliev.LoggerService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4483,7 +4471,6 @@
         {
           "path": "Maliev.LoggerService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4492,7 +4479,6 @@
         {
           "path": "Maliev.LoggerService.Common/Enumerations/LogSortType.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4501,7 +4487,6 @@
         {
           "path": "Maliev.LoggerService.Common/Maliev.LoggerService.Common.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4510,7 +4495,6 @@
         {
           "path": "Maliev.LoggerService.Common/Maliev.LoggerService.Common.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4519,7 +4503,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/LogContext.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4528,7 +4511,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/Nlog.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4537,7 +4519,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4546,7 +4527,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4555,7 +4535,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4564,7 +4543,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4573,7 +4551,6 @@
         {
           "path": "Maliev.LoggerService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4582,7 +4559,6 @@
         {
           "path": "Maliev.LoggerService.NLog/ILoggerManager.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4591,7 +4567,6 @@
         {
           "path": "Maliev.LoggerService.NLog/LoggerManager.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4600,7 +4575,6 @@
         {
           "path": "Maliev.LoggerService.NLog/Maliev.LoggerService.NLog.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4609,7 +4583,6 @@
         {
           "path": "Maliev.LoggerService.NLog/Maliev.LoggerService.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4618,7 +4591,6 @@
         {
           "path": "Maliev.LoggerService.NLog/nlog.config",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4627,7 +4599,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Logs/GetLogDetailAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4636,7 +4607,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Logs/GetPaginatedLogsAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4645,7 +4615,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Maliev.LoggerService.Tests.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -4654,7 +4623,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Maliev.LoggerService.Tests.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -19520,7 +19488,6 @@
         {
           "path": "Maliev.LoggerService.Api/deploy-service.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -19529,7 +19496,6 @@
         {
           "path": "Maliev.LoggerService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -19538,7 +19504,6 @@
         {
           "path": "Maliev.LoggerService.Api/service.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -21686,7 +21651,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -21695,7 +21659,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/LogContext.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -21704,7 +21667,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/Nlog.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -21713,7 +21675,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -23010,7 +22971,6 @@
         {
           "path": "Maliev.LoggerService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -26147,7 +26107,6 @@
         {
           "path": "Maliev.LoggerService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -26411,7 +26370,6 @@
         {
           "path": "Maliev.LoggerService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -27066,7 +27024,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -27075,7 +27032,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -27084,7 +27040,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Maliev.LoggerService.Tests.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -28065,7 +28020,6 @@
         {
           "path": "Maliev.LoggerService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -38225,7 +38179,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/LogContext.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -38234,7 +38187,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -38243,7 +38195,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -38252,7 +38203,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -38847,7 +38797,6 @@
         {
           "path": "Maliev.LoggerService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -38856,7 +38805,6 @@
         {
           "path": "Maliev.LoggerService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -39456,7 +39404,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -39465,7 +39412,6 @@
         {
           "path": "Maliev.LoggerService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -39474,7 +39420,6 @@
         {
           "path": "Maliev.LoggerService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40712,7 +40657,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40721,7 +40665,6 @@
         {
           "path": "Maliev.LoggerService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40730,7 +40673,6 @@
         {
           "path": "Maliev.LoggerService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40739,7 +40681,6 @@
         {
           "path": "Maliev.LoggerService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40748,7 +40689,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/LogContext.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40757,7 +40697,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40766,7 +40705,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40775,7 +40713,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -40784,7 +40721,6 @@
         {
           "path": "Maliev.LoggerService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42895,7 +42831,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42904,7 +42839,6 @@
         {
           "path": "Maliev.LoggerService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42913,7 +42847,6 @@
         {
           "path": "Maliev.LoggerService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42922,7 +42855,6 @@
         {
           "path": "Maliev.LoggerService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42931,7 +42863,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/LogContext.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42940,7 +42871,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42949,7 +42879,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42958,7 +42887,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -42967,7 +42895,6 @@
         {
           "path": "Maliev.LoggerService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -44815,7 +44742,6 @@
         {
           "path": "Maliev.LoggerService.Api/.dockerignore",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -50170,7 +50096,6 @@
         {
           "path": "Maliev.LoggerService.Api/deploy-service.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -50179,7 +50104,6 @@
         {
           "path": "Maliev.LoggerService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -51903,7 +51827,6 @@
         {
           "path": "Maliev.LoggerService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -54143,7 +54066,6 @@
         {
           "path": "Maliev.LoggerService.NLog/nlog.config",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -61989,7 +61911,6 @@
         {
           "path": "Maliev.LoggerService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72587,7 +72508,6 @@
         {
           "path": "Maliev.LoggerService.NLog/ILoggerManager.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72596,7 +72516,6 @@
         {
           "path": "Maliev.LoggerService.NLog/LoggerManager.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72605,7 +72524,6 @@
         {
           "path": "Maliev.LoggerService.NLog/Maliev.LoggerService.NLog.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72614,7 +72532,6 @@
         {
           "path": "Maliev.LoggerService.NLog/Maliev.LoggerService.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72623,7 +72540,6 @@
         {
           "path": "Maliev.LoggerService.NLog/RequestFailureLogEvent.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72632,7 +72548,6 @@
         {
           "path": "Maliev.LoggerService.NLog/nlog.config",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72742,7 +72657,6 @@
         {
           "path": "Maliev.LoggerService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72751,7 +72665,6 @@
         {
           "path": "Maliev.LoggerService.NLog/ExceptionHandlerApplicationBuilderExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -72760,7 +72673,6 @@
         {
           "path": "Maliev.LoggerService.NLog/Maliev.LoggerService.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73721,7 +73633,6 @@
         {
           "path": "Maliev.LoggerService.Api/.dockerignore",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73730,7 +73641,6 @@
         {
           "path": "Maliev.LoggerService.Api/Controllers/LogsController.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73739,7 +73649,6 @@
         {
           "path": "Maliev.LoggerService.Api/Dockerfile",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73748,7 +73657,6 @@
         {
           "path": "Maliev.LoggerService.Api/Dockerfile.self-contained",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73757,7 +73665,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73766,7 +73673,6 @@
         {
           "path": "Maliev.LoggerService.Api/Maliev.LoggerService.Api.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73775,7 +73681,6 @@
         {
           "path": "Maliev.LoggerService.Api/Program.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73784,7 +73689,6 @@
         {
           "path": "Maliev.LoggerService.Api/Properties/launchSettings.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73793,7 +73697,6 @@
         {
           "path": "Maliev.LoggerService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73802,7 +73705,6 @@
         {
           "path": "Maliev.LoggerService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73811,7 +73713,6 @@
         {
           "path": "Maliev.LoggerService.Api/appsettings.Development.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73820,7 +73721,6 @@
         {
           "path": "Maliev.LoggerService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73829,7 +73729,6 @@
         {
           "path": "Maliev.LoggerService.Api/deploy-service.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73838,7 +73737,6 @@
         {
           "path": "Maliev.LoggerService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73847,7 +73745,6 @@
         {
           "path": "Maliev.LoggerService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73856,7 +73753,6 @@
         {
           "path": "Maliev.LoggerService.Api/service.yaml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73865,7 +73761,6 @@
         {
           "path": "Maliev.LoggerService.Common/Enumerations/LogSortType.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73874,7 +73769,6 @@
         {
           "path": "Maliev.LoggerService.Common/Maliev.LoggerService.Common.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73883,7 +73777,6 @@
         {
           "path": "Maliev.LoggerService.Common/Maliev.LoggerService.Common.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73892,7 +73785,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/LogContext.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73901,7 +73793,6 @@
         {
           "path": "Maliev.LoggerService.Data/Database/LoggerContext/Nlog.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73910,7 +73801,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73919,7 +73809,6 @@
         {
           "path": "Maliev.LoggerService.Data/Maliev.LoggerService.Data.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73928,7 +73817,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73937,7 +73825,6 @@
         {
           "path": "Maliev.LoggerService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73946,7 +73833,6 @@
         {
           "path": "Maliev.LoggerService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73955,7 +73841,6 @@
         {
           "path": "Maliev.LoggerService.NLog/ExceptionHandlerApplicationBuilderExtensions.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73964,7 +73849,6 @@
         {
           "path": "Maliev.LoggerService.NLog/ILoggerManager.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73973,7 +73857,6 @@
         {
           "path": "Maliev.LoggerService.NLog/LoggerManager.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73982,7 +73865,6 @@
         {
           "path": "Maliev.LoggerService.NLog/Maliev.LoggerService.NLog.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -73991,7 +73873,6 @@
         {
           "path": "Maliev.LoggerService.NLog/Maliev.LoggerService.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74000,7 +73881,6 @@
         {
           "path": "Maliev.LoggerService.NLog/RequestFailureLogEvent.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74009,7 +73889,6 @@
         {
           "path": "Maliev.LoggerService.NLog/nlog.config",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74018,7 +73897,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Logs/GetLogDetailAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74027,7 +73905,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Logs/GetPaginatedLogsAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74036,7 +73913,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Maliev.LoggerService.Tests.csproj",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
@@ -74045,7 +73921,6 @@
         {
           "path": "Maliev.LoggerService.Tests/Maliev.LoggerService.Tests.xml",
           "owners": [
-            "Legacy.Maliev.CompatibilityContracts",
             "Legacy.Maliev.ServiceDefaults"
           ],
           "disposition": "migration-required",
