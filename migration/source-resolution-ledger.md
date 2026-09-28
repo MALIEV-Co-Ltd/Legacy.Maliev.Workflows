@@ -32,6 +32,15 @@ an explicit reason and approval URL. Mixed commits cannot be complete until
 all owner and retirement decisions are proven. An exact formatting-only no-op
 has a separate disposition and is never labeled runtime migration.
 
+Source `cbac7d7155da2208c77d56103b6a2cb19196fc83` removed an embedded
+HS256 key and required external signing material. AuthService's merged PR #1
+replaced this with required runtime-projected RS256 private-key material and
+startup validation; current-main CI 36417095916 passed. This is a deliberate
+security-preserving architectural replacement, not HS256 wire compatibility.
+Workflows issue #191 tracks the remaining issuer/validator owners. The overall
+source SHA remains partial until each changed-path owner has independent
+evidence; this entry does not authorize deployment or token cutover.
+
 Source `7255bd59625694a9da85b964ad6ffa32c1490cec` adds a fail-closed,
 PII-free aggregate outcome receipt validator with quotation/invoice wire
 fixtures and regression tests. Workflows #180 links its sole owner to the

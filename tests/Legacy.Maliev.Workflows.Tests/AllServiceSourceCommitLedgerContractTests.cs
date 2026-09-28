@@ -331,6 +331,30 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     }
 
     [Fact]
+    public void Source_cbac_Auth_runtime_key_replacement_is_tracked_without_closing_other_owners()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "cbac7d7155da2208c77d56103b6a2cb19196fc83");
+
+        Assert.Equal("partial", record.GetProperty("status").GetString());
+        var owners = record.GetProperty("ownerResolutions");
+        var auth = owners.GetProperty("Legacy.Maliev.AuthService");
+        Assert.Equal("migrated", auth.GetProperty("status").GetString());
+        Assert.Equal("28cbbcc1750ba30db516c7d7a63bf51ed4f4fa39",
+            auth.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/191",
+            auth.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/1",
+            auth.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/actions/runs/36417095916",
+            auth.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains(owners.EnumerateObject(), owner => owner.Name != "Legacy.Maliev.AuthService"
+            && owner.Value.GetProperty("status").GetString() == "pending");
+    }
+
+    [Fact]
     public void Ownership_map_has_unambiguous_valid_rules()
     {
         using var document = Load("migration/source-path-owners.json");
