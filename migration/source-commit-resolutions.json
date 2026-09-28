@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-28T08:09:11.3452786+00:00",
+  "generatedAt": "2026-09-28T08:24:26.1738694+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "sourceCommitCount": 1096,
@@ -1153,13 +1153,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -1254,6 +1247,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -2002,13 +2002,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -2109,6 +2102,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -2181,13 +2181,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -2287,6 +2280,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -2351,13 +2351,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -2457,6 +2450,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -2872,13 +2872,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -2958,6 +2951,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -5737,13 +5737,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -5818,6 +5811,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -5871,13 +5871,6 @@
           "validationEvidenceUrls": []
         },
         "Legacy.Maliev.CatalogService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
-        "Legacy.Maliev.CompatibilityContracts": {
           "status": "pending",
           "issueUrls": [],
           "prUrls": [],
@@ -5980,6 +5973,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -6039,13 +6039,6 @@
           "validationEvidenceUrls": []
         },
         "Legacy.Maliev.CatalogService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
-        "Legacy.Maliev.CompatibilityContracts": {
           "status": "pending",
           "issueUrls": [],
           "prUrls": [],
@@ -6139,6 +6132,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -6237,13 +6237,6 @@
           "validationEvidenceUrls": []
         },
         "Legacy.Maliev.CatalogService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
-        "Legacy.Maliev.CompatibilityContracts": {
           "status": "pending",
           "issueUrls": [],
           "prUrls": [],
@@ -6367,6 +6360,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -6522,13 +6522,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -6646,6 +6639,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -6831,13 +6831,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -6930,6 +6923,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -8472,13 +8472,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -8581,6 +8574,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -8898,13 +8898,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -8984,6 +8977,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -9755,13 +9755,6 @@
       "isMerge": false,
       "status": "pending",
       "ownerResolutions": {
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.ServiceDefaults": {
           "status": "pending",
           "issueUrls": [],
@@ -9777,7 +9770,14 @@
           "validationEvidenceUrls": []
         }
       },
-      "retirementApproval": null
+      "retirementApproval": null,
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
+      }
     },
     {
       "sourceSha": "a76d1c66c2c1545328c477837e933f063f2d7ece",
@@ -11598,13 +11598,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -11690,6 +11683,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -14401,13 +14401,6 @@
       "isMerge": false,
       "status": "pending",
       "ownerResolutions": {
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.ServiceDefaults": {
           "status": "pending",
           "issueUrls": [],
@@ -14423,7 +14416,14 @@
           "validationEvidenceUrls": []
         }
       },
-      "retirementApproval": null
+      "retirementApproval": null,
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
+      }
     },
     {
       "sourceSha": "f0640fe0719b2eb6becda378bff08153d955be07",
@@ -14481,13 +14481,6 @@
           "validationEvidenceUrls": [
             "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/actions/runs/36388500752"
           ]
-        },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
         },
         "Legacy.Maliev.CountryService": {
           "status": "migrated",
@@ -14655,6 +14648,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {
@@ -14823,13 +14823,6 @@
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
         },
-        "Legacy.Maliev.CompatibilityContracts": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
-        },
         "Legacy.Maliev.CountryService": {
           "status": "pending",
           "issueUrls": [],
@@ -14941,6 +14934,13 @@
         ],
         "reason": null,
         "evidenceUrl": null
+      },
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.CompatibilityContracts",
+        "retainedOwner": "Legacy.Maliev.ServiceDefaults",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173",
+        "priorIssueUrls": [],
+        "reason": "Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior."
       }
     },
     {

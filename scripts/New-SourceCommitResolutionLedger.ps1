@@ -55,11 +55,13 @@ function Assert-EvidenceUrls([object[]] $Urls, [string] $Suffix) {
 # Workflows #138 reviewed six path mappings. Only three commits lose the
 # CompatibilityContracts owner entirely; mixed commits retain that valid owner.
 $reviewedOwnerTransitions = @{}
+$reviewedTransitionPatterns = @{}
 @(
     '3d6506285a58671651d046e97a35fbb8885cea4f',
     '7b311e4e7f0dd80be0441abc2625dab295179f1a',
     '5ac7d045c51194edd9e64d8564f1b726b001be34'
 ) | ForEach-Object {
+    $reviewedTransitionPatterns[$_] = '^Maliev\.(?:NativeLogging|Service\.WebApi)/'
     $reviewedOwnerTransitions[$_] = [ordered]@{
         removedOwner = 'Legacy.Maliev.CompatibilityContracts'
         retainedOwner = 'Legacy.Maliev.ServiceDefaults'
@@ -70,6 +72,35 @@ $reviewedOwnerTransitions = @{}
     if ($_ -ceq '7b311e4e7f0dd80be0441abc2625dab295179f1a') {
         $reviewedOwnerTransitions[$_].priorIssueUrls = @(
             'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/138')
+    }
+}
+@(
+    '3a393215d883fa35e1461f69c876bf2ead7ce36e',
+    '5458b7ddc81a15d72087fa69fb4cfcc27ae75747',
+    '53f4baf373ef04a3ed5ab5c1ef39bd61404c5258',
+    '93f9f99522fbe6c128acb5d049f2b448e07dba95',
+    '00ec830615c15b5e4e227046712247b11df0100f',
+    '2aab25eb07894fc0267b03b85bad96490219d2fa',
+    '7d6f46f53cbab853ca9c25e385af067cfff6238a',
+    'cbac7d7155da2208c77d56103b6a2cb19196fc83',
+    'eb8ed86672bd9afccc6560b547b734d0fcd7363b',
+    'a649db99a27bda65274fe1b18866ae226d3c69cf',
+    '03eaff1194c3ae2a54ceefeae31deffaff90436f',
+    '72163e9ae11f39f6579423841a2e20529b986fab',
+    'f8921b1b1d5846eeaff999af10b640011655d1d4',
+    'ee2bb593830c0b8aa30874d162ba2edee1596fea',
+    '143f53ba0a1c81c78d252864ca131d42ed79dc1b',
+    'abc057c985053c983ff3a23a78dcfe3ba1d0b2be',
+    'f0640fe0719b2eb6becda378bff08153d955be07',
+    '9e51e6c5da29de8e617b65b59d46882cde6d3b64'
+) | ForEach-Object {
+    $reviewedTransitionPatterns[$_] = '^Maliev\.LoggerService\.'
+    $reviewedOwnerTransitions[$_] = [ordered]@{
+        removedOwner = 'Legacy.Maliev.CompatibilityContracts'
+        retainedOwner = 'Legacy.Maliev.ServiceDefaults'
+        issueUrl = 'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/173'
+        priorIssueUrls = @()
+        reason = 'Retired LoggerService HTTP logging and NLog are not retained message-wire contracts; ServiceDefaults owns the replacement failure-tracing behavior.'
     }
 }
 
@@ -129,7 +160,7 @@ $records = foreach ($source in $ledger.records) {
     if ($transition) {
         $reviewedTransitionCount++
         if (-not $old -or -not @($source.classifications | Where-Object {
-            $_.path -match '^Maliev\.(?:NativeLogging|Service\.WebApi)/'
+            $_.path -match $reviewedTransitionPatterns[$source.commit]
         }).Count -or $owners -cnotcontains $transition.retainedOwner -or
             $owners -ccontains $transition.removedOwner) {
             throw "The reviewed owner transition does not match the source classification for $($source.commit)."
@@ -206,7 +237,7 @@ $records = foreach ($source in $ledger.records) {
     $record
 }
 if ($reviewedTransitionCount -ne $reviewedOwnerTransitions.Count) {
-    throw 'The exact three reviewed owner-set transitions were not present in the complete source ledger.'
+    throw 'The exact reviewed owner-set transitions were not present in the complete source ledger.'
 }
 $sourceShaSet = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 foreach ($record in $records) { $null = $sourceShaSet.Add($record.sourceSha) }
