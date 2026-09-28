@@ -20116,10 +20116,17 @@
       "ownerResolutions": {
         "Legacy.Maliev.Web": {
           "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/309"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/360",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/381"
+          ],
           "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36412644580"
+          ]
         }
       },
       "retirementApproval": null
