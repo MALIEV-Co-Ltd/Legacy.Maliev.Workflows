@@ -106,6 +106,13 @@ $reviewedTransitionPatterns = @{}
 
 $resolvedCount = 0
 $reviewedTransitionCount = 0
+$formatOnlySha = '61df92fb171a5c1c65a46a07cd70777d87e1a46e'
+$formatOnlyPaths = @(
+    'Maliev.QuotationRequestService.Common/Models/QualificationOutcomeReadback.cs',
+    'Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationOutcomeReadbackTests.cs',
+    'Maliev.Web.Tests/MeasurementRuntimeBrowserTests.cs'
+)
+$formatOnlyOwners = @('Legacy.Maliev.QuotationService', 'Legacy.Maliev.Web')
 $records = foreach ($source in $ledger.records) {
     $owners = @($source.classifications | Where-Object { $_.disposition -ceq 'migration-required' } |
         ForEach-Object { $_.owners } | Where-Object { $_ } | Sort-Object -Unique -CaseSensitive)
@@ -127,7 +134,7 @@ $records = foreach ($source in $ledger.records) {
                 validationEvidenceUrls = @()
             }
         }
-        if ($item.status -cnotin @('pending', 'partial', 'migrated', 'blocked')) {
+        if ($item.status -cnotin @('pending', 'partial', 'migrated', 'blocked', 'approved-no-op')) {
             throw "Invalid owner resolution status for $($source.commit)."
         }
         if ($item.status -cin @('partial', 'migrated')) {
@@ -152,6 +159,37 @@ $records = foreach ($source in $ledger.records) {
             & git -C $targetPath merge-base --is-ancestor $item.mergedTargetSha $ledger.legacyTargets[$owner].mainSha
             if ($LASTEXITCODE -ne 0) {
                 throw "The merged target SHA is not an ancestor of protected main for $owner."
+            }
+        }
+        if ($item.status -ceq 'approved-no-op') {
+            if ($source.commit -cne $formatOnlySha -or $source.isMerge -or
+                (@($owners | Sort-Object -CaseSensitive) -join '|') -cne
+                    (@($formatOnlyOwners | Sort-Object -CaseSensitive) -join '|') -or
+                (@($source.classifications | ForEach-Object { $_.path } | Sort-Object -CaseSensitive) -join '|') -cne
+                    (@($formatOnlyPaths | Sort-Object -CaseSensitive) -join '|') -or
+                (@($item.issueUrls) -join '|') -cne
+                    'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/175' -or
+                [string]::IsNullOrWhiteSpace([string]$item.reason) -or
+                $item.reviewedTargetSha -cnotmatch '^[0-9a-f]{40}$' -or
+                @($item.prUrls | Where-Object { $_ }).Count -ne 0 -or
+                @($item.validationEvidenceUrls | Where-Object { $_ }).Count -ne 0 -or
+                -not [string]::IsNullOrEmpty([string]$item.mergedTargetSha)) {
+                throw "The exact owner no-op disposition is invalid for $($source.commit)."
+            }
+            $changedPaths = @(git -C $SourceRepository diff --name-only $source.parents[0] $source.commit)
+            if ($LASTEXITCODE -ne 0 -or
+                (@($changedPaths | Sort-Object -CaseSensitive) -join '|') -cne
+                    (@($formatOnlyPaths | Sort-Object -CaseSensitive) -join '|')) {
+                throw 'The reviewed source commit no longer has the exact three formatting-only paths.'
+            }
+            & git -C $SourceRepository diff --ignore-space-at-eol --quiet $source.parents[0] $source.commit
+            if ($LASTEXITCODE -ne 0) {
+                throw 'The reviewed source commit contains a non-formatting content change.'
+            }
+            $targetPath = Join-Path $LegacyRoot $owner
+            & git -C $targetPath merge-base --is-ancestor $item.reviewedTargetSha $ledger.legacyTargets[$owner].mainSha
+            if ($LASTEXITCODE -ne 0) {
+                throw "The reviewed no-op target SHA is not an ancestor of protected main for $owner."
             }
         }
         $ownerResolutions[$owner] = $item
@@ -213,19 +251,23 @@ $records = foreach ($source in $ledger.records) {
         throw "A prior retirement candidate disappeared for $($source.commit)."
     }
 
-    $allOwnersMigrated = $owners.Count -eq 0 -or
+    $allOwnersMigrated = $owners.Count -gt 0 -and
         @($ownerResolutions.Values | Where-Object { $_.status -cne 'migrated' }).Count -eq 0
+    $allOwnersNoOp = $owners.Count -gt 0 -and
+        @($ownerResolutions.Values | Where-Object { $_.status -cne 'approved-no-op' }).Count -eq 0
     $retirementApproved = -not $retirement -or $retirement.status -ceq 'approved'
     # A validated subset is visible as partial, but cannot increment the fully
     # resolved count until every owner and retirement decision is complete.
-    $anyResolved = @($ownerResolutions.Values | Where-Object { $_.status -cin @('partial', 'migrated') }).Count -gt 0 -or
+    $anyResolved = @($ownerResolutions.Values | Where-Object {
+        $_.status -cin @('partial', 'migrated', 'approved-no-op') }).Count -gt 0 -or
         ($retirement -and $retirement.status -ceq 'approved')
     $anyBlocked = @($ownerResolutions.Values | Where-Object { $_.status -ceq 'blocked' }).Count -gt 0 -or
         ($retirement -and $retirement.status -ceq 'blocked')
-    $status = if ($allOwnersMigrated -and $retirementApproved) {
-        if ($owners.Count -gt 0) { 'migrated' } else { 'approved-retirement' }
-    } elseif ($anyResolved) { 'partial' } elseif ($anyBlocked) { 'blocked' } else { 'pending' }
-    if ($status -in @('migrated', 'approved-retirement')) { $resolvedCount++ }
+    $status = if ($allOwnersMigrated -and $retirementApproved) { 'migrated' }
+        elseif ($allOwnersNoOp -and $retirementApproved) { 'approved-no-op' }
+        elseif ($owners.Count -eq 0 -and $retirementApproved) { 'approved-retirement' }
+        elseif ($anyResolved) { 'partial' } elseif ($anyBlocked) { 'blocked' } else { 'pending' }
+    if ($status -in @('migrated', 'approved-no-op', 'approved-retirement')) { $resolvedCount++ }
     $record = [ordered]@{
         sourceSha = $source.commit
         isMerge = [bool]$source.isMerge
