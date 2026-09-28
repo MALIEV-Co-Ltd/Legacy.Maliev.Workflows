@@ -2,6 +2,7 @@ $ErrorActionPreference = 'Stop'
 
 $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $GateScript = Join-Path $RepositoryRoot 'scripts\Test-LegacyPublication.ps1'
+$ResourceScanScript = Join-Path $RepositoryRoot 'scripts\Invoke-JwtSigningResourceScan.ps1'
 $PublishScript = Join-Path $RepositoryRoot 'scripts\Publish-LegacyRepository.ps1'
 $RealGit = (Get-Command git -CommandType Application | Select-Object -First 1).Source
 
@@ -494,6 +495,24 @@ internal static string TokenSigningMaterial {
             $result.ExitCode | Should Not Be 0
             $result.Output | Should Match 'resource XML cannot be safely inspected; details redacted'
             $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'uses the same redacted resource scan from a clean split-repository checkout' {
+        $fixture = New-PublicationFixture
+        try {
+            $clean = Invoke-Process $fixture.Repository 'pwsh' @('-NoProfile', '-File', $ResourceScanScript, '-RepositoryPath', $fixture.Repository)
+            $clean.ExitCode | Should Be 0
+
+            $value = 'fixture-' + 'routine-signing-material'
+            Set-Content (Join-Path $fixture.Repository 'Resources.resx') ('<root><data name="TokenSigningMaterial"><value>' + $value + '</value></data></root>')
+            Invoke-Git $fixture.Repository add Resources.resx | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture routine resource' | Out-Null
+            $rejected = Invoke-Process $fixture.Repository 'pwsh' @('-NoProfile', '-File', $ResourceScanScript, '-RepositoryPath', $fixture.Repository)
+
+            $rejected.ExitCode | Should Not Be 0
+            $rejected.Output | Should Match 'JWT signing material in a resource; value redacted'
+            $rejected.Output | Should Not Match ([regex]::Escape($value))
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 

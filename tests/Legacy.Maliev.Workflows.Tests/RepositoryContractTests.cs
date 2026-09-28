@@ -178,6 +178,25 @@ public sealed class RepositoryContractTests
     }
 
     [Fact]
+    public void ForkSafeValidationAction_WhenResourcesAreChecked_RunsRedactedScanBeforeRestore()
+    {
+        string action = ReadRequiredSource("actions/dotnet-validate/action.yml");
+        string runner = ReadRequiredSource("scripts/Invoke-JwtSigningResourceScan.ps1");
+        string scanner = ReadRequiredSource("scripts/JwtSigningResourceScanner.ps1");
+
+        int scan = action.IndexOf("- name: Scan JWT signing resources", StringComparison.Ordinal);
+        int restore = action.IndexOf("- name: Restore", StringComparison.Ordinal);
+        Assert.True(scan > 0 && scan < restore);
+        Assert.Contains("shell: pwsh", action[scan..restore], StringComparison.Ordinal);
+        Assert.Contains("Invoke-JwtSigningResourceScan.ps1", action[scan..restore], StringComparison.Ordinal);
+        Assert.Contains("-RepositoryPath $env:GITHUB_WORKSPACE", action[scan..restore], StringComparison.Ordinal);
+        Assert.Contains("git -C $resolvedRepositoryPath ls-files -z", runner, StringComparison.Ordinal);
+        Assert.Contains("JwtSigningResourceScanner.ps1", runner, StringComparison.Ordinal);
+        Assert.Contains("$settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit", scanner, StringComparison.Ordinal);
+        Assert.Contains("value redacted", runner, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ForkSafeValidationAction_WhenLocalDependenciesAreConfigured_UsesAnExactSafeBooleanContract()
     {
         string source = ReadRequiredSource("actions/dotnet-validate/action.yml");
