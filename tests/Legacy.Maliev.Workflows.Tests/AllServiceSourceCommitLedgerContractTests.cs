@@ -10,6 +10,25 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     private static readonly Regex Sha = new("^[0-9a-f]{40}$", RegexOptions.CultureInvariant);
 
     [Fact]
+    public void Source_d6d06_Auth_async_callback_warning_has_equivalent_merged_boundary()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "d6d06a282125f01d119ac2beec7f8d335608328f");
+
+        Assert.Equal("migrated", record.GetProperty("status").GetString());
+        var auth = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.AuthService");
+        Assert.Equal("migrated", auth.GetProperty("status").GetString());
+        Assert.Equal("b328301b0ec901e6c0261cc29544e0b542a93197",
+            auth.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/70",
+            auth.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/actions/runs/36360294396",
+            auth.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+    }
+
+    [Fact]
     public void Ownership_map_has_unambiguous_valid_rules()
     {
         using var document = Load("migration/source-path-owners.json");
