@@ -10,6 +10,42 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     private static readonly Regex Sha = new("^[0-9a-f]{40}$", RegexOptions.CultureInvariant);
 
     [Fact]
+    public void Source_61df_formatting_only_has_two_approved_no_op_owners_not_runtime_migrations()
+    {
+        const string sourceSha = "61df92fb171a5c1c65a46a07cd70777d87e1a46e";
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var source = Assert.Single(ownership.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("commit").GetString() == sourceSha);
+        Assert.Equal([
+            "Maliev.QuotationRequestService.Common/Models/QualificationOutcomeReadback.cs",
+            "Maliev.QuotationRequestService.Tests/QuotationRequests/QualificationOutcomeReadbackTests.cs",
+            "Maliev.Web.Tests/MeasurementRuntimeBrowserTests.cs",
+        ], source.GetProperty("classifications").EnumerateArray()
+            .Select(item => item.GetProperty("path").GetString()!).ToArray());
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("sourceSha").GetString() == sourceSha);
+        Assert.Equal("approved-no-op", record.GetProperty("status").GetString());
+        var owners = record.GetProperty("ownerResolutions");
+        Assert.Equal(["Legacy.Maliev.QuotationService", "Legacy.Maliev.Web"],
+            owners.EnumerateObject().Select(item => item.Name).ToArray());
+        foreach (var owner in owners.EnumerateObject())
+        {
+            var disposition = owner.Value;
+            Assert.Equal("approved-no-op", disposition.GetProperty("status").GetString());
+            Assert.Equal("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/175",
+                Assert.Single(disposition.GetProperty("issueUrls").EnumerateArray()).GetString());
+            Assert.Empty(disposition.GetProperty("prUrls").EnumerateArray());
+            Assert.Equal(JsonValueKind.Null, disposition.GetProperty("mergedTargetSha").ValueKind);
+            Assert.Empty(disposition.GetProperty("validationEvidenceUrls").EnumerateArray());
+            Assert.False(string.IsNullOrWhiteSpace(disposition.GetProperty("reason").GetString()));
+            Assert.Equal(ownership.RootElement.GetProperty("legacyTargets").GetProperty(owner.Name)
+                .GetProperty("mainSha").GetString(), disposition.GetProperty("reviewedTargetSha").GetString());
+        }
+        Assert.Equal(JsonValueKind.Null, record.GetProperty("retirementApproval").ValueKind);
+    }
+
+    [Fact]
     public void Source_f0640_failure_tracing_shared_owner_is_migrated_without_closing_other_owners()
     {
         using var resolutions = Load("migration/source-commit-resolutions.json");
@@ -763,7 +799,7 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             Assert.Equal(sourceCommit.GetProperty("isMerge").GetBoolean(),
                 record.GetProperty("isMerge").GetBoolean());
             Assert.Contains(record.GetProperty("status").GetString(),
-                new[] { "pending", "partial", "blocked", "migrated", "approved-retirement" });
+                new[] { "pending", "partial", "blocked", "migrated", "approved-no-op", "approved-retirement" });
             var expectedOwners = sourceCommit.GetProperty("classifications").EnumerateArray()
                 .Where(item => item.GetProperty("disposition").GetString() == "migration-required")
                 .SelectMany(item => item.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!))
@@ -775,13 +811,21 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             {
                 var result = owner.Value;
                 Assert.Contains(result.GetProperty("status").GetString(),
-                    new[] { "pending", "partial", "blocked", "migrated" });
+                    new[] { "pending", "partial", "blocked", "migrated", "approved-no-op" });
                 if (result.GetProperty("status").GetString() is "partial" or "migrated")
                 {
                     Assert.NotEmpty(result.GetProperty("issueUrls").EnumerateArray());
                     Assert.NotEmpty(result.GetProperty("prUrls").EnumerateArray());
                     Assert.Matches(Sha, result.GetProperty("mergedTargetSha").GetString()!);
                     Assert.NotEmpty(result.GetProperty("validationEvidenceUrls").EnumerateArray());
+                }
+                if (result.GetProperty("status").GetString() == "approved-no-op")
+                {
+                    Assert.Equal("61df92fb171a5c1c65a46a07cd70777d87e1a46e", sha);
+                    Assert.Equal(JsonValueKind.Null, result.GetProperty("mergedTargetSha").ValueKind);
+                    Assert.Empty(result.GetProperty("prUrls").EnumerateArray());
+                    Assert.Empty(result.GetProperty("validationEvidenceUrls").EnumerateArray());
+                    Assert.Matches(Sha, result.GetProperty("reviewedTargetSha").GetString()!);
                 }
             }
             var retirement = record.GetProperty("retirementApproval");
@@ -851,6 +895,7 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.DoesNotContain("git -C $SourceRepository fetch", resolutionScript, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("git -C $SourceRepository reset", resolutionScript, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("merge-base --is-ancestor", resolutionScript, StringComparison.Ordinal);
+        Assert.Contains("diff --ignore-space-at-eol --quiet", resolutionScript, StringComparison.Ordinal);
     }
 
     private static JsonDocument Load(string relativePath) =>

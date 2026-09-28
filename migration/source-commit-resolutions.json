@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-28T08:24:26.1738694+00:00",
+  "generatedAt": "2026-09-28T08:43:11.3872165+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "sourceCommitCount": 1096,
-  "fullyResolvedCommitCount": 95,
-  "unresolvedCommitCount": 1001,
+  "fullyResolvedCommitCount": 96,
+  "unresolvedCommitCount": 1000,
   "complete": false,
   "records": [
     {
@@ -21880,21 +21880,29 @@
     {
       "sourceSha": "61df92fb171a5c1c65a46a07cd70777d87e1a46e",
       "isMerge": false,
-      "status": "pending",
+      "status": "approved-no-op",
       "ownerResolutions": {
         "Legacy.Maliev.QuotationService": {
-          "status": "pending",
-          "issueUrls": [],
+          "status": "approved-no-op",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/175"
+          ],
           "prUrls": [],
           "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "validationEvidenceUrls": [],
+          "reviewedTargetSha": "db1427dcc73e3d98f14f7192c36e3d13b72fc42a",
+          "reason": "The exact source commit removes only final newlines from this owner's DTO and test; there is no runtime or wire change to migrate."
         },
         "Legacy.Maliev.Web": {
-          "status": "pending",
-          "issueUrls": [],
+          "status": "approved-no-op",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/175"
+          ],
           "prUrls": [],
           "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "validationEvidenceUrls": [],
+          "reviewedTargetSha": "04d53410fd0c6c42273909dcce399512c11cac66",
+          "reason": "The exact source commit removes only the final newline from this owner's browser test; there is no runtime or assertion change to migrate."
         }
       },
       "retirementApproval": null

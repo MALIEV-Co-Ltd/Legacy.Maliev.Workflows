@@ -21,9 +21,21 @@ resolution. Each owning Legacy repository starts `pending`. A candidate
 retirement also starts `pending`, even where the path rule says
 `approved-retirement` or `source-tooling-only`; the path-rule explanation is not
 an owner approval. The generated `complete` flag remains false until every
-owner has issue, merged PR, protected-main ancestor SHA, and validation URLs,
-and every candidate retirement has an explicit reason and approval URL.
-Mixed commits cannot be complete until both kinds of resolution are proven.
+owner is independently resolved. Runtime migration requires issue, merged PR,
+protected-main ancestor SHA, and validation URLs; candidate retirement needs
+an explicit reason and approval URL. Mixed commits cannot be complete until
+all owner and retirement decisions are proven. An exact formatting-only no-op
+has a separate disposition and is never labeled runtime migration.
+
+Source `61df92fb171a5c1c65a46a07cd70777d87e1a46e` is an approved no-op for
+both QuotationService and Web under Workflows #175. The committed three-path
+diff removes only final newlines; `git diff --ignore-space-at-eol --exit-code`
+against its first parent is empty. The resolution generator limits this
+disposition to the exact SHA, three paths and two owners, then verifies each
+owner's reviewed target SHA is an ancestor of the ledger's protected-main
+snapshot. Neither owner has a migration PR or merged runtime SHA for this
+source commit. It does not certify broader quotation or Web parity, deployment,
+or production data.
 
 Source `f0640fe0719b2eb6becda378bff08153d955be07` has a CatalogService
 owner for the original MaterialService exception-handler change. CatalogService
