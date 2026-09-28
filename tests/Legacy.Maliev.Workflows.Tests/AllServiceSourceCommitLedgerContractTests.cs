@@ -304,6 +304,25 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     }
 
     [Fact]
+    public void Source_8ec87_ABS_heated_enclosure_energy_is_resolved_on_Web_main()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "8ec87e40c1104485537823bb5059833f2735cc9e");
+
+        Assert.Equal("migrated", record.GetProperty("status").GetString());
+        var web = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
+        Assert.Equal("migrated", web.GetProperty("status").GetString());
+        Assert.Equal("5f5fb73591fe980433c1771d6b8d7c93f86e2269",
+            web.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/368",
+            web.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36363602749",
+            web.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+    }
+
+    [Fact]
     public void Source_492577_web_no_prune_is_resolved_only_after_exact_main_validation()
     {
         using var resolutions = Load("migration/source-commit-resolutions.json");
