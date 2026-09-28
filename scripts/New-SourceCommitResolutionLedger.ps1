@@ -96,25 +96,25 @@ $records = foreach ($source in $ledger.records) {
                 validationEvidenceUrls = @()
             }
         }
-        if ($item.status -cnotin @('pending', 'migrated', 'blocked')) {
+        if ($item.status -cnotin @('pending', 'partial', 'migrated', 'blocked')) {
             throw "Invalid owner resolution status for $($source.commit)."
         }
-        if ($item.status -ceq 'migrated') {
+        if ($item.status -cin @('partial', 'migrated')) {
             if (@($item.issueUrls).Count -eq 0 -or @($item.prUrls).Count -eq 0 -or
                 @($item.validationEvidenceUrls).Count -eq 0 -or
                 $item.mergedTargetSha -cnotmatch '^[0-9a-f]{40}$') {
-                throw "Migrated owner $owner lacks issue, PR, main SHA, or validation evidence."
+                throw "Resolved slice for $owner lacks issue, PR, main SHA, or validation evidence."
             }
             Assert-EvidenceUrls @($item.issueUrls) 'issues/[0-9]+'
             foreach ($prUrl in @($item.prUrls)) {
                 if ($prUrl -cnotmatch ('^https://github\.com/MALIEV-Co-Ltd/' +
                     [regex]::Escape($owner) + '/pull/[0-9]+$')) {
-                    throw "A migrated $owner resolution points to a PR in a different repository."
+                    throw "A resolved $owner slice points to a PR in a different repository."
                 }
             }
             foreach ($evidenceUrl in @($item.validationEvidenceUrls)) {
                 if ($evidenceUrl -cnotmatch '^https://') {
-                    throw "A migrated $owner resolution has a non-URL validation reference."
+                    throw "A resolved $owner slice has a non-URL validation reference."
                 }
             }
             $targetPath = Join-Path $LegacyRoot $owner
@@ -185,7 +185,9 @@ $records = foreach ($source in $ledger.records) {
     $allOwnersMigrated = $owners.Count -eq 0 -or
         @($ownerResolutions.Values | Where-Object { $_.status -cne 'migrated' }).Count -eq 0
     $retirementApproved = -not $retirement -or $retirement.status -ceq 'approved'
-    $anyResolved = @($ownerResolutions.Values | Where-Object { $_.status -ceq 'migrated' }).Count -gt 0 -or
+    # A validated subset is visible as partial, but cannot increment the fully
+    # resolved count until every owner and retirement decision is complete.
+    $anyResolved = @($ownerResolutions.Values | Where-Object { $_.status -cin @('partial', 'migrated') }).Count -gt 0 -or
         ($retirement -and $retirement.status -ceq 'approved')
     $anyBlocked = @($ownerResolutions.Values | Where-Object { $_.status -ceq 'blocked' }).Count -gt 0 -or
         ($retirement -and $retirement.status -ceq 'blocked')
