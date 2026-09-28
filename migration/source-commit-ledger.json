@@ -72689,7 +72689,7 @@
         {
           "path": "Maliev.MessageService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null

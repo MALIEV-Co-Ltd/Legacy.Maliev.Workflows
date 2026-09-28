@@ -130,6 +130,14 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     [Fact]
     public void Source_f0640_failure_tracing_shared_owner_is_migrated_without_closing_other_owners()
     {
+        using var source = Load("migration/source-commit-ledger.json");
+        var sourceRecord = Assert.Single(source.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("commit").GetString() ==
+                "f0640fe0719b2eb6becda378bff08153d955be07");
+        var messagePath = Assert.Single(sourceRecord.GetProperty("classifications").EnumerateArray(),
+            candidate => candidate.GetProperty("path").GetString() == "Maliev.MessageService.Api/Startup.cs");
+        Assert.Equal("Legacy.Maliev.ContactService",
+            Assert.Single(messagePath.GetProperty("owners").EnumerateArray()).GetString());
         using var resolutions = Load("migration/source-commit-resolutions.json");
         var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
             candidate => candidate.GetProperty("sourceSha").GetString() ==
@@ -196,9 +204,17 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.Equal("migrated", file.GetProperty("status").GetString());
         Assert.Equal("26a9e77571672862396b7bcefcfb98e8ec8abea3",
             file.GetProperty("mergedTargetSha").GetString());
+        var contact = owners.GetProperty("Legacy.Maliev.ContactService");
+        Assert.Equal("migrated", contact.GetProperty("status").GetString());
+        Assert.Equal("7c61b4c2f49a634a5d455f6965f42d0a61c165c2",
+            contact.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ContactService/pull/21",
+            contact.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ContactService/actions/runs/36419162082",
+            contact.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
         var notification = owners.GetProperty("Legacy.Maliev.NotificationService");
-        Assert.Equal("partial", notification.GetProperty("status").GetString());
-        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/issues/32",
+        Assert.Equal("migrated", notification.GetProperty("status").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/issues/31",
             notification.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
         var order = owners.GetProperty("Legacy.Maliev.OrderService");
         Assert.Equal("migrated", order.GetProperty("status").GetString());
