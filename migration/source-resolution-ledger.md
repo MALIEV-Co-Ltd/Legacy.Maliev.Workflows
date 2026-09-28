@@ -42,6 +42,17 @@ AuthService PR #96, merged at
 correlation identifiers, safe fallback, generic 500 responses, and incident
 correlation. This does not resolve the other f0640fe owners.
 
+The EmployeeService and CustomerService owners of `f0640fe` are also resolved
+independently. EmployeeService #18 / PR #19 merged at
+`997fc23dc7c6b77f12e19b3b1a83e9537b253071` with exact-main CI
+36391144381, Release build, 48/48 tests, format, vulnerability audit, and
+secret scan. CustomerService #25 / PR #26 merged at
+`cebf45e8e1eeb600d760a565f8b0970c7f434148` with exact-main CI
+36391610412, Release build, 89/89 tests, format, vulnerability audit, and
+secret scan. Both pin the redacting shared failure middleware and add focused
+contract regression coverage. The source commit remains partial: other owners
+and the proposed PredictionService retirement still require independent proof.
+
 Source commit `7ebe7e4bf83a435ecb18afc29cf263424ed2bb74` persists
 quotation-request journey attribution. Its QuotationService owner is migrated
 through QuotationService #35 / PR #36, merged at
