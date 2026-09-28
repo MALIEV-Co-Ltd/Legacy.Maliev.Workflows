@@ -427,6 +427,76 @@ Describe 'Test-LegacyPublication' {
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 
+    It 'rejects JWT signing material in a resource without printing the value' {
+        $fixture = New-PublicationFixture
+        try {
+            $value = 'fixture-' + 'jwt-signing-material'
+            $resource = '<root><data name="JwtSecurityKey"><value>' + $value + '</value></data></root>'
+            Set-Content (Join-Path $fixture.Repository 'Resources.resx') $resource
+            Invoke-Git $fixture.Repository add Resources.resx | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture resource' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'JWT signing material in a resource; value redacted'
+            $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'rejects generated JWT resource comments without printing the value' {
+        $fixture = New-PublicationFixture
+        try {
+            $value = 'fixture-' + 'generated-signing-material'
+            @"
+/// <summary>
+/// Looks up a localized string similar to $value.
+/// </summary>
+internal static string TokenSigningMaterial {
+    get { return ResourceManager.GetString("TokenSigningMaterial", resourceCulture); }
+}
+"@ | Set-Content (Join-Path $fixture.Repository 'Resources.Designer.cs')
+            Invoke-Git $fixture.Repository add Resources.Designer.cs | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture generated resource' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'JWT signing material in a resource; value redacted'
+            $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'permits non-secret token metadata resources' {
+        $fixture = New-PublicationFixture
+        try {
+            Set-Content (Join-Path $fixture.Repository 'Resources.resx') '<root><data name="TokenExpiryMinutes"><value>30</value></data></root>'
+            Invoke-Git $fixture.Repository add Resources.resx | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture non-secret resource' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Be 0
+            $result.Output | Should Match 'Publication gate passed'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'fails closed on malformed resource XML without printing its content' {
+        $fixture = New-PublicationFixture
+        try {
+            $value = 'fixture-' + 'untrusted-resource-content'
+            Set-Content (Join-Path $fixture.Repository 'Resources.resx') ('<root><data name="JwtSecurityKey"><value>' + $value)
+            Invoke-Git $fixture.Repository add Resources.resx | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture malformed resource' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'resource XML cannot be safely inspected; details redacted'
+            $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
     It 'rejects unpinned Actions, unsafe PR permissions, secret access, and direct cluster commands' {
         $fixture = New-PublicationFixture
         try {
