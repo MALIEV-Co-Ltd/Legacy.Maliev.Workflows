@@ -1,20 +1,20 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-28T09:10:19.6638617+00:00",
+  "generatedAt": "2026-09-28T12:34:11.2639574+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
-      "mainSha": "bb8b7edb432e3199493ba745d0fdb9fbf750f764",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/commit/bb8b7edb432e3199493ba745d0fdb9fbf750f764"
+      "mainSha": "396987e55daabecd2894bdb50c1fecdb4d570a58",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/commit/396987e55daabecd2894bdb50c1fecdb4d570a58"
     },
     "Legacy.Maliev.AppHost": {
       "mainSha": "3fc07638e818dbe33abf26fde199b238ad5452f4",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AppHost/commit/3fc07638e818dbe33abf26fde199b238ad5452f4"
     },
     "Legacy.Maliev.AuthService": {
-      "mainSha": "4c54af92f5dcbe43469664ccd43acd42897acf1d",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/4c54af92f5dcbe43469664ccd43acd42897acf1d"
+      "mainSha": "882a5dd7c8a4bd0974417b1d5177b48b7452e7fd",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/882a5dd7c8a4bd0974417b1d5177b48b7452e7fd"
     },
     "Legacy.Maliev.CareerService": {
       "mainSha": "bb878ad09fa4959c8cfad73e51afdb766dc3b791",
@@ -29,8 +29,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CompatibilityContracts/commit/8ae2252997992ce489977e387e2a0b2bec0eda3d"
     },
     "Legacy.Maliev.ContactService": {
-      "mainSha": "831816a3ce95ab5d2a5b029d3f933c09fec9452f",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ContactService/commit/831816a3ce95ab5d2a5b029d3f933c09fec9452f"
+      "mainSha": "7c61b4c2f49a634a5d455f6965f42d0a61c165c2",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ContactService/commit/7c61b4c2f49a634a5d455f6965f42d0a61c165c2"
     },
     "Legacy.Maliev.CountryService": {
       "mainSha": "df4aa56353949b43bd534fc7daf20ebb41c42106",
@@ -41,8 +41,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/cebf45e8e1eeb600d760a565f8b0970c7f434148"
     },
     "Legacy.Maliev.DataMigration": {
-      "mainSha": "9499267df020c1cadda41f63b3772c09b7a3ad47",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/9499267df020c1cadda41f63b3772c09b7a3ad47"
+      "mainSha": "bc6ff625bbb94065d05130597b522f1a50e8d237",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/bc6ff625bbb94065d05130597b522f1a50e8d237"
     },
     "Legacy.Maliev.DocumentService": {
       "mainSha": "f309f6a89878600eb8dc721acf73817aa658e54d",
@@ -53,16 +53,16 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.EmployeeService/commit/997fc23dc7c6b77f12e19b3b1a83e9537b253071"
     },
     "Legacy.Maliev.FileService": {
-      "mainSha": "26a9e77571672862396b7bcefcfb98e8ec8abea3",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.FileService/commit/26a9e77571672862396b7bcefcfb98e8ec8abea3"
+      "mainSha": "3a8535b70c1710c8d9e30a8c1864be7d54715c56",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.FileService/commit/3a8535b70c1710c8d9e30a8c1864be7d54715c56"
     },
     "Legacy.Maliev.Intranet": {
-      "mainSha": "7e6fe677c1a2abbadb3034a18a1513e67200349a",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/commit/7e6fe677c1a2abbadb3034a18a1513e67200349a"
+      "mainSha": "374bd8aca80018d4b159889913c10c0154214852",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/commit/374bd8aca80018d4b159889913c10c0154214852"
     },
     "Legacy.Maliev.NotificationService": {
-      "mainSha": "32d215886abe7f135e463a5392cccdc936e16f39",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/commit/32d215886abe7f135e463a5392cccdc936e16f39"
+      "mainSha": "ff0f0592eefdbdd812c97c3b3519e948bdc3754c",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/commit/ff0f0592eefdbdd812c97c3b3519e948bdc3754c"
     },
     "Legacy.Maliev.OrderService": {
       "mainSha": "773214c271ebaf9430389a55b0cba39220b0c38d",
@@ -81,12 +81,12 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/5c5f9479313710fa576f83d3b396442997a2fcf4"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "65b6f9a6fd0dadef8d9eca4f1e2692491f6f11ec",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/65b6f9a6fd0dadef8d9eca4f1e2692491f6f11ec"
+      "mainSha": "84d940989c8e176a584edff050bc84fae49ecdb0",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/84d940989c8e176a584edff050bc84fae49ecdb0"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "8362cf4ca7f512296bf3cd11b4ba196922a20a01",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/8362cf4ca7f512296bf3cd11b4ba196922a20a01"
+      "mainSha": "07650cd0932e58d9fc6d20fa9719a8466b6db544",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/07650cd0932e58d9fc6d20fa9719a8466b6db544"
     }
   },
   "commitCount": 1096,
@@ -5159,7 +5159,7 @@
         {
           "path": "Maliev.MessageService.Api/Controllers/MessagesController.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5167,7 +5167,7 @@
         {
           "path": "Maliev.MessageService.Api/Dockerfile",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5175,7 +5175,7 @@
         {
           "path": "Maliev.MessageService.Api/Dockerfile.self-contained",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5183,7 +5183,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5191,7 +5191,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5199,7 +5199,7 @@
         {
           "path": "Maliev.MessageService.Api/Program.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5207,7 +5207,7 @@
         {
           "path": "Maliev.MessageService.Api/Properties/launchSettings.json",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5215,7 +5215,7 @@
         {
           "path": "Maliev.MessageService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5223,7 +5223,7 @@
         {
           "path": "Maliev.MessageService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5231,7 +5231,7 @@
         {
           "path": "Maliev.MessageService.Api/appsettings.Development.json",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5239,7 +5239,7 @@
         {
           "path": "Maliev.MessageService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5247,7 +5247,7 @@
         {
           "path": "Maliev.MessageService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5255,7 +5255,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5263,7 +5263,7 @@
         {
           "path": "Maliev.MessageService.Common/Enumerations/MessageSortType.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5271,7 +5271,7 @@
         {
           "path": "Maliev.MessageService.Common/Maliev.MessageService.Common.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5279,7 +5279,7 @@
         {
           "path": "Maliev.MessageService.Common/Maliev.MessageService.Common.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5287,7 +5287,7 @@
         {
           "path": "Maliev.MessageService.Data/Database/MessageContext/Message.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5295,7 +5295,7 @@
         {
           "path": "Maliev.MessageService.Data/Database/MessageContext/MessageContext.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5303,7 +5303,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.ContactService.Data.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5311,7 +5311,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5319,7 +5319,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5327,7 +5327,7 @@
         {
           "path": "Maliev.MessageService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5335,7 +5335,7 @@
         {
           "path": "Maliev.MessageService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5343,7 +5343,7 @@
         {
           "path": "Maliev.MessageService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5351,7 +5351,7 @@
         {
           "path": "Maliev.MessageService.Tests/Maliev.MessageService.Tests.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5359,7 +5359,7 @@
         {
           "path": "Maliev.MessageService.Tests/Maliev.MessageService.Tests.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5367,7 +5367,7 @@
         {
           "path": "Maliev.MessageService.Tests/Messages/CreateMessageAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5375,7 +5375,7 @@
         {
           "path": "Maliev.MessageService.Tests/Messages/DeleteMessageAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5383,7 +5383,7 @@
         {
           "path": "Maliev.MessageService.Tests/Messages/GetMessageAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5391,7 +5391,7 @@
         {
           "path": "Maliev.MessageService.Tests/Messages/GetPaginatedAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -5399,7 +5399,7 @@
         {
           "path": "Maliev.MessageService.Tests/Messages/UpdateMessageAsync_UnitTest.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -19536,7 +19536,7 @@
         {
           "path": "Maliev.MessageService.Api/deploy-service.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -19544,7 +19544,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -19552,7 +19552,7 @@
         {
           "path": "Maliev.MessageService.Api/service.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -20052,7 +20052,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -20249,7 +20249,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -21771,7 +21771,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -21779,7 +21779,7 @@
         {
           "path": "Maliev.MessageService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -21787,7 +21787,7 @@
         {
           "path": "Maliev.MessageService.Data/Database/MessageContext/Message.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -21795,7 +21795,7 @@
         {
           "path": "Maliev.MessageService.Data/Database/MessageContext/MessageContext.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -21803,7 +21803,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -22987,7 +22987,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -26123,7 +26123,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -26386,7 +26386,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -27072,7 +27072,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -27080,7 +27080,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -27088,7 +27088,7 @@
         {
           "path": "Maliev.MessageService.Tests/Maliev.MessageService.Tests.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -28036,7 +28036,7 @@
         {
           "path": "Maliev.MessageService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -38243,7 +38243,7 @@
         {
           "path": "Maliev.MessageService.Data/Database/MessageContext/MessageContext.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -38251,7 +38251,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -38259,7 +38259,7 @@
         {
           "path": "Maliev.MessageService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -38267,7 +38267,7 @@
         {
           "path": "Maliev.MessageService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -38829,7 +38829,7 @@
         {
           "path": "Maliev.MessageService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -38837,7 +38837,7 @@
         {
           "path": "Maliev.MessageService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -39452,7 +39452,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -39460,7 +39460,7 @@
         {
           "path": "Maliev.MessageService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -39468,7 +39468,7 @@
         {
           "path": "Maliev.MessageService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40801,7 +40801,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40809,7 +40809,7 @@
         {
           "path": "Maliev.MessageService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40817,7 +40817,7 @@
         {
           "path": "Maliev.MessageService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40825,7 +40825,7 @@
         {
           "path": "Maliev.MessageService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40833,7 +40833,7 @@
         {
           "path": "Maliev.MessageService.Data/Database/MessageContext/MessageContext.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40841,7 +40841,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40849,7 +40849,7 @@
         {
           "path": "Maliev.MessageService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40857,7 +40857,7 @@
         {
           "path": "Maliev.MessageService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -40865,7 +40865,7 @@
         {
           "path": "Maliev.MessageService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -42975,7 +42975,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -42983,7 +42983,7 @@
         {
           "path": "Maliev.MessageService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -42991,7 +42991,7 @@
         {
           "path": "Maliev.MessageService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -42999,7 +42999,7 @@
         {
           "path": "Maliev.MessageService.Api/appsettings.json",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -43007,7 +43007,7 @@
         {
           "path": "Maliev.MessageService.Data/Database/MessageContext/MessageContext.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -43015,7 +43015,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -43023,7 +43023,7 @@
         {
           "path": "Maliev.MessageService.Data/Properties/Resources.Designer.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -43031,7 +43031,7 @@
         {
           "path": "Maliev.MessageService.Data/Properties/Resources.resx",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -43039,7 +43039,7 @@
         {
           "path": "Maliev.MessageService.Data/ScaffoldContext.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -44758,7 +44758,7 @@
         {
           "path": "Maliev.MessageService.Api/.dockerignore",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -50128,7 +50128,7 @@
         {
           "path": "Maliev.MessageService.Api/deploy-service.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -50136,7 +50136,7 @@
         {
           "path": "Maliev.MessageService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -51843,7 +51843,7 @@
         {
           "path": "Maliev.MessageService.Api/deploy.ps1",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -61927,7 +61927,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -73985,7 +73985,7 @@
         {
           "path": "Maliev.MessageService.Api/Dockerfile",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -73993,7 +73993,7 @@
         {
           "path": "Maliev.MessageService.Api/Dockerfile.self-contained",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -74001,7 +74001,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -74009,7 +74009,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -74017,7 +74017,7 @@
         {
           "path": "Maliev.MessageService.Api/Program.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -74025,7 +74025,7 @@
         {
           "path": "Maliev.MessageService.Api/ServiceExtensions.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -74033,7 +74033,7 @@
         {
           "path": "Maliev.MessageService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -75795,7 +75795,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -75856,7 +75856,7 @@
         {
           "path": "Maliev.MessageService.Api/deployment.yaml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -88998,7 +88998,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -89006,7 +89006,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -89014,7 +89014,7 @@
         {
           "path": "Maliev.MessageService.Common/Maliev.MessageService.Common.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -89022,7 +89022,7 @@
         {
           "path": "Maliev.MessageService.Common/Maliev.MessageService.Common.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -89030,7 +89030,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.ContactService.Data.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -89038,7 +89038,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -89046,7 +89046,7 @@
         {
           "path": "Maliev.MessageService.Data/Maliev.MessageService.Data.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -89054,7 +89054,7 @@
         {
           "path": "Maliev.MessageService.Tests/Maliev.MessageService.Tests.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -89062,7 +89062,7 @@
         {
           "path": "Maliev.MessageService.Tests/Maliev.MessageService.Tests.xml",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -90231,7 +90231,7 @@
         {
           "path": "Maliev.MessageService.Api/Dockerfile",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -90239,7 +90239,7 @@
         {
           "path": "Maliev.MessageService.Api/Dockerfile.self-contained",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -90247,7 +90247,7 @@
         {
           "path": "Maliev.MessageService.Api/Maliev.MessageService.Api.csproj",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -90255,7 +90255,7 @@
         {
           "path": "Maliev.MessageService.Api/Program.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -90263,7 +90263,7 @@
         {
           "path": "Maliev.MessageService.Api/Startup.cs",
           "owners": [
-            "Legacy.Maliev.NotificationService"
+            "Legacy.Maliev.ContactService"
           ],
           "disposition": "migration-required",
           "decision": null
