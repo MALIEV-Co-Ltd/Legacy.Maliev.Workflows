@@ -188,7 +188,7 @@ try {
     }
 
     if (Test-JwtSigningResourceMaterial -RepositoryPath $script:ResolvedRepositoryPath -TrackedFiles $trackedFiles) {
-        Stop-PublicationGate 'Candidate contains JWT signing material in a resource; value redacted.'
+        Stop-PublicationGate 'Candidate contains credential material in a resource; value redacted.'
     }
 
     $automationPaths = $trackedFiles | Where-Object { $_ -match '^\.github/workflows/.*\.ya?ml$' -or $_ -match '(?i)(^|/)action\.ya?ml$' }
