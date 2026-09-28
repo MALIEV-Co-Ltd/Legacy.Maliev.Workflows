@@ -38,8 +38,35 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.Equal("pending", auth.GetProperty("status").GetString());
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/96",
             auth.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        var quotation = owners.GetProperty("Legacy.Maliev.QuotationService");
+        Assert.Equal("migrated", quotation.GetProperty("status").GetString());
+        Assert.Equal("db1427dcc73e3d98f14f7192c36e3d13b72fc42a",
+            quotation.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/pull/63",
+            quotation.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
         Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.Web").GetProperty("status").GetString());
         Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.OrderService").GetProperty("status").GetString());
+    }
+
+    [Fact]
+    public void Source_062953_Travelers_warning_fix_has_reviewed_Intranet_disposition()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "062953f6287d62015c4c57b17127e3901afd96f3");
+
+        Assert.Equal("migrated", record.GetProperty("status").GetString());
+        var intranet = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Intranet");
+        Assert.Equal("migrated", intranet.GetProperty("status").GetString());
+        Assert.Equal("7378a4b65ad6b7023b5baa53839772bb51a1e687",
+            intranet.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/issues/211",
+            intranet.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/pull/214",
+            intranet.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/actions/runs/36381239567",
+            intranet.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
     }
 
     [Theory]
