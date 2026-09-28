@@ -250,6 +250,38 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     }
 
     [Fact]
+    public void Worker_only_source_commits_are_resolved_without_claiming_broader_additive_parity()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var records = resolutions.RootElement.GetProperty("records").EnumerateArray().ToArray();
+        foreach (var sha in new[]
+        {
+            "b36d919905ab063911dc5352ebb003c97af9a8b0",
+            "7e76659f875eeaa745aeed1f8ea5508f88bcbaee",
+            "f9c3ac3460925fe54833b87b209407efabba908c",
+        })
+        {
+            var record = Assert.Single(records, candidate => candidate.GetProperty("sourceSha").GetString() == sha);
+            Assert.Equal("migrated", record.GetProperty("status").GetString());
+            var web = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
+            Assert.Equal("migrated", web.GetProperty("status").GetString());
+            Assert.Equal("d5780cc410ffe571ecc8f10a0ad1ac1830568410", web.GetProperty("mergedTargetSha").GetString());
+            Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/290",
+                web.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        }
+
+        foreach (var sha in new[]
+        {
+            "744d3c5225e7cbf7a88af5c1f4fdb47442e2c325",
+            "ea0743c0c7e8653462eebe813af6c7a5dbfd8438",
+        })
+        {
+            var record = Assert.Single(records, candidate => candidate.GetProperty("sourceSha").GetString() == sha);
+            Assert.NotEqual("migrated", record.GetProperty("status").GetString());
+        }
+    }
+
+    [Fact]
     public void Source_492577_web_no_prune_is_resolved_only_after_exact_main_validation()
     {
         using var resolutions = Load("migration/source-commit-resolutions.json");
