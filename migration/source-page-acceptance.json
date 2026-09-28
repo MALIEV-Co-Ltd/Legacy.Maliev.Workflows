@@ -348,17 +348,17 @@
       "sourcePath": "Maliev.Intranet/Pages/Travelers/Create.cshtml",
       "sourceRoutePattern": "/Travelers/Create",
       "ownerRepository": "Legacy.Maliev.Intranet",
-      "status": "unverified",
-      "targetRoute": null,
-      "evidence": []
+      "status": "retired",
+      "targetRoute": "/Travelers/Create",
+      "evidence": ["https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/issues/211"]
     },
     {
       "sourcePath": "Maliev.Intranet/Pages/Travelers/Index.cshtml",
       "sourceRoutePattern": "/Travelers",
       "ownerRepository": "Legacy.Maliev.Intranet",
-      "status": "unverified",
-      "targetRoute": null,
-      "evidence": []
+      "status": "retired",
+      "targetRoute": "/Travelers",
+      "evidence": ["https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/issues/211"]
     },
     {
       "sourcePath": "Maliev.Web/Pages/About/Index.cshtml",

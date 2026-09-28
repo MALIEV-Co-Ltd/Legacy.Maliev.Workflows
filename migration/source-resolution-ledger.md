@@ -2,9 +2,14 @@
 
 `source-page-acceptance.json` separately inventories all 79 Razor Pages with a
 first-line `@page` directive at source `4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db`
-(35 Web, 44 Intranet). Every page is deliberately `unverified`: a source-file
-mapping, an existing Legacy route, and a passing unit suite do not prove
+(35 Web, 44 Intranet). Pages remain `unverified` except the two owner-approved
+Travelers retirements. A source-file mapping, an existing Legacy route, and a
+passing unit suite do not prove
 authenticated workflow, responsive, localization, or persisted-data parity.
+The owner approved retirement of the obsolete Travelers feature in Intranet
+issue #211. The two source pages (`/Travelers` and `/Travelers/Create`) are
+recorded as retired in the acceptance inventory; authenticated direct GETs to
+those paths and the historical target `/Travelers/Index` return 410 Gone.
 `scripts/Test-SourcePageAcceptance.ps1` compares both source page-tree Git IDs
 and the exact path set to live source `origin/main` without modifying it. This
 is a source-page census for issue #98, not the complete route, API, role, or

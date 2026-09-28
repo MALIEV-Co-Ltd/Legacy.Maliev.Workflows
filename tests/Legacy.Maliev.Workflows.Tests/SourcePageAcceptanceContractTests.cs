@@ -41,9 +41,19 @@ public sealed class SourcePageAcceptanceContractTests
             var sourceRoute = page.GetProperty("sourceRoutePattern").GetString();
             Assert.False(string.IsNullOrWhiteSpace(sourceRoute));
             Assert.StartsWith("/", sourceRoute, StringComparison.Ordinal);
-            Assert.Equal("unverified", page.GetProperty("status").GetString());
-            Assert.Equal(JsonValueKind.Null, page.GetProperty("targetRoute").ValueKind);
-            Assert.Empty(page.GetProperty("evidence").EnumerateArray());
+            if (sourcePath.StartsWith("Maliev.Intranet/Pages/Travelers/", StringComparison.Ordinal))
+            {
+                Assert.Equal("retired", page.GetProperty("status").GetString());
+                Assert.Equal(sourceRoute, page.GetProperty("targetRoute").GetString());
+                Assert.Contains(page.GetProperty("evidence").EnumerateArray(), evidence =>
+                    evidence.GetString() == "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/issues/211");
+            }
+            else
+            {
+                Assert.Equal("unverified", page.GetProperty("status").GetString());
+                Assert.Equal(JsonValueKind.Null, page.GetProperty("targetRoute").ValueKind);
+                Assert.Empty(page.GetProperty("evidence").EnumerateArray());
+            }
         }
 
         var sorted = paths.Order(StringComparer.Ordinal).ToArray();
