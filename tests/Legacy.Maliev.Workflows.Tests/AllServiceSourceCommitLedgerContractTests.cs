@@ -9,6 +9,33 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     private static readonly string Root = FindRepositoryRoot();
     private static readonly Regex Sha = new("^[0-9a-f]{40}$", RegexOptions.CultureInvariant);
 
+    [Fact]
+    public void Source_f0640_failure_tracing_shared_owner_is_migrated_without_closing_other_owners()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "f0640fe0719b2eb6becda378bff08153d955be07");
+
+        Assert.Equal("partial", record.GetProperty("status").GetString());
+        var owners = record.GetProperty("ownerResolutions");
+        var shared = owners.GetProperty("Legacy.Maliev.ServiceDefaults");
+        Assert.Equal("migrated", shared.GetProperty("status").GetString());
+        Assert.Equal("cfc8053d316c55353841092429985a9f76f17d8d",
+            shared.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/162",
+            shared.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+        foreach (int pullRequest in new[] { 32, 45, 49 })
+        {
+            Assert.Contains($"https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/pull/{pullRequest}",
+                shared.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        }
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/actions/runs/36359872119",
+            shared.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.Web").GetProperty("status").GetString());
+        Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.OrderService").GetProperty("status").GetString());
+    }
+
     [Theory]
     [InlineData("5a3f24d9ecf4723ac49670e241c6c19d37b540fd", 371,
         "c4c076115aebcf3055b9792a879987cb6216c48c", 36367135684L)]
