@@ -10,6 +10,32 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     private static readonly Regex Sha = new("^[0-9a-f]{40}$", RegexOptions.CultureInvariant);
 
     [Fact]
+    public void Source_4bde_no_prune_behavior_is_proven_in_the_gated_quotation_publisher()
+    {
+        const string sourceSha = "4bde312241c2e063e6768f510b92ee2f60b2b94b";
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var source = Assert.Single(ownership.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("commit").GetString() == sourceSha);
+        Assert.Equal("Maliev.QuotationRequestService.Api/deploy.ps1",
+            Assert.Single(source.GetProperty("classifications").EnumerateArray()).GetProperty("path").GetString());
+
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("sourceSha").GetString() == sourceSha);
+        Assert.Equal("migrated", record.GetProperty("status").GetString());
+        var quotation = Assert.Single(record.GetProperty("ownerResolutions").EnumerateObject());
+        Assert.Equal("Legacy.Maliev.QuotationService", quotation.Name);
+        Assert.Equal("migrated", quotation.Value.GetProperty("status").GetString());
+        Assert.Equal("67f14175d1c8375922d55243b33c0b257aa5d31a",
+            quotation.Value.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/pull/65",
+            quotation.Value.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/actions/runs/36398938815",
+            quotation.Value.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Equal(JsonValueKind.Null, record.GetProperty("retirementApproval").ValueKind);
+    }
+
+    [Fact]
     public void Source_61df_formatting_only_has_two_approved_no_op_owners_not_runtime_migrations()
     {
         const string sourceSha = "61df92fb171a5c1c65a46a07cd70777d87e1a46e";
@@ -39,8 +65,12 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             Assert.Equal(JsonValueKind.Null, disposition.GetProperty("mergedTargetSha").ValueKind);
             Assert.Empty(disposition.GetProperty("validationEvidenceUrls").EnumerateArray());
             Assert.False(string.IsNullOrWhiteSpace(disposition.GetProperty("reason").GetString()));
-            Assert.Equal(ownership.RootElement.GetProperty("legacyTargets").GetProperty(owner.Name)
-                .GetProperty("mainSha").GetString(), disposition.GetProperty("reviewedTargetSha").GetString());
+            // The review is pinned to the target main observed at disposition time;
+            // later unrelated target merges must not invalidate that audit evidence.
+            var expectedReviewedSha = owner.Name == "Legacy.Maliev.QuotationService"
+                ? "db1427dcc73e3d98f14f7192c36e3d13b72fc42a"
+                : "04d53410fd0c6c42273909dcce399512c11cac66";
+            Assert.Equal(expectedReviewedSha, disposition.GetProperty("reviewedTargetSha").GetString());
         }
         Assert.Equal(JsonValueKind.Null, record.GetProperty("retirementApproval").ValueKind);
     }
