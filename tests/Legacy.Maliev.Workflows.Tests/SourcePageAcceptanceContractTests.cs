@@ -13,7 +13,7 @@ public sealed class SourcePageAcceptanceContractTests
         using var document = JsonDocument.Parse(File.ReadAllText(path));
         var inventory = document.RootElement;
 
-        Assert.Equal(1, inventory.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal(2, inventory.GetProperty("schemaVersion").GetInt32());
         Assert.Equal("MALIEV-Co-Ltd/maliev-web", inventory.GetProperty("sourceRepository").GetString());
         Assert.Matches("^[0-9a-f]{40}$", inventory.GetProperty("sourceCommit").GetString()!);
 
@@ -38,6 +38,9 @@ public sealed class SourcePageAcceptanceContractTests
                 ? "Legacy.Maliev.Web"
                 : "Legacy.Maliev.Intranet";
             Assert.Equal(owner, page.GetProperty("ownerRepository").GetString());
+            var sourceRoute = page.GetProperty("sourceRoutePattern").GetString();
+            Assert.False(string.IsNullOrWhiteSpace(sourceRoute));
+            Assert.StartsWith("/", sourceRoute, StringComparison.Ordinal);
             Assert.Equal("unverified", page.GetProperty("status").GetString());
             Assert.Equal(JsonValueKind.Null, page.GetProperty("targetRoute").ValueKind);
             Assert.Empty(page.GetProperty("evidence").EnumerateArray());
@@ -45,6 +48,21 @@ public sealed class SourcePageAcceptanceContractTests
 
         var sorted = paths.Order(StringComparer.Ordinal).ToArray();
         Assert.Equal(sorted, pages.Select(page => page.GetProperty("sourcePath").GetString()!).ToArray());
+
+        var expectedOverrides = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Maliev.Intranet/Pages/Operations/OutcomeReadback.cshtml"] = "/Operations/OutcomeReadback",
+            ["Maliev.Web/Pages/Career/View.cshtml"] = "/Career/View/{id}",
+            ["Maliev.Web/Pages/Contact/Line.cshtml"] = "/contact/line",
+            ["Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml"] = "/instantquotation/3d-printing",
+            ["Maliev.Web/Pages/InstantQuotation/Index.cshtml"] = "/instantquotation",
+            ["Maliev.Web/Pages/Legal/NoWeapons.cshtml"] = "/no-weapons",
+        };
+        foreach (var (sourcePath, route) in expectedOverrides)
+        {
+            var page = pages.Single(item => item.GetProperty("sourcePath").GetString() == sourcePath);
+            Assert.Equal(route, page.GetProperty("sourceRoutePattern").GetString());
+        }
     }
 
     [Fact]
@@ -56,6 +74,7 @@ public sealed class SourcePageAcceptanceContractTests
         Assert.Contains("cat-file -e", script, StringComparison.Ordinal);
         Assert.Contains("source_page_tree_changed", script, StringComparison.Ordinal);
         Assert.Contains("source_page_inventory_changed", script, StringComparison.Ordinal);
+        Assert.Contains("source_page_route_changed", script, StringComparison.Ordinal);
         foreach (var forbidden in new[] { " fetch ", " pull ", " checkout ", " reset ", " clean ", " push " })
         {
             Assert.DoesNotContain(forbidden, script, StringComparison.OrdinalIgnoreCase);
