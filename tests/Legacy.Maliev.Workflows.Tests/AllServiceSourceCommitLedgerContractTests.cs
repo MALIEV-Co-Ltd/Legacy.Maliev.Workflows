@@ -38,6 +38,14 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.Equal("pending", auth.GetProperty("status").GetString());
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/96",
             auth.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        var country = owners.GetProperty("Legacy.Maliev.CountryService");
+        Assert.Equal("migrated", country.GetProperty("status").GetString());
+        Assert.Equal("df4aa56353949b43bd534fc7daf20ebb41c42106",
+            country.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CountryService/pull/27",
+            country.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CountryService/actions/runs/36384608409",
+            country.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
         var quotation = owners.GetProperty("Legacy.Maliev.QuotationService");
         Assert.Equal("migrated", quotation.GetProperty("status").GetString());
         Assert.Equal("db1427dcc73e3d98f14f7192c36e3d13b72fc42a",
