@@ -195,6 +195,12 @@ public sealed class AllServiceSourceCommitLedgerContractTests
 
         Assert.Equal("partial", record.GetProperty("status").GetString());
         var owners = record.GetProperty("ownerResolutions");
+        var accounting = owners.GetProperty("Legacy.Maliev.AccountingService");
+        Assert.Equal("migrated", accounting.GetProperty("status").GetString());
+        Assert.Equal("cb5f75c34d6783cebb705219a64b9fa3b71baf12",
+            accounting.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/actions/runs/36360378615",
+            accounting.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
         var defaults = owners.GetProperty("Legacy.Maliev.ServiceDefaults");
         Assert.Equal("migrated", defaults.GetProperty("status").GetString());
         Assert.Equal("d22f0e6f95254b10cf4fe891c8dce5df7c419f3f",
@@ -219,6 +225,12 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             appHost.GetProperty("mergedTargetSha").GetString());
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AppHost/actions/runs/36356967445",
             appHost.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        var auth = owners.GetProperty("Legacy.Maliev.AuthService");
+        Assert.Equal("migrated", auth.GetProperty("status").GetString());
+        Assert.Equal("371a6e8ec4338e975acc0029815ed8fd721021b9",
+            auth.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/actions/runs/36359697617",
+            auth.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
         var country = owners.GetProperty("Legacy.Maliev.CountryService");
         Assert.Equal("migrated", country.GetProperty("status").GetString());
         Assert.Equal("f4577b8d08ef2e58d07a3e56a012876209fa7a1c",

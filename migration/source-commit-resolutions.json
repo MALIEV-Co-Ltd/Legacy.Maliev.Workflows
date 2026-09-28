@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-27T23:46:05.5955100+00:00",
+  "generatedAt": "2026-09-28T00:04:24.1485145+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "sourceCommitCount": 1096,
@@ -18957,11 +18957,18 @@
       "status": "partial",
       "ownerResolutions": {
         "Legacy.Maliev.AccountingService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/issues/26"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/pull/27"
+          ],
+          "mergedTargetSha": "cb5f75c34d6783cebb705219a64b9fa3b71baf12",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/actions/runs/36360242719",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/actions/runs/36360378615"
+          ]
         },
         "Legacy.Maliev.AppHost": {
           "status": "migrated",
@@ -18978,11 +18985,18 @@
           ]
         },
         "Legacy.Maliev.AuthService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/issues/92"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/93"
+          ],
+          "mergedTargetSha": "371a6e8ec4338e975acc0029815ed8fd721021b9",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/actions/runs/36359518647",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/actions/runs/36359697617"
+          ]
         },
         "Legacy.Maliev.CareerService": {
           "status": "pending",
