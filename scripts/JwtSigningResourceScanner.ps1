@@ -2,6 +2,7 @@ function Test-JwtSigningResourceMaterial {
     param([string]$RepositoryPath, [string[]]$TrackedFiles)
 
     $resourceNamePattern = '^(?:jwt(?:security|signing)?(?:key|secret|material)|token(?:security|signing)(?:key|secret|material)|(?:jwt|token)(?:key|secret))$'
+    $providerCredentialNamePattern = '^(?:[A-Za-z0-9_]*(?:ApiKey|ApiSecret|ApiCredential|ClientSecret)|[A-Za-z0-9_]+ClientId|(?:Brevo|SendGrid|Mailgun)Api)$'
     foreach ($relativePath in $TrackedFiles) {
         if ($relativePath -match '(?i)\.resx$') {
             $settings = [System.Xml.XmlReaderSettings]::new()
@@ -14,7 +15,7 @@ function Test-JwtSigningResourceMaterial {
                 while ($reader.Read()) {
                     if ($reader.NodeType -ne [System.Xml.XmlNodeType]::Element -or $reader.LocalName -cne 'data') { continue }
                     $name = $reader.GetAttribute('name')
-                    if ($name -notmatch $resourceNamePattern) { continue }
+                    if ($name -notmatch $resourceNamePattern -and $name -notmatch $providerCredentialNamePattern) { continue }
                     $data = $reader.ReadSubtree()
                     try {
                         while ($data.Read()) {
@@ -43,7 +44,8 @@ function Test-JwtSigningResourceMaterial {
                     $memberName = $member.Groups['member'].Value
                     $nameMatch = [regex]::Match($memberName, '([A-Za-z_][A-Za-z0-9_]*)$')
                     if (-not $nameMatch.Success -or
-                        $nameMatch.Groups[1].Value -notmatch $resourceNamePattern) { continue }
+                        ($nameMatch.Groups[1].Value -notmatch $resourceNamePattern -and
+                        $nameMatch.Groups[1].Value -notmatch $providerCredentialNamePattern)) { continue }
                     if ($summaryExpression.IsMatch($member.Groups['body'].Value)) { return $true }
                 }
             } catch {
@@ -57,7 +59,8 @@ function Test-JwtSigningResourceMaterial {
             }
             $documentation = '(?im)^\s*///\s*Looks\s+up\s+a\s+localized\s+string\s+similar\s+to\s+[^\r\n<]+\.\s*\r?\n(?:\s*///[^\r\n]*\r?\n){0,8}\s*(?:internal|public)\s+static\s+string\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\{'
             foreach ($match in [regex]::Matches($source, $documentation)) {
-                if ($match.Groups['name'].Value -match $resourceNamePattern) { return $true }
+                if ($match.Groups['name'].Value -match $resourceNamePattern -or
+                    $match.Groups['name'].Value -match $providerCredentialNamePattern) { return $true }
             }
         }
     }
