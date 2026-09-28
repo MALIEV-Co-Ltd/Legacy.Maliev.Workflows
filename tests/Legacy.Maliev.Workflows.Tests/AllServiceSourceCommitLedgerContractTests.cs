@@ -495,8 +495,8 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             auth.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/actions/runs/36417095916",
             auth.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
-        Assert.Contains(owners.EnumerateObject(), owner => owner.Name != "Legacy.Maliev.AuthService"
-            && owner.Value.GetProperty("status").GetString() == "pending");
+        Assert.Equal("partial", owners.GetProperty("Legacy.Maliev.Workflows").GetProperty("status").GetString());
+        Assert.Equal("pending", record.GetProperty("retirementApproval").GetProperty("status").GetString());
     }
 
     [Fact]

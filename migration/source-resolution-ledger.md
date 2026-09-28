@@ -76,9 +76,26 @@ and test production issuer, audience, signing key, and algorithm rejection.
 DocumentService also supplies non-secret issuer/audience defaults while its
 public key remains externally injected. Each owner passed its affected full
 suite and exact-main CI, with image publication gated off. The source SHA
-remains partial: Customer, File, Notification, Order, Procurement, Quotation,
-ServiceDefaults, and Workflows owners plus the separate retirement decision
-still need evidence under Workflows #191 and their service-specific issues.
+remains partial, despite seven more completed split-service owner slices:
+CustomerService #27 / PR #28 (`d70051778809133168b6ed1fce0acf973471e5f0`,
+CI `36437973409`), FileService #35 / PR #36
+(`ed973193daa446ecd5e3c9a6e89ce12b0a13eade`, CI `36438724821`),
+NotificationService #37 / PR #38 (`5098626ebc1f640db0f8c49ecf7146d0a22823a2`,
+CI `36439394379`), OrderService #42 / PR #43
+(`b7e6ccfed23baeddc717738f746b7c6bbe74c6f8`, CI `36439969535`),
+ProcurementService #22 / PR #23 (`18e02b0013ad7539b2c977a967a1bb208722f371`,
+CI `36440670906`), QuotationService #66 / PR #67
+(`9788378d7628917c8fef9bc7df70bfbf41afd7fa`, CI `36441811934`), and
+ServiceDefaults #55 / PR #56 (`515c5898a478eef914d5515eabd95930c1d2d8b7`,
+CI `36436862954`). These pin the shared RS256 validator, exercise
+production-mode acceptance and rejection, and preserve the split service
+boundaries. Quotation's exact-main CI passed; no image was published.
+Workflows #197 remains partial: live protected mains for AppHost, AuthService,
+DataMigration, Intranet, and Web still call `dotnet-validate@6017816f` rather
+than the redacted scanner in `@73dd7304`; the remaining split consumers pin
+`@73dd7304`. The proposed
+PredictionService retirement still lacks explicit owner approval. Neither a
+source path classification nor a superseded runtime is retirement authority.
 
 Workflows #195 / PR #196 added redacted publication-time detection of JWT
 signing material in `.resx` and generated resource comments (merged
