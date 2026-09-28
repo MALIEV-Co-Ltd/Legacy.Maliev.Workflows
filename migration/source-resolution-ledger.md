@@ -25,6 +25,16 @@ owner has issue, merged PR, protected-main ancestor SHA, and validation URLs,
 and every candidate retirement has an explicit reason and approval URL.
 Mixed commits cannot be complete until both kinds of resolution are proven.
 
+Source `f0640fe0719b2eb6becda378bff08153d955be07` has a CatalogService
+owner for the original MaterialService exception-handler change. CatalogService
+#21 / PR #22 pins the redacted shared middleware and contracts its use without
+the retired LoggerService handler. Protected Catalog main
+`45629ed48c92c0bf938d4e1076b09ea86441bd8c` passed exact-main CI
+36388500752; local Release build, focused and full Catalog suites, shared
+failure-logging tests, formatting, dependency audit, and secret scan passed.
+This resolves only the Catalog owner of that source SHA. Other owners remain
+independently pending; no deployment or production data parity is implied.
+
 Source commit `7ebe7e4bf83a435ecb18afc29cf263424ed2bb74` persists
 quotation-request journey attribution. Its QuotationService owner is migrated
 through QuotationService #35 / PR #36, merged at
