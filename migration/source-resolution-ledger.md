@@ -32,6 +32,17 @@ an explicit reason and approval URL. Mixed commits cannot be complete until
 all owner and retirement decisions are proven. An exact formatting-only no-op
 has a separate disposition and is never labeled runtime migration.
 
+Source `7255bd59625694a9da85b964ad6ffa32c1490cec` adds a fail-closed,
+PII-free aggregate outcome receipt validator with quotation/invoice wire
+fixtures and regression tests. Workflows #180 links its sole owner to the
+adapted Legacy implementation in PR #23, merged at
+`6e3bb55f5ff3ee2b69dd6b4aee6333777ba0ed36` with exact-main CI
+33964911473. The Legacy quotation/invoice producers serialize PascalCase,
+so the target validator deliberately accepts that producer wire shape rather
+than the source's camelCase payload. Its synthetic fixtures, 16 Python tests,
+and seven .NET wire fixtures pass. This resolution does not assert a collected
+live receipt, Ads attribution, or production deployment.
+
 Source `61df92fb171a5c1c65a46a07cd70777d87e1a46e` is an approved no-op for
 both QuotationService and Web under Workflows #175. The committed three-path
 diff removes only final newlines; `git diff --ignore-space-at-eol --exit-code`
