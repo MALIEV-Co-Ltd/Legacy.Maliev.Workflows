@@ -43,6 +43,22 @@ than the source's camelCase payload. Its synthetic fixtures, 16 Python tests,
 and seven .NET wire fixtures pass. This resolution does not assert a collected
 live receipt, Ads attribution, or production deployment.
 
+Source `894e437e064c1e4b693b43fe45d15b6ac1d70168` has distinct Intranet
+and Workflows owners under #182. Intranet PR #155 merged the authenticated
+employee-session outcome bridge, fixed producer routes, UTC-window and
+source-specific permission checks, aggregate allowlist, generic unavailable
+receipts, and no-store response; PR #188 retained the original
+`/Analytics/OutcomeReadback` route as an authenticated alias. Their merged
+protected-main SHAs `736eeb74f53e9f8c58b1d0f5ddabf01d124262ea` and
+`f1061bb445b164d5ad968892d1c59db65a6312fa` passed exact-main CI
+33969206504 and 36275244245. Workflows PR #67 merged the offline receipt
+collector documentation for the canonical Operations route and Analytics alias
+at `7f01550a94d1140615f6591e7ad05122e3ae4c8b`, exact-main CI
+36275583537. These satisfy this source commit's code and documentation
+behavior; Intranet #183 remains open for authenticated production-derived
+Aspire acceptance. Neither mock tests nor route existence prove live receipt,
+production data, or deployment parity.
+
 Source `61df92fb171a5c1c65a46a07cd70777d87e1a46e` is an approved no-op for
 both QuotationService and Web under Workflows #175. The committed three-path
 diff removes only final newlines; `git diff --ignore-space-at-eol --exit-code`
