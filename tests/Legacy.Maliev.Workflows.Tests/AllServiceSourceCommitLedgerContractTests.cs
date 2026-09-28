@@ -282,6 +282,28 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     }
 
     [Fact]
+    public void Source_7387_SCB_display_is_migrated_but_payment_account_data_is_pending()
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() ==
+                "7387d9e88e4f1b1b254c48f5ab0933ec3bbf20d3");
+
+        Assert.Equal("partial", record.GetProperty("status").GetString());
+        var owners = record.GetProperty("ownerResolutions");
+        var web = owners.GetProperty("Legacy.Maliev.Web");
+        Assert.Equal("migrated", web.GetProperty("status").GetString());
+        Assert.Equal("85bbefdd380f278ed949b05433d3055c2a602847",
+            web.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/287",
+            web.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        var data = owners.GetProperty("Legacy.Maliev.DataMigration");
+        Assert.Equal("pending", data.GetProperty("status").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/issues/201",
+            data.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+    }
+
+    [Fact]
     public void Source_492577_web_no_prune_is_resolved_only_after_exact_main_validation()
     {
         using var resolutions = Load("migration/source-commit-resolutions.json");
