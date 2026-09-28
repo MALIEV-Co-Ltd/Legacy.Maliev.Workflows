@@ -12,13 +12,13 @@ try {
     }
     $trackedFiles = @($trackedOutput -split "`0" | Where-Object { $_ })
     if (Test-JwtSigningResourceMaterial -RepositoryPath $resolvedRepositoryPath -TrackedFiles $trackedFiles) {
-        throw [System.InvalidOperationException]::new('Candidate contains JWT signing material in a resource; value redacted.')
+        throw [System.InvalidOperationException]::new('Candidate contains credential material in a resource; value redacted.')
     }
 } catch {
     $message = $_.Exception.Message
     if ($message -notin @(
         'Unable to enumerate tracked candidate files.',
-        'Candidate contains JWT signing material in a resource; value redacted.',
+        'Candidate contains credential material in a resource; value redacted.',
         'Candidate resource XML cannot be safely inspected; details redacted.',
         'Candidate generated resource XML cannot be safely inspected; details redacted.',
         'Candidate generated resource cannot be safely inspected; details redacted.')) {

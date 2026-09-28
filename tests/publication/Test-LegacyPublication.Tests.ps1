@@ -440,7 +440,7 @@ Describe 'Test-LegacyPublication' {
             $result = Invoke-GateFixture $fixture
 
             $result.ExitCode | Should Not Be 0
-            $result.Output | Should Match 'JWT signing material in a resource; value redacted'
+            $result.Output | Should Match 'credential material in a resource; value redacted'
             $result.Output | Should Not Match ([regex]::Escape($value))
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
@@ -463,7 +463,7 @@ internal static string TokenSigningMaterial {
             $result = Invoke-GateFixture $fixture
 
             $result.ExitCode | Should Not Be 0
-            $result.Output | Should Match 'JWT signing material in a resource; value redacted'
+            $result.Output | Should Match 'credential material in a resource; value redacted'
             $result.Output | Should Not Match ([regex]::Escape($value))
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
@@ -481,8 +481,79 @@ internal static string TokenSigningMaterial {
             $result = Invoke-GateFixture $fixture
 
             $result.ExitCode | Should Not Be 0
-            $result.Output | Should Match 'JWT signing material in a resource; value redacted'
+            $result.Output | Should Match 'credential material in a resource; value redacted'
             $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'rejects provider API credentials in resources without printing the value' {
+        $fixture = New-PublicationFixture
+        try {
+            $value = 'fixture-' + 'provider-api-key'
+            Set-Content (Join-Path $fixture.Repository 'Resources.resx') ('<root><data name="BrevoApi"><value>' + $value + '</value></data></root>')
+            Invoke-Git $fixture.Repository add Resources.resx | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture provider resource' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'credential material in a resource; value redacted'
+            $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'rejects provider client credentials in generated XML documentation without printing the value' {
+        $fixture = New-PublicationFixture
+        try {
+            $value = 'fixture-' + 'provider-client-secret'
+            $documentation = '<doc><members><member name="P:Fixture.Properties.Resources.ProductionOAuthClientSecret"><summary>' +
+                'Looks up a localized string similar to ' + $value + '.</summary></member></members></doc>'
+            Set-Content (Join-Path $fixture.Repository 'Fixture.xml') $documentation
+            Invoke-Git $fixture.Repository add Fixture.xml | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture provider XML documentation' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'credential material in a resource; value redacted'
+            $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'rejects provider client credentials in generated resource comments without printing the value' {
+        $fixture = New-PublicationFixture
+        try {
+            $value = 'fixture-' + 'provider-client-id'
+            @"
+/// <summary>
+/// Looks up a localized string similar to $value.
+/// </summary>
+internal static string LiveClientId {
+    get { return ResourceManager.GetString("LiveClientId", resourceCulture); }
+}
+"@ | Set-Content (Join-Path $fixture.Repository 'Resources.Designer.cs')
+            Invoke-Git $fixture.Repository add Resources.Designer.cs | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture provider resource comments' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'credential material in a resource; value redacted'
+            $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'permits non-secret provider metadata resources' {
+        $fixture = New-PublicationFixture
+        try {
+            Set-Content (Join-Path $fixture.Repository 'Resources.resx') '<root><data name="ProviderTimeoutSeconds"><value>30</value></data></root>'
+            Invoke-Git $fixture.Repository add Resources.resx | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture provider metadata' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Be 0
+            $result.Output | Should Match 'Publication gate passed'
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 
@@ -547,7 +618,7 @@ internal static string TokenSigningMaterial {
             $rejected = Invoke-Process $fixture.Repository 'pwsh' @('-NoProfile', '-File', $ResourceScanScript, '-RepositoryPath', $fixture.Repository)
 
             $rejected.ExitCode | Should Not Be 0
-            $rejected.Output | Should Match 'JWT signing material in a resource; value redacted'
+            $rejected.Output | Should Match 'credential material in a resource; value redacted'
             $rejected.Output | Should Not Match ([regex]::Escape($value))
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
