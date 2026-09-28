@@ -64,7 +64,7 @@ runs:
       shell: pwsh
       working-directory: ${{ inputs.working-directory }}
       run: |
-        & (Join-Path $env:GITHUB_ACTION_PATH '../../scripts/Invoke-JwtSigningResourceScan.ps1') -RepositoryPath $env:GITHUB_WORKSPACE
+        & (Join-Path $env:GITHUB_ACTION_PATH '../../scripts/Invoke-JwtSigningResourceScan.ps1') -RepositoryPath (Get-Location).Path
 
     - name: Restore
       shell: bash

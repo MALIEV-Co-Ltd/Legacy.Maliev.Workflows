@@ -189,7 +189,9 @@ public sealed class RepositoryContractTests
         Assert.True(scan > 0 && scan < restore);
         Assert.Contains("shell: pwsh", action[scan..restore], StringComparison.Ordinal);
         Assert.Contains("Invoke-JwtSigningResourceScan.ps1", action[scan..restore], StringComparison.Ordinal);
-        Assert.Contains("-RepositoryPath $env:GITHUB_WORKSPACE", action[scan..restore], StringComparison.Ordinal);
+        Assert.Contains("working-directory: ${{ inputs.working-directory }}", action[scan..restore], StringComparison.Ordinal);
+        Assert.Contains("-RepositoryPath (Get-Location).Path", action[scan..restore], StringComparison.Ordinal);
+        Assert.DoesNotContain("-RepositoryPath $env:GITHUB_WORKSPACE", action[scan..restore], StringComparison.Ordinal);
         Assert.Contains("git -C $resolvedRepositoryPath ls-files -z", runner, StringComparison.Ordinal);
         Assert.Contains("JwtSigningResourceScanner.ps1", runner, StringComparison.Ordinal);
         Assert.Contains("$settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit", scanner, StringComparison.Ordinal);

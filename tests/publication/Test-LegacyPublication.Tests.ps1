@@ -501,6 +501,10 @@ internal static string TokenSigningMaterial {
     It 'uses the same redacted resource scan from a clean split-repository checkout' {
         $fixture = New-PublicationFixture
         try {
+            $workspaceRoot = Invoke-Process $fixture.Container 'pwsh' @('-NoProfile', '-File', $ResourceScanScript, '-RepositoryPath', $fixture.Container)
+            $workspaceRoot.ExitCode | Should Not Be 0
+            $workspaceRoot.Output | Should Match 'Unable to enumerate tracked candidate files'
+
             $clean = Invoke-Process $fixture.Repository 'pwsh' @('-NoProfile', '-File', $ResourceScanScript, '-RepositoryPath', $fixture.Repository)
             $clean.ExitCode | Should Be 0
 
