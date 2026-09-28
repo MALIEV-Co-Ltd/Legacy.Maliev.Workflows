@@ -10,6 +10,58 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     private static readonly Regex Sha = new("^[0-9a-f]{40}$", RegexOptions.CultureInvariant);
 
     [Fact]
+    public void Source_31e8_manufacturing_unit_price_is_proven_without_closing_parent_pricing_issue()
+    {
+        const string sourceSha = "31e8f5d28d11f903687c4e540441b19bbfbfe102";
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var source = Assert.Single(ownership.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("commit").GetString() == sourceSha);
+        Assert.Equal(2, source.GetProperty("classifications").GetArrayLength());
+
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("sourceSha").GetString() == sourceSha);
+        Assert.Equal("migrated", record.GetProperty("status").GetString());
+        var web = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
+        Assert.Equal("migrated", web.GetProperty("status").GetString());
+        Assert.Equal("65b6f9a6fd0dadef8d9eca4f1e2692491f6f11ec",
+            web.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/275",
+            web.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/378",
+            web.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36399283760",
+            web.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+    }
+
+    [Fact]
+    public void Source_505c_per_part_print_time_is_partial_until_physical_simulation_acceptance()
+    {
+        const string sourceSha = "505c67cfda7ebfe79b5ceed9d3d0d9a114232821";
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var source = Assert.Single(ownership.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("commit").GetString() == sourceSha);
+        Assert.Equal(2, source.GetProperty("classifications").GetArrayLength());
+
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("sourceSha").GetString() == sourceSha);
+        Assert.Equal("partial", record.GetProperty("status").GetString());
+        var web = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
+        Assert.Equal("partial", web.GetProperty("status").GetString());
+        Assert.Equal("a909217648aa97464cf53a56b4e9f8ebe471176c",
+            web.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/274",
+            web.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/300",
+            web.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/357",
+            web.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36338116751",
+            web.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+    }
+
+    [Fact]
     public void Source_4bde_no_prune_behavior_is_proven_in_the_gated_quotation_publisher()
     {
         const string sourceSha = "4bde312241c2e063e6768f510b92ee2f60b2b94b";
