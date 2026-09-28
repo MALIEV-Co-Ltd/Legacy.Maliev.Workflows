@@ -6035,7 +6035,7 @@
     {
       "sourceSha": "cbac7d7155da2208c77d56103b6a2cb19196fc83",
       "isMerge": false,
-      "status": "pending",
+      "status": "partial",
       "ownerResolutions": {
         "Legacy.Maliev.AccountingService": {
           "status": "pending",
@@ -6045,11 +6045,17 @@
           "validationEvidenceUrls": []
         },
         "Legacy.Maliev.AuthService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/191"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/1"
+          ],
+          "mergedTargetSha": "28cbbcc1750ba30db516c7d7a63bf51ed4f4fa39",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/actions/runs/36417095916"
+          ]
         },
         "Legacy.Maliev.CareerService": {
           "status": "pending",
