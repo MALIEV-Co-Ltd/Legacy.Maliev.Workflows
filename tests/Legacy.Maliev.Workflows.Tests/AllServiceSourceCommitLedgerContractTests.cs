@@ -58,6 +58,22 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             country.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CountryService/actions/runs/36384608409",
             country.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        var customer = owners.GetProperty("Legacy.Maliev.CustomerService");
+        Assert.Equal("migrated", customer.GetProperty("status").GetString());
+        Assert.Equal("cebf45e8e1eeb600d760a565f8b0970c7f434148",
+            customer.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/pull/26",
+            customer.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/actions/runs/36391610412",
+            customer.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        var employee = owners.GetProperty("Legacy.Maliev.EmployeeService");
+        Assert.Equal("migrated", employee.GetProperty("status").GetString());
+        Assert.Equal("997fc23dc7c6b77f12e19b3b1a83e9537b253071",
+            employee.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.EmployeeService/pull/19",
+            employee.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.EmployeeService/actions/runs/36391144381",
+            employee.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
         var quotation = owners.GetProperty("Legacy.Maliev.QuotationService");
         Assert.Equal("migrated", quotation.GetProperty("status").GetString());
         Assert.Equal("db1427dcc73e3d98f14f7192c36e3d13b72fc42a",
