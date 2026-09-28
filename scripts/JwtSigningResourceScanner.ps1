@@ -28,6 +28,27 @@ function Test-JwtSigningResourceMaterial {
             } catch {
                 throw [System.InvalidOperationException]::new('Candidate resource XML cannot be safely inspected; details redacted.')
             } finally { if ($null -ne $reader) { $reader.Dispose() } }
+        } elseif ($relativePath -match '(?i)\.xml$') {
+            try {
+                $path = Join-Path $RepositoryPath $relativePath
+                if ((Get-Item -LiteralPath $path).Length -gt 8MB) {
+                    throw [System.InvalidOperationException]::new('Candidate generated resource XML is too large.')
+                }
+                $source = Get-Content -LiteralPath $path -Raw
+                $memberExpression = [regex]::new('(?is)<member\b[^>]*\bname\s*=\s*["''](?<member>[^"'']+)["''][^>]*>(?<body>.*?)</member\s*>',
+                    [System.Text.RegularExpressions.RegexOptions]::None, [timespan]::FromSeconds(2))
+                $summaryExpression = [regex]::new('(?is)<summary\b[^>]*>.*?Looks\s+up\s+a\s+localized\s+string\s+similar\s+to\s+\S+.*?</summary\s*>',
+                    [System.Text.RegularExpressions.RegexOptions]::None, [timespan]::FromSeconds(2))
+                foreach ($member in $memberExpression.Matches($source)) {
+                    $memberName = $member.Groups['member'].Value
+                    $nameMatch = [regex]::Match($memberName, '([A-Za-z_][A-Za-z0-9_]*)$')
+                    if (-not $nameMatch.Success -or
+                        $nameMatch.Groups[1].Value -notmatch $resourceNamePattern) { continue }
+                    if ($summaryExpression.IsMatch($member.Groups['body'].Value)) { return $true }
+                }
+            } catch {
+                throw [System.InvalidOperationException]::new('Candidate generated resource XML cannot be safely inspected; details redacted.')
+            }
         } elseif ($relativePath -match '(?i)\.Designer\.cs$') {
             try {
                 $source = Get-Content -LiteralPath (Join-Path $RepositoryPath $relativePath) -Raw

@@ -468,6 +468,38 @@ internal static string TokenSigningMaterial {
         } finally { Remove-Item $fixture.Container -Recurse -Force }
     }
 
+    It 'rejects generated JWT XML documentation without printing the value' {
+        $fixture = New-PublicationFixture
+        try {
+            $value = 'fixture-' + 'xml-signing-material'
+            $documentation = '<doc><members><member name="P:Fixture.Properties.Resources.TokenSigningMaterial"><summary>' +
+                'Looks up a localized string similar to ' + $value + '.</summary></member></members></doc>'
+            Set-Content (Join-Path $fixture.Repository 'Resources.xml') $documentation
+            Invoke-Git $fixture.Repository add Resources.xml | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture XML documentation' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Not Be 0
+            $result.Output | Should Match 'JWT signing material in a resource; value redacted'
+            $result.Output | Should Not Match ([regex]::Escape($value))
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
+    It 'permits non-secret generated token metadata XML documentation' {
+        $fixture = New-PublicationFixture
+        try {
+            Set-Content (Join-Path $fixture.Repository 'Resources.xml') '<doc><members><member name="P:Fixture.Properties.Resources.TokenExpiryMinutes"><summary>Looks up a localized string similar to 30.</summary></member></members></doc>'
+            Invoke-Git $fixture.Repository add Resources.xml | Out-Null
+            Invoke-Git $fixture.Repository commit -m 'fixture safe XML documentation' | Out-Null
+
+            $result = Invoke-GateFixture $fixture
+
+            $result.ExitCode | Should Be 0
+            $result.Output | Should Match 'Publication gate passed'
+        } finally { Remove-Item $fixture.Container -Recurse -Force }
+    }
+
     It 'permits non-secret token metadata resources' {
         $fixture = New-PublicationFixture
         try {
