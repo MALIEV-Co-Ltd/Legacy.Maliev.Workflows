@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-28T18:43:48.9765122+00:00",
+  "generatedAt": "2026-09-28T19:46:23.8965600+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "legacyTargets": {
@@ -81,12 +81,12 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/515c5898a478eef914d5515eabd95930c1d2d8b7"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "6a98120b4e3e0c2df95fa7c4cb2779abe1643420",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/6a98120b4e3e0c2df95fa7c4cb2779abe1643420"
+      "mainSha": "6ccbb8376b0c782dea4636110631728115d19d12",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/6ccbb8376b0c782dea4636110631728115d19d12"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "4cec1e0fa2e1fc7e55f0eec23e0b53ad12b98490",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/4cec1e0fa2e1fc7e55f0eec23e0b53ad12b98490"
+      "mainSha": "57b9f39d31ecfa177fea55644d6ccc154600a819",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/57b9f39d31ecfa177fea55644d6ccc154600a819"
     }
   },
   "commitCount": 1096,
