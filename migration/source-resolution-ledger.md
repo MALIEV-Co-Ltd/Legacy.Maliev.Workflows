@@ -52,6 +52,26 @@ Workflows issue #191 tracks the remaining issuer/validator owners. The overall
 source SHA remains partial until each changed-path owner has independent
 evidence; this entry does not authorize deployment or token cutover.
 
+AccountingService #32 / PR #33 reconciles the original Invoice, Payment, and
+Receipt validator changes under the split Accounting owner. It pins the
+RS256-only shared validator, tests accepted/rejected JWT algorithms and
+protected routes, and merged at `f64cade04dd6f6dfb2b9b4891f16cd5942db05ad`;
+exact-main CI `36426205947` passed. CareerService #21 / PR #22 independently
+reconciles the original JobService validator changes with service-specific
+issuer, audience, key, algorithm, and route tests. It merged at
+`9c69ad0d53fbdad516c766b1be86181fb2997982`; exact-main CI `36427359118`
+passed. Both builds had zero warnings/errors and their full affected suites
+passed. These are two owner resolutions, not whole-commit completion.
+
+Workflows #195 / PR #196 added redacted publication-time detection of JWT
+signing material in `.resx` and generated resource comments (merged
+`512d1acca3e2fe70dd341a6324b9a8237f3de2e0`, exact-main CI `36426293884`).
+Workflows #197 / PR #198 added the same scan to the shared .NET validation
+action (merged `73dd7304ffe85ec504389fd7664cc39070b9f148`, exact-main CI
+`36427714339`). The Workflows owner remains pending until the action is
+actually pinned and validated in every affected service; CompatibilityContracts
+#14 / PR #15 is the first verified consumer, not evidence for all services.
+
 Source `7255bd59625694a9da85b964ad6ffa32c1490cec` adds a fail-closed,
 PII-free aggregate outcome receipt validator with quotation/invoice wire
 fixtures and regression tests. Workflows #180 links its sole owner to the
