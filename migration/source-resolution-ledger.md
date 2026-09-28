@@ -125,10 +125,16 @@ Source `c5fe0e4446f4bf96917d6d1e2a84216f9ea0bea3` externalized provider
 credentials. NotificationService #39 / PR #40 confirms the existing runtime-
 only Brevo configuration rejects blank keys and accepts an externally supplied
 key in production, merged at `cfc4a8cfdb5e9f1a266589d2f972008183cac535`
-with exact-main CI `36452071826` green. Workflows #207 tracks the separate
-provider-resource scanner and proposed PayPal retirement; neither is yet
-accepted, so the source SHA remains partial. No credential values, old
+with exact-main CI `36452071826` green. Workflows #207 / PR #208 adds redacted
+provider-resource detection for `.resx`, generated XML, and generated comments,
+merged at `4ddf7c0d74295927f5a6eb8571c18aad924faec3` with exact-main CI
+`36453207817` green. The scanner still needs adoption by every affected split
+consumer, and proposed PayPal retirement lacks explicit approval, so the
+source SHA remains partial. No credential values, old
 resource files, or application deployment are included in this disposition.
+Workflows #210 separately tracks the next source SHA,
+`868b5909406cc3759254ee10520e04d4ad5beab0`, whose secret-scan and
+PostgreSQL-parity test changes are still pending split-repository acceptance.
 
 Source `7255bd59625694a9da85b964ad6ffa32c1490cec` adds a fail-closed,
 PII-free aggregate outcome receipt validator with quotation/invoice wire
