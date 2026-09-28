@@ -9,6 +9,30 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     private static readonly string Root = FindRepositoryRoot();
     private static readonly Regex Sha = new("^[0-9a-f]{40}$", RegexOptions.CultureInvariant);
 
+    [Theory]
+    [InlineData("5a3f24d9ecf4723ac49670e241c6c19d37b540fd", 371,
+        "c4c076115aebcf3055b9792a879987cb6216c48c", 36367135684L)]
+    [InlineData("07845568583107d38aab31ee8d1ef87e094ea57c", 372,
+        "12be9f6894fbc951b137a3d845035643f9d60730", 36368526344L)]
+    public void Single_owner_Web_pricing_slices_remain_partial_until_full_source_parity(
+        string sourceSha, int pullRequest, string mergedSha, long validationRun)
+    {
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var record = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            candidate => candidate.GetProperty("sourceSha").GetString() == sourceSha);
+
+        Assert.Equal("partial", record.GetProperty("status").GetString());
+        var web = record.GetProperty("ownerResolutions").GetProperty("Legacy.Maliev.Web");
+        Assert.Equal("partial", web.GetProperty("status").GetString());
+        Assert.Equal(mergedSha, web.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/275",
+            web.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains($"https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/{pullRequest}",
+            web.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains($"https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/{validationRun}",
+            web.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+    }
+
     [Fact]
     public void Source_d6d06_Auth_async_callback_warning_has_equivalent_merged_boundary()
     {
@@ -534,8 +558,8 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             {
                 var result = owner.Value;
                 Assert.Contains(result.GetProperty("status").GetString(),
-                    new[] { "pending", "blocked", "migrated" });
-                if (result.GetProperty("status").GetString() == "migrated")
+                    new[] { "pending", "partial", "blocked", "migrated" });
+                if (result.GetProperty("status").GetString() is "partial" or "migrated")
                 {
                     Assert.NotEmpty(result.GetProperty("issueUrls").EnumerateArray());
                     Assert.NotEmpty(result.GetProperty("prUrls").EnumerateArray());
