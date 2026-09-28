@@ -6423,21 +6423,33 @@
     {
       "sourceSha": "e2fbd8e608748bf6f9f1e58824beb41cd1b0f379",
       "isMerge": false,
-      "status": "pending",
+      "status": "partial",
       "ownerResolutions": {
         "Legacy.Maliev.AuthService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/issues/103"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/pull/104"
+          ],
+          "mergedTargetSha": "3b549aed37258df676bef9f9acc5d5101ad8229b",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/actions/runs/36450205432"
+          ]
         },
         "Legacy.Maliev.Workflows": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "partial",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/205"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/pull/206"
+          ],
+          "mergedTargetSha": "b856eb3dc57fe6597c7a491ecbf65b2938c330a1",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/actions/runs/36449262634"
+          ]
         }
       },
       "retirementApproval": null
@@ -6445,14 +6457,20 @@
     {
       "sourceSha": "c5fe0e4446f4bf96917d6d1e2a84216f9ea0bea3",
       "isMerge": false,
-      "status": "pending",
+      "status": "partial",
       "ownerResolutions": {
         "Legacy.Maliev.NotificationService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/issues/39"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/pull/40"
+          ],
+          "mergedTargetSha": "cfc4a8cfdb5e9f1a266589d2f972008183cac535",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/actions/runs/36452071826"
+          ]
         },
         "Legacy.Maliev.Workflows": {
           "status": "pending",

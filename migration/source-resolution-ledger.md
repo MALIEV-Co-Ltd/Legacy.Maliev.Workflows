@@ -90,10 +90,12 @@ ServiceDefaults #55 / PR #56 (`515c5898a478eef914d5515eabd95930c1d2d8b7`,
 CI `36436862954`). These pin the shared RS256 validator, exercise
 production-mode acceptance and rejection, and preserve the split service
 boundaries. Quotation's exact-main CI passed; no image was published.
-Workflows #197 remains partial: live protected mains for AppHost, AuthService,
-DataMigration, Intranet, and Web still call `dotnet-validate@6017816f` rather
-than the redacted scanner in `@73dd7304`; the remaining split consumers pin
-`@73dd7304`. The proposed
+Workflows #197 remains partial: AppHost #121 / PR #122, AuthService #101 /
+PR #102, Intranet #219 / PR #220, and Web #384 / PR #385 now pin the
+corrected redacted action at `d7efac266bc66273bc45eab583618871292ecbd6`.
+The Intranet exact-main run is still being verified; the DataMigration consumer
+remains on an earlier action pin and is owned by its separate guarded-data
+workstream. The proposed
 PredictionService retirement still lacks explicit owner approval. Neither a
 source path classification nor a superseded runtime is retirement authority.
 
@@ -102,9 +104,31 @@ signing material in `.resx` and generated resource comments (merged
 `512d1acca3e2fe70dd341a6324b9a8237f3de2e0`, exact-main CI `36426293884`).
 Workflows #197 / PR #198 added the same scan to the shared .NET validation
 action (merged `73dd7304ffe85ec504389fd7664cc39070b9f148`, exact-main CI
-`36427714339`). The Workflows owner remains pending until the action is
-actually pinned and validated in every affected service; CompatibilityContracts
-#14 / PR #15 is the first verified consumer, not evidence for all services.
+`36427714339`). Workflows #202 / PR #203 corrected multi-checkout repository
+selection in that action (merged `d7efac266bc66273bc45eab583618871292ecbd6`,
+CI `36445163234`). The Workflows owner remains partial until the action is
+pinned and validated in every affected service; one consumer is not evidence
+for all services.
+
+Source `e2fbd8e608748bf6f9f1e58824beb41cd1b0f379` removed a stale JWT
+resource secret from generated XML documentation. AuthService #103 / PR #104
+adds a source-specific absence regression and pins the XML-aware scanner,
+merged at `3b549aed37258df676bef9f9acc5d5101ad8229b` with exact-main CI
+`36450205432` green. Workflows #205 / PR #206 adds bounded, redacted
+generated-XML member scanning with positive and negative tests; it merged at
+`b856eb3dc57fe6597c7a491ecbf65b2938c330a1`, CI `36449262634` green.
+That shared owner remains partial until the corrected action is pinned and
+validated across all relevant consumers. No stale resource value is copied
+into the Legacy repositories.
+
+Source `c5fe0e4446f4bf96917d6d1e2a84216f9ea0bea3` externalized provider
+credentials. NotificationService #39 / PR #40 confirms the existing runtime-
+only Brevo configuration rejects blank keys and accepts an externally supplied
+key in production, merged at `cfc4a8cfdb5e9f1a266589d2f972008183cac535`
+with exact-main CI `36452071826` green. Workflows #207 tracks the separate
+provider-resource scanner and proposed PayPal retirement; neither is yet
+accepted, so the source SHA remains partial. No credential values, old
+resource files, or application deployment are included in this disposition.
 
 Source `7255bd59625694a9da85b964ad6ffa32c1490cec` adds a fail-closed,
 PII-free aggregate outcome receipt validator with quotation/invoice wire
