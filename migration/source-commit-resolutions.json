@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-28T09:48:44.0421129+00:00",
+  "generatedAt": "2026-09-28T10:19:48.0331853+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "sourceCommitCount": 1096,
@@ -21335,7 +21335,9 @@
       "ownerResolutions": {
         "Legacy.Maliev.Web": {
           "status": "pending",
-          "issueUrls": [],
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/380"
+          ],
           "prUrls": [],
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
