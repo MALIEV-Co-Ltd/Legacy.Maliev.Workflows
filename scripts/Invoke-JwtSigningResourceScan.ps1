@@ -20,6 +20,7 @@ try {
         'Unable to enumerate tracked candidate files.',
         'Candidate contains JWT signing material in a resource; value redacted.',
         'Candidate resource XML cannot be safely inspected; details redacted.',
+        'Candidate generated resource XML cannot be safely inspected; details redacted.',
         'Candidate generated resource cannot be safely inspected; details redacted.')) {
         $message = 'Unable to safely inspect tracked resource files; details redacted.'
     }
