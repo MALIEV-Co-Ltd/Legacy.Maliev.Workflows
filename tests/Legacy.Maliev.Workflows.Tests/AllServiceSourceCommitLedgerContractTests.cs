@@ -66,6 +66,30 @@ public sealed class AllServiceSourceCommitLedgerContractTests
             customer.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/actions/runs/36391610412",
             customer.GetProperty("validationEvidenceUrls").EnumerateArray().Select(item => item.GetString()));
+        var accounting = owners.GetProperty("Legacy.Maliev.AccountingService");
+        Assert.Equal("migrated", accounting.GetProperty("status").GetString());
+        Assert.Equal("bb8b7edb432e3199493ba745d0fdb9fbf750f764",
+            accounting.GetProperty("mergedTargetSha").GetString());
+        var document = owners.GetProperty("Legacy.Maliev.DocumentService");
+        Assert.Equal("migrated", document.GetProperty("status").GetString());
+        Assert.Equal("f309f6a89878600eb8dc721acf73817aa658e54d",
+            document.GetProperty("mergedTargetSha").GetString());
+        var file = owners.GetProperty("Legacy.Maliev.FileService");
+        Assert.Equal("migrated", file.GetProperty("status").GetString());
+        Assert.Equal("26a9e77571672862396b7bcefcfb98e8ec8abea3",
+            file.GetProperty("mergedTargetSha").GetString());
+        var notification = owners.GetProperty("Legacy.Maliev.NotificationService");
+        Assert.Equal("partial", notification.GetProperty("status").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.NotificationService/issues/32",
+            notification.GetProperty("issueUrls").EnumerateArray().Select(item => item.GetString()));
+        var order = owners.GetProperty("Legacy.Maliev.OrderService");
+        Assert.Equal("migrated", order.GetProperty("status").GetString());
+        Assert.Equal("773214c271ebaf9430389a55b0cba39220b0c38d",
+            order.GetProperty("mergedTargetSha").GetString());
+        var procurement = owners.GetProperty("Legacy.Maliev.ProcurementService");
+        Assert.Equal("migrated", procurement.GetProperty("status").GetString());
+        Assert.Equal("f9084920af54c8c8bb765fb7d55869f8ced733b8",
+            procurement.GetProperty("mergedTargetSha").GetString());
         var employee = owners.GetProperty("Legacy.Maliev.EmployeeService");
         Assert.Equal("migrated", employee.GetProperty("status").GetString());
         Assert.Equal("997fc23dc7c6b77f12e19b3b1a83e9537b253071",
@@ -81,7 +105,8 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/pull/63",
             quotation.GetProperty("prUrls").EnumerateArray().Select(item => item.GetString()));
         Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.Web").GetProperty("status").GetString());
-        Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.OrderService").GetProperty("status").GetString());
+        Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.Intranet").GetProperty("status").GetString());
+        Assert.Equal("pending", owners.GetProperty("Legacy.Maliev.Workflows").GetProperty("status").GetString());
     }
 
     [Fact]

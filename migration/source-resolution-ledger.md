@@ -53,6 +53,20 @@ secret scan. Both pin the redacting shared failure middleware and add focused
 contract regression coverage. The source commit remains partial: other owners
 and the proposed PredictionService retirement still require independent proof.
 
+Additional `f0640fe` owners were independently reconciled on 2026-09-28:
+AccountingService #29 / PR #30 (`bb8b7edb`, exact-main CI 36392134819),
+FileService #29 and #31 / PRs #30 and #32 (`26a9e775`, exact-main CI
+36393766167), OrderService #40 / PR #41 (`773214c2`, exact-main CI
+36394029041), ProcurementService #20 / PR #21 (`f9084920`, exact-main CI
+36393820622), and DocumentService #28 / PR #29 (`f309f6a8`, exact-main CI
+36394708345). Each pins the redacted shared failure middleware and has
+service-specific error/trace contracts; their protected-main Release builds,
+affected test suites, and gated CI passed. NotificationService #31 / PR #33
+(`32d21588`, exact-main CI 36392560478) covers only the Email path, so its
+owner remains **partial** until MessageService #32 is resolved. Intranet,
+CompatibilityContracts, Web, Workflows, and the proposed PredictionService
+retirement remain pending. No app deployment or data parity is implied.
+
 Source commit `7ebe7e4bf83a435ecb18afc29cf263424ed2bb74` persists
 quotation-request journey attribution. Its QuotationService owner is migrated
 through QuotationService #35 / PR #36, merged at
