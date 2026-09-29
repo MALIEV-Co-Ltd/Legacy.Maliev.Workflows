@@ -43,6 +43,26 @@ an explicit reason and approval URL. Mixed commits cannot be complete until
 all owner and retirement decisions are proven. An exact formatting-only no-op
 has a separate disposition and is never labeled runtime migration.
 
+Workflows #238 resolves nine Web-only source commits individually against
+merged Web PR #186 (`1d58887f44c5d0300bb1c24d05d89c4a68f74bfa`;
+successful validation run `33964899428`). Source diffs and the PR's runtime
+and test files were compared at those Git objects:
+
+| Source SHA | Merged Web evidence |
+| --- | --- |
+| `e79640c8f30f6d030ac487e92f9914c974435164` | CNC search-intent copy in `CncMachiningContent.razor` and `CncMachiningStaticSsrRouteTests.cs` |
+| `a07b98ce97b3d4d5593a5247ded663b1cadf4191` | Native multi-part review/color and summary in `InstantQuotationReview.razor` and `InstantQuotationReviewEditParityTests.cs` |
+| `8b7ff7a2ef26c10e35a74b4d3d5526ba01f0102c` | Per-part preview snapshot/color refresh in `workflow-interop.mjs`, `instant-quotation-viewer.test.mjs`, and review markup |
+| `fb3595dd9c4b5f43e7b6165deed7cea9151f3147` | CAD face ranges and boundary topology in `model-viewer.mjs` and `instant-quotation-viewer.test.mjs` |
+| `9cb9e89de948637ac9931241f88e7cab8ee91b35` | Preview/incident separation in `ErrorDisplayModelResolver.cs`, middleware, and `ErrorRoutePolicyTests.cs` |
+| `6c6824f90550ec80ec46ed65a683a76e7ff532f2` | Transparent resting recovery links in `space-error.css` and route asset tests |
+| `441828056b209f277c8009ea6e40fe408d77eb10` | Three-note scan preparation in `ThreeDimensionalScanningContent.razor` and `ScanningPresentationContractTests.cs` |
+| `0a7ae412d2992530516d2816d64d3b3113edc42e` | Native quotation validation and building guidance in customer form, address-validation module, and tests |
+| `4486f0e964e508e5eb7b43a59eeaec46cc052c67` | Strict page-size parsing for career/member routes in `PageSizeQuery.cs` and `PageSizeQueryValidationTests.cs` |
+
+This is code-migration evidence only, not deployment, route acceptance, or
+data parity. The other pending Web commits in #234 remain pending.
+
 Workflows #236 resolves four Web-only source changes from the additive quotation
 series individually: `5650867256ebfddecb4e3bf96afc962269dcd08e` (calibrated
 FDM price, Web #268), `da2796fd4dd395cb2a839057f4e8dfd99f13f6b6`
