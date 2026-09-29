@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "7055e4e5f64f8e405033509de324f57362868200",
+  "status": "runtime-migrated-analytics-release-unverified",
+  "outcomeEvent": "generate_lead",
+  "diagnosticEvents": [
+    { "name": "finish_matcher_viewed", "parameters": [] },
+    { "name": "finish_matcher_started", "parameters": ["input_method"] },
+    { "name": "finish_matcher_recommendation_selected", "parameters": ["step_number", "selection_type", "sheen", "match_quality"] },
+    { "name": "finish_matcher_guidance_opened", "parameters": ["guidance_topic"] },
+    { "name": "finish_matcher_quote_clicked", "parameters": ["step_number", "selection_type", "sheen", "match_quality", "input_method", "has_pantone"] },
+    { "name": "finish_matcher_error", "parameters": ["failure_category", "input_method"] }
+  ],
+  "commonParameters": ["service_id", "intent", "locale", "source"],
+  "allowedValues": {
+    "service_id": ["3d_printing"],
+    "intent": ["finish_color_matcher"],
+    "locale": ["en", "th"],
+    "source": ["finishing_and_color"],
+    "input_method": ["color_picker", "default", "guidance", "hex", "image", "pantone", "recommendation", "sheen"],
+    "selection_type": ["closest", "tonal_alternative"],
+    "sheen": ["matte", "satin", "gloss"],
+    "match_quality": ["close", "noticeable", "large_difference"],
+    "guidance_topic": ["color_science", "painting_plan", "pantone_handoff"],
+    "failure_category": ["validation"]
+  },
+  "prohibitedPayloads": ["screen_hex", "hlc_coordinates", "lab_coordinates", "pantone_code", "uploaded_image", "uploaded_image_name", "customer_text", "url_query", "identity_fields"],
+  "adsConversion": false,
+  "ga4KeyEvent": false
+}
