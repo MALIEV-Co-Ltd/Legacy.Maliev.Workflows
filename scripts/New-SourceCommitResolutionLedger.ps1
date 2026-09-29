@@ -137,6 +137,24 @@ foreach ($sha in $reviewedMessageShas) {
     }
 }
 
+# Workflows #220 reviews the sole Web.Tests file that tests UploadService
+# deployment artifacts, not Web behavior. It changed in exactly two source
+# commits; FileService retains their open workload identity release gate.
+@(
+    '4533669fa5231368f17c4b59b17c3e2f52e24a89',
+    '25418c95b5ac79400029ce274541f0e51728da3e'
+) | ForEach-Object {
+    $reviewedTransitionPatterns[$_] =
+        '^Maliev\.Web\.Tests/UploadServiceWorkloadIdentityDeploymentTests\.cs$'
+    $reviewedOwnerTransitions[$_] = [ordered]@{
+        removedOwner = 'Legacy.Maliev.Web'
+        retainedOwner = 'Legacy.Maliev.FileService'
+        issueUrl = 'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/220'
+        priorIssueUrls = @()
+        reason = 'The source test reads only UploadService deployment artifacts; FileService owns the pending workload identity release gate, with target-native manifest verification in GitOps.'
+    }
+}
+
 $resolvedCount = 0
 $reviewedTransitionCount = 0
 $reviewedMessageCount = 0
@@ -323,7 +341,8 @@ $records = foreach ($source in $ledger.records) {
     elseif ($old -and $old.messageOwnerTransition) {
         throw "Unexpected MessageService transition for $($source.commit)."
     }
-    elseif ($old -and (@($old.ownerResolutions.Keys | Sort-Object -CaseSensitive) -join '|') -cne ($owners -join '|')) {
+    elseif (-not $transition -and $old -and
+        (@($old.ownerResolutions.Keys | Sort-Object -CaseSensitive) -join '|') -cne ($owners -join '|')) {
         throw "The owner set changed for $($source.commit); review its evidence manually."
     }
 
