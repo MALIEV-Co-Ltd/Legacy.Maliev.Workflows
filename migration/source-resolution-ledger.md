@@ -70,6 +70,15 @@ has its Web HLC matcher owner resolved by #167, but the separate Workflows
 design-QA evidence owner remains pending in issue #225. These are source-SHA
 code/document decisions only, not full feature-route or data-backed acceptance.
 
+Source `2fbee81b4c8a788db4236376dc15231c5eae5b30` finishing guidance is
+covered by Web PR #167. Source `7055e4e5f64f8e405033509de324f57362868200`
+has both owners resolved: the Web matcher diagnostic code in #167 and the
+portable, PII-free measurement contract in Workflows #227 / PR #228
+(`4c6787bcc92e6ee44e57360bc9fb0063f908814b`, exact-main CI
+`36511604965`). Live GTM/GA4 configuration and production telemetry remain
+unverified in Project #2 issue #229; this source-commit code/doc disposition
+does not authorize tag publication or claim a production analytics outcome.
+
 AccountingService #32 / PR #33 reconciles the original Invoice, Payment, and
 Receipt validator changes under the split Accounting owner. It pins the
 RS256-only shared validator, tests accepted/rejected JWT algorithms and
