@@ -17,6 +17,9 @@ function Invoke-SourceGit {
 }
 
 $mapping = Get-Content -LiteralPath $MappingPath -Raw | ConvertFrom-Json -Depth 20
+$intranetTestSolutionSha = '5e2030b7339d4d9bd699fd8c3f406b71706b377d'
+$intranetTestSolutionPath = 'Maliev.sln'
+$intranetTestSolutionCount = 0
 $checkpoint = ([string](Invoke-SourceGit rev-parse $SourceRef | Select-Object -First 1)).Trim()
 if ($checkpoint -notmatch '^[0-9a-f]{40}$') { throw "Source ref did not resolve to a full commit SHA: $checkpoint" }
 $liveMain = ([string](Invoke-SourceGit ls-remote origin refs/heads/main | Select-Object -First 1)).Trim()
@@ -68,9 +71,19 @@ $records = foreach ($commitValue in $commits) {
         $matches = @($mapping.rules | Where-Object { $path -match $_.pattern })
         if ($matches.Count -ne 1) { throw "Path '$path' in $commit matched $($matches.Count) ownership rules; expected exactly one." }
         $rule = $matches[0]
+        $owners = @($rule.owners)
+        if ($commit -ceq $intranetTestSolutionSha -and $path -ceq $intranetTestSolutionPath) {
+            if ($isMerge -or $parents.Count -ne 1 -or
+                (@($owners | Sort-Object -CaseSensitive) -join '|') -cne
+                    'Legacy.Maliev.AppHost|Legacy.Maliev.Workflows') {
+                throw 'The reviewed Intranet test-solution owner override no longer matches its source commit or generic rule.'
+            }
+            $intranetTestSolutionCount++
+            $owners = @('Legacy.Maliev.Intranet')
+        }
         [ordered]@{
             path = $path
-            owners = @($rule.owners)
+            owners = $owners
             disposition = if ($rule.disposition) { $rule.disposition } else { 'migration-required' }
             decision = if ($rule.decision) { $rule.decision } else { $null }
         }
@@ -86,6 +99,9 @@ $records = foreach ($commitValue in $commits) {
         sourceEvidence = "https://github.com/$($mapping.sourceRepository)/commit/$commit"
         classifications = @($classifications)
     }
+}
+if ($intranetTestSolutionCount -ne 1) {
+    throw 'The exact reviewed Intranet test-solution path was not found once in the source history.'
 }
 
 $ledger = [ordered]@{

@@ -10,6 +10,71 @@ public sealed class AllServiceSourceCommitLedgerContractTests
     private static readonly Regex Sha = new("^[0-9a-f]{40}$", RegexOptions.CultureInvariant);
 
     [Fact]
+    public void Source_5e2030b_solution_test_registration_belongs_only_to_Intranet()
+    {
+        const string sourceSha = "5e2030b7339d4d9bd699fd8c3f406b71706b377d";
+        const string intranet = "Legacy.Maliev.Intranet";
+        using var mapping = Load("migration/source-path-owners.json");
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+
+        var genericRule = Assert.Single(mapping.RootElement.GetProperty("rules").EnumerateArray(), rule =>
+            Regex.IsMatch("Maliev.sln", rule.GetProperty("pattern").GetString()!));
+        Assert.Equal(["Legacy.Maliev.AppHost", "Legacy.Maliev.Workflows"],
+            genericRule.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()!).ToArray());
+
+        var solutions = ownership.RootElement.GetProperty("records").EnumerateArray()
+            .Select(record => new
+            {
+                Sha = record.GetProperty("commit").GetString()!,
+                Paths = record.GetProperty("classifications").EnumerateArray()
+                    .Where(path => path.GetProperty("path").GetString() == "Maliev.sln").ToArray(),
+            })
+            .Where(record => record.Paths.Length > 0).ToArray();
+        Assert.True(solutions.Length > 1);
+        foreach (var solution in solutions)
+        {
+            var path = Assert.Single(solution.Paths);
+            var owners = path.GetProperty("owners").EnumerateArray()
+                .Select(owner => owner.GetString()!).ToArray();
+            Assert.Equal(solution.Sha == sourceSha
+                ? [intranet]
+                : ["Legacy.Maliev.AppHost", "Legacy.Maliev.Workflows"], owners);
+        }
+        var resolution = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            record => record.GetProperty("sourceSha").GetString() == sourceSha);
+        Assert.Equal("partial", resolution.GetProperty("status").GetString());
+        var resolvedOwners = resolution.GetProperty("ownerResolutions");
+        Assert.False(resolvedOwners.TryGetProperty("Legacy.Maliev.AppHost", out _));
+        Assert.False(resolvedOwners.TryGetProperty("Legacy.Maliev.Workflows", out _));
+        var intranetOwner = resolvedOwners.GetProperty(intranet);
+        var intranetStatus = intranetOwner.GetProperty("status").GetString();
+        Assert.Contains(intranetStatus, new[] { "pending", "migrated" });
+        if (intranetStatus == "pending")
+        {
+            Assert.Empty(intranetOwner.GetProperty("prUrls").EnumerateArray());
+            Assert.Equal(JsonValueKind.Null, intranetOwner.GetProperty("mergedTargetSha").ValueKind);
+        }
+        else
+        {
+            Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/pull/228",
+                intranetOwner.GetProperty("prUrls").EnumerateArray().Select(url => url.GetString()));
+            Assert.Matches(Sha, intranetOwner.GetProperty("mergedTargetSha").GetString()!);
+            Assert.NotEmpty(intranetOwner.GetProperty("validationEvidenceUrls").EnumerateArray());
+        }
+        Assert.Equal("migrated", resolvedOwners.GetProperty("Legacy.Maliev.AuthService")
+            .GetProperty("status").GetString());
+        Assert.Equal("migrated", resolvedOwners.GetProperty("Legacy.Maliev.Web")
+            .GetProperty("status").GetString());
+        var transition = resolution.GetProperty("solutionGraphOwnerTransition");
+        Assert.Equal(["Legacy.Maliev.AppHost", "Legacy.Maliev.Workflows"],
+            transition.GetProperty("removedOwners").EnumerateArray().Select(owner => owner.GetString()!).ToArray());
+        Assert.Equal(intranet, transition.GetProperty("retainedOwner").GetString());
+        Assert.Equal("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/233",
+            transition.GetProperty("issueUrl").GetString());
+    }
+
+    [Fact]
     public void MessageService_history_is_Contact_owned_without_reassigning_Email_or_prior_evidence()
     {
         string[] reviewedShas =
