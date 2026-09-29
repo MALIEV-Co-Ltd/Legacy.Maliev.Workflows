@@ -10816,11 +10816,21 @@
           "validationEvidenceUrls": []
         },
         "Legacy.Maliev.Web": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/170"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/10",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/169",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/171"
+          ],
+          "mergedTargetSha": "a70dd456adeb72978ef8bdf43d7d258733dca06e",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/29426865368",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/30753044213",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/30756910290"
+          ]
         },
         "Legacy.Maliev.Workflows": {
           "status": "pending",
