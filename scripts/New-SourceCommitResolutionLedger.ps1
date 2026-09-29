@@ -158,6 +158,8 @@ foreach ($sha in $reviewedMessageShas) {
 $resolvedCount = 0
 $reviewedTransitionCount = 0
 $reviewedMessageCount = 0
+$intranetTestSolutionSha = '5e2030b7339d4d9bd699fd8c3f406b71706b377d'
+$intranetTestSolutionCount = 0
 $formatOnlySha = '61df92fb171a5c1c65a46a07cd70777d87e1a46e'
 $formatOnlyPaths = @(
     'Maliev.QuotationRequestService.Common/Models/QualificationOutcomeReadback.cs',
@@ -245,6 +247,52 @@ $records = foreach ($source in $ledger.records) {
             }
         }
         $ownerResolutions[$owner] = $item
+    }
+    $solutionGraphTransition = $null
+    if ($source.commit -ceq $intranetTestSolutionSha) {
+        $intranetTestSolutionCount++
+        $solutionPaths = @($source.classifications | Where-Object { $_.path -ceq 'Maliev.sln' })
+        if ($source.isMerge -or $solutionPaths.Count -ne 1 -or
+            (@($solutionPaths[0].owners) -join '|') -cne 'Legacy.Maliev.Intranet' -or
+            $owners -ccontains 'Legacy.Maliev.AppHost' -or $owners -ccontains 'Legacy.Maliev.Workflows') {
+            throw 'The reviewed Intranet test-solution owner transition no longer matches its source classification.'
+        }
+        $removedOwners = @('Legacy.Maliev.AppHost', 'Legacy.Maliev.Workflows')
+        $previousOwners = @($old.ownerResolutions.Keys | Sort-Object -CaseSensitive)
+        $expectedPreviousOwners = if ($old.solutionGraphOwnerTransition) {
+            @($owners | Sort-Object -CaseSensitive)
+        } else {
+            @(($owners + $removedOwners) | Sort-Object -Unique -CaseSensitive)
+        }
+        $solutionGraphTransition = [ordered]@{
+            removedOwners = $removedOwners
+            retainedOwner = 'Legacy.Maliev.Intranet'
+            issueUrl = 'https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/233'
+            reason = 'The source solution adds only Intranet.Tests; the split Intranet solution and CI own that test graph, not AppHost or Workflows.'
+        }
+        if (-not $old -or $previousOwners.Count -ne $expectedPreviousOwners.Count -or
+            ($previousOwners -join '|') -cne ($expectedPreviousOwners -join '|')) {
+            throw 'The reviewed Intranet test-solution transition has an unexpected prior owner set.'
+        }
+        if (-not $old.solutionGraphOwnerTransition) {
+            foreach ($removedOwner in $removedOwners) {
+                $removed = $old.ownerResolutions[$removedOwner]
+                if ($removed.status -cne 'pending' -or @($removed.issueUrls | Where-Object { $_ }).Count -ne 0 -or
+                    @($removed.prUrls | Where-Object { $_ }).Count -ne 0 -or
+                    @($removed.validationEvidenceUrls | Where-Object { $_ }).Count -ne 0 -or
+                    -not [string]::IsNullOrEmpty([string]$removed.mergedTargetSha)) {
+                    throw "Removed solution-graph owner $removedOwner has evidence or non-pending work."
+                }
+            }
+        }
+        if ($old.solutionGraphOwnerTransition -and
+            ($old.solutionGraphOwnerTransition | ConvertTo-Json -Compress) -cne
+                ($solutionGraphTransition | ConvertTo-Json -Compress)) {
+            throw 'The reviewed Intranet test-solution transition provenance changed.'
+        }
+    }
+    elseif ($old -and $old.solutionGraphOwnerTransition) {
+        throw "Unexpected Intranet test-solution transition for $($source.commit)."
     }
     $transition = $reviewedOwnerTransitions[$source.commit]
     if ($transition) {
@@ -341,7 +389,7 @@ $records = foreach ($source in $ledger.records) {
     elseif ($old -and $old.messageOwnerTransition) {
         throw "Unexpected MessageService transition for $($source.commit)."
     }
-    elseif (-not $transition -and $old -and
+    elseif (-not $transition -and -not $solutionGraphTransition -and $old -and
         (@($old.ownerResolutions.Keys | Sort-Object -CaseSensitive) -join '|') -cne ($owners -join '|')) {
         throw "The owner set changed for $($source.commit); review its evidence manually."
     }
@@ -391,7 +439,11 @@ $records = foreach ($source in $ledger.records) {
     }
     if ($transition) { $record.ownerSetTransition = $transition }
     if ($messageTransition) { $record.messageOwnerTransition = $messageTransition }
+    if ($solutionGraphTransition) { $record.solutionGraphOwnerTransition = $solutionGraphTransition }
     $record
+}
+if ($intranetTestSolutionCount -ne 1) {
+    throw 'The exact reviewed Intranet test-solution transition was not present once in the complete source ledger.'
 }
 if ($reviewedTransitionCount -ne $reviewedOwnerTransitions.Count) {
     throw 'The exact reviewed owner-set transitions were not present in the complete source ledger.'

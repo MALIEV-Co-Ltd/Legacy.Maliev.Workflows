@@ -59,6 +59,19 @@ cover the credential-validated, one-time recovery grant, localized resend UI,
 and its regression tests; PR validation run `30753044213` passed. This records
 existing protected-main behavior, not a new Web change or data-parity claim.
 
+Source `5e2030b7339d4d9bd699fd8c3f406b71706b377d` changes `Maliev.sln`
+only to add `Maliev.Intranet.Tests` and its build configurations; it does not
+add the already-registered `Maliev.Identities` project. Issue #233 pins a
+commit-specific owner correction for this solution path: the split
+`Legacy.Maliev.Intranet.slnx` already includes `Legacy.Maliev.Intranet.Tests`
+and Intranet CI explicitly builds and tests it (protected-main run
+`36505513282`). AppHost and Workflows retain their own test-inclusive
+solutions (protected-main runs `36446506100` and `36514003643`), so neither
+inherits an Intranet project reference. The generic `Maliev.sln` rule remains
+unchanged for other commits. The overall source SHA stays partial while the
+Intranet employee callback and token-flow owner is pending; this solution-graph
+correction does not claim that behavior is verified or deployed.
+
 The same merged Web PR #169 covers source `e25c833ee9a6eea2740210e850b2663d9c292d38`
 for verification and first-login security. Web PR #167
 (`19b42e1e4c1dd4c87a61c397ea136b3169d306c1`, validation run
