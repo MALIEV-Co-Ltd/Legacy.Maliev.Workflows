@@ -43,6 +43,17 @@ an explicit reason and approval URL. Mixed commits cannot be complete until
 all owner and retirement decisions are proven. An exact formatting-only no-op
 has a separate disposition and is never labeled runtime migration.
 
+Workflows #236 resolves four Web-only source changes from the additive quotation
+series individually: `5650867256ebfddecb4e3bf96afc962269dcd08e` (calibrated
+FDM price, Web #268), `da2796fd4dd395cb2a839057f4e8dfd99f13f6b6`
+(auditable order cost, Web #270), `54a3033842b19967766d10dcb6cf18f8f032f155`
+(resin evidence gate, Web #269), and `8b54af5097b8b4232bc42dcd5684d293c3c9c37b`
+(preliminary estimate disclosure, Web #268). Merged Web PR #272 at
+`26ffc9df5f14f4f0df531fb7beef64c26095c0a7` includes matching runtime
+and regression-test files; required validation run `35489575192` passed.
+Adjacent multi-owner additive commits stay pending. This proves those four
+code-migration records, not route acceptance, deployment, or data parity.
+
 Source `cbac7d7155da2208c77d56103b6a2cb19196fc83` removed an embedded
 HS256 key and required external signing material. AuthService's merged PR #1
 replaced this with required runtime-projected RS256 private-key material and
