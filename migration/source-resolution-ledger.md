@@ -52,6 +52,13 @@ Workflows issue #191 tracks the remaining issuer/validator owners. The overall
 source SHA remains partial until each changed-path owner has independent
 evidence; this entry does not authorize deployment or token cutover.
 
+Source `beba894f9554044722fcdeac7adfd0ef5b71cff1` (secure email
+verification resend) is fully resolved for its sole Web owner. Web issue #170
+and merged PR #169 (`7b13f0547d58e39625124b93e92107725632c003`)
+cover the credential-validated, one-time recovery grant, localized resend UI,
+and its regression tests; PR validation run `30753044213` passed. This records
+existing protected-main behavior, not a new Web change or data-parity claim.
+
 AccountingService #32 / PR #33 reconciles the original Invoice, Payment, and
 Receipt validator changes under the split Accounting owner. It pins the
 RS256-only shared validator, tests accepted/rejected JWT algorithms and
