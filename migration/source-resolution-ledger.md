@@ -59,6 +59,17 @@ cover the credential-validated, one-time recovery grant, localized resend UI,
 and its regression tests; PR validation run `30753044213` passed. This records
 existing protected-main behavior, not a new Web change or data-parity claim.
 
+The same merged Web PR #169 covers source `e25c833ee9a6eea2740210e850b2663d9c292d38`
+for verification and first-login security. Web PR #167
+(`19b42e1e4c1dd4c87a61c397ea136b3169d306c1`, validation run
+`30729578789`) covers source `e62d177b06fc20f1512b7033fe8f14e1e0959935`
+motion, `b16aa08b760ad4c2ddb46a3505d5fcc0d0962756` frontend dependency
+replacement, and `81909e65ba634ab851b3a794b4ca31b4c3a853bc` service
+chapter navigation. Source `04c9bb0d80ddc9d8be97af632c71f1348307c332`
+has its Web HLC matcher owner resolved by #167, but the separate Workflows
+design-QA evidence owner remains pending in issue #225. These are source-SHA
+code/document decisions only, not full feature-route or data-backed acceptance.
+
 AccountingService #32 / PR #33 reconciles the original Invoice, Payment, and
 Receipt validator changes under the split Accounting owner. It pins the
 RS256-only shared validator, tests accepted/rejected JWT algorithms and
