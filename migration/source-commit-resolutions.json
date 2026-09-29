@@ -16143,16 +16143,16 @@
           "prUrls": [],
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
-        },
-        "Legacy.Maliev.Web": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
         }
       },
-      "retirementApproval": null
+      "retirementApproval": null,
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.Web",
+        "retainedOwner": "Legacy.Maliev.FileService",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/220",
+        "priorIssueUrls": [],
+        "reason": "The source test reads only UploadService deployment artifacts; FileService owns the pending workload identity release gate, with target-native manifest verification in GitOps."
+      }
     },
     {
       "sourceSha": "f11b102c580338a60373edd1378f2d90fea41e46",
@@ -16195,16 +16195,16 @@
           "prUrls": [],
           "mergedTargetSha": null,
           "validationEvidenceUrls": []
-        },
-        "Legacy.Maliev.Web": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
         }
       },
-      "retirementApproval": null
+      "retirementApproval": null,
+      "ownerSetTransition": {
+        "removedOwner": "Legacy.Maliev.Web",
+        "retainedOwner": "Legacy.Maliev.FileService",
+        "issueUrl": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/220",
+        "priorIssueUrls": [],
+        "reason": "The source test reads only UploadService deployment artifacts; FileService owns the pending workload identity release gate, with target-native manifest verification in GitOps."
+      }
     },
     {
       "sourceSha": "b385e19a1d8c34d61c7b0662fa69dbbc5190bb22",

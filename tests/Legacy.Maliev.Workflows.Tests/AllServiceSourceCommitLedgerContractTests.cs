@@ -555,6 +555,56 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         }
     }
 
+    [Theory]
+    [InlineData("4533669fa5231368f17c4b59b17c3e2f52e24a89", 4)]
+    [InlineData("25418c95b5ac79400029ce274541f0e51728da3e", 6)]
+    public void Upload_workload_identity_source_test_is_FileService_owned_without_closing_release_gate(
+        string sourceSha,
+        int expectedPathCount)
+    {
+        const string deploymentTest = "Maliev.Web.Tests/UploadServiceWorkloadIdentityDeploymentTests.cs";
+        using var mapping = Load("migration/source-path-owners.json");
+        using var ownership = Load("migration/source-commit-ledger.json");
+        using var resolutions = Load("migration/source-commit-resolutions.json");
+        var rules = mapping.RootElement.GetProperty("rules").EnumerateArray().ToArray();
+
+        foreach (var (path, owner) in new[]
+        {
+            (deploymentTest, "Legacy.Maliev.FileService"),
+            ("Maliev.Web.Tests/QuotationPageTests.cs", "Legacy.Maliev.Web"),
+            ("Maliev.UploadService.Api/deployment.yaml", "Legacy.Maliev.FileService"),
+        })
+        {
+            var rule = Assert.Single(rules, item => Regex.IsMatch(path, item.GetProperty("pattern").GetString()!));
+            Assert.Equal(owner, Assert.Single(rule.GetProperty("owners").EnumerateArray()).GetString());
+        }
+
+        var source = Assert.Single(ownership.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("commit").GetString() == sourceSha);
+        var classifications = source.GetProperty("classifications").EnumerateArray().ToArray();
+        Assert.Equal(expectedPathCount, classifications.Length);
+        Assert.Contains(classifications, item => item.GetProperty("path").GetString() == deploymentTest);
+        Assert.All(classifications, item =>
+        {
+            Assert.Equal("migration-required", item.GetProperty("disposition").GetString());
+            Assert.Equal("Legacy.Maliev.FileService",
+                Assert.Single(item.GetProperty("owners").EnumerateArray()).GetString());
+        });
+
+        var resolution = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
+            item => item.GetProperty("sourceSha").GetString() == sourceSha);
+        Assert.Equal("pending", resolution.GetProperty("status").GetString());
+        var fileService = Assert.Single(resolution.GetProperty("ownerResolutions").EnumerateObject());
+        Assert.Equal("Legacy.Maliev.FileService", fileService.Name);
+        Assert.Equal("pending", fileService.Value.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, resolution.GetProperty("retirementApproval").ValueKind);
+        var transition = resolution.GetProperty("ownerSetTransition");
+        Assert.Equal("Legacy.Maliev.Web", transition.GetProperty("removedOwner").GetString());
+        Assert.Equal("Legacy.Maliev.FileService", transition.GetProperty("retainedOwner").GetString());
+        Assert.Equal("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/220",
+            transition.GetProperty("issueUrl").GetString());
+    }
+
     [Fact]
     public void Native_logging_and_WebApi_history_has_exact_reviewed_owner_transitions()
     {

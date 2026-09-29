@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-29T01:02:06.2742464+00:00",
+  "generatedAt": "2026-09-29T01:09:35.2763342+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
   "legacyTargets": {
@@ -85,8 +85,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/5bafa2e2c6e1cb76f294374aef0b8a5a5e6d28fb"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "d73541db3808817f0fc936303a5e875bd090655a",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/d73541db3808817f0fc936303a5e875bd090655a"
+      "mainSha": "b890ed41358bea5fcabd36b9b25a350e1b396e3c",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/b890ed41358bea5fcabd36b9b25a350e1b396e3c"
     }
   },
   "commitCount": 1096,
@@ -76513,7 +76513,7 @@
         {
           "path": "Maliev.Web.Tests/UploadServiceWorkloadIdentityDeploymentTests.cs",
           "owners": [
-            "Legacy.Maliev.Web"
+            "Legacy.Maliev.FileService"
           ],
           "disposition": "migration-required",
           "decision": null
@@ -76664,7 +76664,7 @@
         {
           "path": "Maliev.Web.Tests/UploadServiceWorkloadIdentityDeploymentTests.cs",
           "owners": [
-            "Legacy.Maliev.Web"
+            "Legacy.Maliev.FileService"
           ],
           "disposition": "migration-required",
           "decision": null
