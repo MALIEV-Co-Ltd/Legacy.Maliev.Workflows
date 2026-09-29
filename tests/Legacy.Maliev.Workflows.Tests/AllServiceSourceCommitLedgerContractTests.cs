@@ -117,25 +117,20 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         }
         var resolution = Assert.Single(resolutions.RootElement.GetProperty("records").EnumerateArray(),
             record => record.GetProperty("sourceSha").GetString() == sourceSha);
-        Assert.Equal("partial", resolution.GetProperty("status").GetString());
+        Assert.Equal("migrated", resolution.GetProperty("status").GetString());
         var resolvedOwners = resolution.GetProperty("ownerResolutions");
         Assert.False(resolvedOwners.TryGetProperty("Legacy.Maliev.AppHost", out _));
         Assert.False(resolvedOwners.TryGetProperty("Legacy.Maliev.Workflows", out _));
         var intranetOwner = resolvedOwners.GetProperty(intranet);
-        var intranetStatus = intranetOwner.GetProperty("status").GetString();
-        Assert.Contains(intranetStatus, new[] { "pending", "migrated" });
-        if (intranetStatus == "pending")
-        {
-            Assert.Empty(intranetOwner.GetProperty("prUrls").EnumerateArray());
-            Assert.Equal(JsonValueKind.Null, intranetOwner.GetProperty("mergedTargetSha").ValueKind);
-        }
-        else
-        {
-            Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/pull/228",
-                intranetOwner.GetProperty("prUrls").EnumerateArray().Select(url => url.GetString()));
-            Assert.Matches(Sha, intranetOwner.GetProperty("mergedTargetSha").GetString()!);
-            Assert.NotEmpty(intranetOwner.GetProperty("validationEvidenceUrls").EnumerateArray());
-        }
+        Assert.Equal("migrated", intranetOwner.GetProperty("status").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/issues/227",
+            intranetOwner.GetProperty("issueUrls").EnumerateArray().Select(url => url.GetString()));
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/pull/228",
+            intranetOwner.GetProperty("prUrls").EnumerateArray().Select(url => url.GetString()));
+        Assert.Equal("455b81ca90ffb3e018d0e9dad6bcb07cd9426071",
+            intranetOwner.GetProperty("mergedTargetSha").GetString());
+        Assert.Contains("https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/actions/runs/36515502211",
+            intranetOwner.GetProperty("validationEvidenceUrls").EnumerateArray().Select(url => url.GetString()));
         Assert.Equal("migrated", resolvedOwners.GetProperty("Legacy.Maliev.AuthService")
             .GetProperty("status").GetString());
         Assert.Equal("migrated", resolvedOwners.GetProperty("Legacy.Maliev.Web")

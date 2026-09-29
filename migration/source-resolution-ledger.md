@@ -99,9 +99,14 @@ and Intranet CI explicitly builds and tests it (protected-main run
 `36505513282`). AppHost and Workflows retain their own test-inclusive
 solutions (protected-main runs `36446506100` and `36514003643`), so neither
 inherits an Intranet project reference. The generic `Maliev.sln` rule remains
-unchanged for other commits. The overall source SHA stays partial while the
-Intranet employee callback and token-flow owner is pending; this solution-graph
-correction does not claim that behavior is verified or deployed.
+unchanged for other commits. The Intranet callback and employee creation owner
+is resolved separately by Intranet issue #227 and merged PR #228 at
+`455b81ca90ffb3e018d0e9dad6bcb07cd9426071`; PR CI `36512981051`
+and exact-main CI `36515502211` validate the migrated code. Source commit
+`5e2030b7339d4d9bd699fd8c3f406b71706b377d` is therefore resolved across
+its Auth, Intranet, and Web owners. This is not deployed-HTTPS-origin or
+authenticated email-callback acceptance: Intranet issue #229 remains open for
+that release gate, including the original disabled-checkbox POST inference.
 
 The same merged Web PR #169 covers source `e25c833ee9a6eea2740210e850b2663d9c292d38`
 for verification and first-login security. Web PR #167
