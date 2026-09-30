@@ -66,6 +66,17 @@ runs:
       run: |
         & (Join-Path $env:GITHUB_ACTION_PATH '../../scripts/Invoke-JwtSigningResourceScan.ps1') -RepositoryPath (Get-Location).Path
 
+    - name: Scan tracked current-tree credentials
+      shell: pwsh
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        $runner = Join-Path $env:GITHUB_ACTION_PATH '../../scripts/Invoke-CurrentTreeCredentialScan.ps1'
+        if (-not (Test-Path -LiteralPath $runner -PathType Leaf)) {
+          [Console]::Error.WriteLine('[current-tree-scan] FAILED: trusted scanner unavailable; details redacted')
+          exit 2
+        }
+        & $runner -RepositoryPath (Get-Location).Path
+
     - name: Restore
       shell: bash
       working-directory: ${{ inputs.working-directory }}

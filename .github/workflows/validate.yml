@@ -14,3 +14,10 @@ jobs:
     uses: ./.github/workflows/dotnet-validate.yml
     with:
       solution: Legacy.Maliev.Workflows.slnx
+
+  scanner-caller-subdirectory:
+    name: scanner caller subdirectory
+    uses: ./.github/workflows/dotnet-validate.yml
+    with:
+      working-directory: tools/analytics/WireFixtures
+      solution: WireFixtures.csproj

@@ -31,6 +31,9 @@ public sealed class RepositoryContractTests
         "scripts/Set-GitOpsImageDigest.ps1",
         "scripts/Test-LegacyPublication.ps1",
         "scripts/Publish-LegacyRepository.ps1",
+        "scripts/Invoke-CurrentTreeCredentialScan.ps1",
+        "tools/security/current_tree_secrets.py",
+        "tools/security/tests/test_current_tree_secrets.py",
     ];
 
     private static readonly string[] RequiredActionSources =
