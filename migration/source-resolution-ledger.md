@@ -43,6 +43,30 @@ an explicit reason and approval URL. Mixed commits cannot be complete until
 all owner and retirement decisions are proven. An exact formatting-only no-op
 has a separate disposition and is never labeled runtime migration.
 
+## September 30 Country and authenticated-profile bundles
+
+Country issue #30 / PR #31 resolves only the Country owner of
+`03eaff1194c3ae2a54ceefeae31deffaff90436f`,
+`9e51e6c5da29de8e617b65b59d46882cde6d3b64`, and
+`03dc9a1271c16e6535934445e9dd6e3f30e8fffe`, at protected main
+`c1e6222e9b7de6431b0e5115e4e43419e12e1323`. Exact-head CI
+`36682469410` and exact-main CI `36682800993` passed. Root independently
+rebuilt Release with zero warnings/errors, ran focused 6/6 and full 50/50
+tests, and verified formatting. Real Docker-context exclusion/retention,
+actual Production HTTP/disposable PostgreSQL/native private incident, and
+generated/published XML/non-root image evidence is recorded in that PR.
+Existing Country `5ac7d045` PR #24 and `f0640fe0` PR #27 provenance remains
+unchanged. Whole-service coverage and broader lifecycle acceptance remain
+open in Country #32; this is not production-derived data or Aspire parity.
+
+Each of the five authenticated-profile source SHAs remains **pending** and
+now links to the shared Web issue #415. Producer prerequisites in Customer
+PRs #30/#32/#34 do not substitute for a merged, validated Web consumer or
+its Auth/Redis/browser and durable quotation retry acceptance. No pending
+consumer has been marked migrated merely because another repository merged.
+Other owners and retirement decisions remain untouched. The overall total
+therefore stays **157 resolved / 939 pending or partial / 1,096 source commits**.
+
 Workflows #238 resolves nine Web-only source commits individually against
 merged Web PR #186 (`1d58887f44c5d0300bb1c24d05d89c4a68f74bfa`;
 successful validation run `33964899428`). Source diffs and the PR's runtime
