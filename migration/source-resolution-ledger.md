@@ -35,6 +35,27 @@ status. The prior 1,096 resolution records and evidence remain unchanged:
 157 resolved, with 941 pending/partial after the two new commits. This is
 inventory and tracking evidence, not migrated ESD behavior or release approval.
 
+### Verified ESD Web owner checkpoint
+
+Both full source SHAs retain separate records. Their Web owner now records
+**partial**, not migrated: Web PR #420 merged at
+`4483e3eb768e8ee59a4a2cf6ba9e2f452e0f3ed0`, and exact-main validation
+[`36735708564`](https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36735708564)
+passed. Canonical Web main equals live origin/main. The bounded catalog/profile
+slice passed independent Release builds with zero warnings/errors, focused191,
+full2481, four browser cases, JS157, asset/static/security checks. Publication
+remained disabled. Web #418 remains open for coordinated activation and wider
+acceptance; Catalog #29 and Workflows #234 remain pending. The global total is
+still **157 resolved / 941 unresolved / 1,098 source commits**. Grouped work and
+a green Web PR do not resolve the other owners or the merge as a whole.
+
+Separate already-tracked follow-on work is Web #275's commercial-policy bundle,
+Quotation #70's employee actor/live authority chain and Auth #113's newly
+reproduced normal-DI PostgreSQL refresh retry/family-concurrency prerequisite.
+Intranet PR #236 is under exact-head CI and is not main acceptance yet. Data
+execution remains owned by the dedicated migration chat; none of these code
+checkpoints authorizes deployment, data refresh, schema application or cutover.
+
 Workflows #193 corrects the source owner map: `Maliev.MessageService.*` belongs
 to ContactService, while `Maliev.EmailService.*` remains NotificationService.
 At the pinned source checkpoint this covers 25 commits and 104 Message paths;

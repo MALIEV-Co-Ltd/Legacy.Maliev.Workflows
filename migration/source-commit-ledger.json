@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T11:34:41.1692391+00:00",
+  "generatedAt": "2026-09-30T16:05:45.3526194+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "bed10c7d15e0698e0b75f1329d0f312937f5d77f",
   "legacyTargets": {
@@ -13,16 +13,16 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AppHost/commit/55d80acfeebf58d17a07f8d3226cc82a8dd38d79"
     },
     "Legacy.Maliev.AuthService": {
-      "mainSha": "7a03f023c1c91759994507347b170b91c21f69c0",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/7a03f023c1c91759994507347b170b91c21f69c0"
+      "mainSha": "a1fb10334f8504a4bf441bde5a2420f4fa686d43",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/a1fb10334f8504a4bf441bde5a2420f4fa686d43"
     },
     "Legacy.Maliev.CareerService": {
       "mainSha": "50d351f7f4c44430588c98cd340da96e2871ec14",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CareerService/commit/50d351f7f4c44430588c98cd340da96e2871ec14"
     },
     "Legacy.Maliev.CatalogService": {
-      "mainSha": "e969d078187bc121dcc8f3adbf085634ae30dd00",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/commit/e969d078187bc121dcc8f3adbf085634ae30dd00"
+      "mainSha": "a961b28f959c5814d7c2ff97c246c61843a88616",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/commit/a961b28f959c5814d7c2ff97c246c61843a88616"
     },
     "Legacy.Maliev.CompatibilityContracts": {
       "mainSha": "47f8f94df02b6d5bb6dfda614ea179fea5d52588",
@@ -57,8 +57,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.FileService/commit/3e31bc4c2fc951e4382e26bf128acb3163ed8eee"
     },
     "Legacy.Maliev.Intranet": {
-      "mainSha": "82bfb2a5d31417aff887f0452335f8a3628ee2dd",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/commit/82bfb2a5d31417aff887f0452335f8a3628ee2dd"
+      "mainSha": "d55af0a55379fc52c4250d43cc1af6e0eb016e5d",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/commit/d55af0a55379fc52c4250d43cc1af6e0eb016e5d"
     },
     "Legacy.Maliev.NotificationService": {
       "mainSha": "cfc4a8cfdb5e9f1a266589d2f972008183cac535",
@@ -73,20 +73,20 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ProcurementService/commit/c54a47ba53562741dd1842725b3e25974f2196a4"
     },
     "Legacy.Maliev.QuotationService": {
-      "mainSha": "9788378d7628917c8fef9bc7df70bfbf41afd7fa",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/commit/9788378d7628917c8fef9bc7df70bfbf41afd7fa"
+      "mainSha": "073ba64a2f60bcbb17d0870925d5394b202ef662",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.QuotationService/commit/073ba64a2f60bcbb17d0870925d5394b202ef662"
     },
     "Legacy.Maliev.ServiceDefaults": {
       "mainSha": "515c5898a478eef914d5515eabd95930c1d2d8b7",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/515c5898a478eef914d5515eabd95930c1d2d8b7"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "dcc9bb8d6a27483a839059d08ec87bcd74f0d46d",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/dcc9bb8d6a27483a839059d08ec87bcd74f0d46d"
+      "mainSha": "4483e3eb768e8ee59a4a2cf6ba9e2f452e0f3ed0",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/4483e3eb768e8ee59a4a2cf6ba9e2f452e0f3ed0"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "edcfbd14d585966f051cce1ada657c2ac805653f",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/edcfbd14d585966f051cce1ada657c2ac805653f"
+      "mainSha": "aeff71cde6c42b1e1c523ab21c0759902cbb4b15",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/aeff71cde6c42b1e1c523ab21c0759902cbb4b15"
     }
   },
   "commitCount": 1098,
