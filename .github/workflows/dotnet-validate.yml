@@ -40,6 +40,68 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Validate shared scanner identity
+        id: scanner-identity
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        env:
+          SHARED_JOB_IDENTITY: ${{ toJSON(job) }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          try {
+            if ([string]::IsNullOrWhiteSpace($env:SHARED_JOB_IDENTITY) -or
+                $env:SHARED_JOB_IDENTITY.Length -gt 65536) { throw 'Job identity unavailable.' }
+            $identity = ConvertFrom-Json -InputObject $env:SHARED_JOB_IDENTITY -AsHashtable -Depth 16
+            if ($identity.Keys -cnotcontains 'workflow_repository' -or $identity.Keys -cnotcontains 'workflow_sha' -or
+                $identity['workflow_repository'] -isnot [string] -or $identity['workflow_sha'] -isnot [string] -or
+                $identity['workflow_repository'] -cne 'MALIEV-Co-Ltd/Legacy.Maliev.Workflows' -or
+                $identity['workflow_sha'] -cnotmatch '^[0-9a-f]{40}$') { throw 'Untrusted job identity.' }
+            if ([string]::IsNullOrWhiteSpace($env:GITHUB_WORKSPACE) -or
+                (Test-Path -LiteralPath (Join-Path $env:GITHUB_WORKSPACE '.maliev-validation-tools'))) {
+              throw 'Reserved shared tools path unavailable.'
+            }
+            [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "workflow_sha=$($identity['workflow_sha'])`n",
+              [System.Text.UTF8Encoding]::new($false))
+          } catch {
+            [Console]::Error.WriteLine('[current-tree-scan] FAILED: immutable shared workflow identity unavailable; details redacted')
+            exit 2
+          }
+
+      - name: Check out immutable shared scanners
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MALIEV-Co-Ltd/Legacy.Maliev.Workflows
+          ref: ${{ steps.scanner-identity.outputs.workflow_sha }}
+          path: .maliev-validation-tools
+          persist-credentials: false
+          sparse-checkout: |
+            scripts
+            tools/security
+
+      - name: Verify shared scanner checkout
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        env:
+          SHARED_WORKFLOW_SHA: ${{ steps.scanner-identity.outputs.workflow_sha }}
+          SHARED_TOOLS_PATH: ${{ github.workspace }}/.maliev-validation-tools
+        run: |
+          $ErrorActionPreference = 'Stop'
+          try {
+            $head = & git -C $env:SHARED_TOOLS_PATH rev-parse HEAD 2>$null
+            if ($LASTEXITCODE -ne 0 -or $env:SHARED_WORKFLOW_SHA -cnotmatch '^[0-9a-f]{40}$' -or
+                $head -cne $env:SHARED_WORKFLOW_SHA) { throw 'Immutable checkout mismatch.' }
+            foreach ($relative in @('scripts/Invoke-CurrentTreeCredentialScan.ps1',
+                'tools/security/current_tree_secrets.py', 'scripts/Invoke-JwtSigningResourceScan.ps1',
+                'scripts/JwtSigningResourceScanner.ps1')) {
+              if (-not (Test-Path -LiteralPath (Join-Path $env:SHARED_TOOLS_PATH $relative) -PathType Leaf)) {
+                throw 'Trusted scanner incomplete.'
+              }
+            }
+          } catch {
+            [Console]::Error.WriteLine('[current-tree-scan] FAILED: immutable shared checkout unavailable; details redacted')
+            exit 2
+          }
+
       - name: Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
@@ -60,6 +122,20 @@ jobs:
 
       - name: Scan repository for leaked secrets
         run: gitleaks git --redact --exit-code 1
+
+      - name: Scan JWT signing resources
+        shell: pwsh
+        env:
+          SHARED_TOOLS_PATH: ${{ github.workspace }}/.maliev-validation-tools
+        run: |
+          & (Join-Path $env:SHARED_TOOLS_PATH 'scripts/Invoke-JwtSigningResourceScan.ps1') -RepositoryPath (Get-Location).Path
+
+      - name: Scan tracked current-tree credentials
+        shell: pwsh
+        env:
+          SHARED_TOOLS_PATH: ${{ github.workspace }}/.maliev-validation-tools
+        run: |
+          & (Join-Path $env:SHARED_TOOLS_PATH 'scripts/Invoke-CurrentTreeCredentialScan.ps1') -RepositoryPath (Get-Location).Path
 
       - name: Restore
         run: dotnet restore "${{ inputs.solution }}"
