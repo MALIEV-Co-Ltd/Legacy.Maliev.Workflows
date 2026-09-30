@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCommit": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
+  "sourceCommit": "bed10c7d15e0698e0b75f1329d0f312937f5d77f",
   "sourcePageTrees": {
-    "Maliev.Web/Pages": "c83bc2580b281232412ac46ff4854f2a382bdda6",
+    "Maliev.Web/Pages": "276f51d14b1f9cd1d4ff11fda8fb73a2f6f20db7",
     "Maliev.Intranet/Pages": "d9d8a0679f05d6f9a34f53194d56451414bcaadc"
   },
   "scope": "Razor Pages with a first-line @page directive; source inventory and effective source route patterns, not target route or workflow acceptance",

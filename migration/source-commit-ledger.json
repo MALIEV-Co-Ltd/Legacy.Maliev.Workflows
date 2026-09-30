@@ -1,28 +1,28 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T05:37:11.2099459+00:00",
+  "generatedAt": "2026-09-30T11:34:41.1692391+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
-  "sourceCheckpoint": "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
+  "sourceCheckpoint": "bed10c7d15e0698e0b75f1329d0f312937f5d77f",
   "legacyTargets": {
     "Legacy.Maliev.AccountingService": {
-      "mainSha": "0ec928ee470e29777151e8028b3f300a93f5b538",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/commit/0ec928ee470e29777151e8028b3f300a93f5b538"
+      "mainSha": "ae0826156b06c34476e95de8c53dfccfcf5a5972",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AccountingService/commit/ae0826156b06c34476e95de8c53dfccfcf5a5972"
     },
     "Legacy.Maliev.AppHost": {
       "mainSha": "55d80acfeebf58d17a07f8d3226cc82a8dd38d79",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AppHost/commit/55d80acfeebf58d17a07f8d3226cc82a8dd38d79"
     },
     "Legacy.Maliev.AuthService": {
-      "mainSha": "82c8d63dd08677a7f8ccd107c05dd6c9badbfd79",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/82c8d63dd08677a7f8ccd107c05dd6c9badbfd79"
+      "mainSha": "7a03f023c1c91759994507347b170b91c21f69c0",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.AuthService/commit/7a03f023c1c91759994507347b170b91c21f69c0"
     },
     "Legacy.Maliev.CareerService": {
       "mainSha": "50d351f7f4c44430588c98cd340da96e2871ec14",
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CareerService/commit/50d351f7f4c44430588c98cd340da96e2871ec14"
     },
     "Legacy.Maliev.CatalogService": {
-      "mainSha": "fcf02d30453ff1402edd59228729aba4cd405b7e",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/commit/fcf02d30453ff1402edd59228729aba4cd405b7e"
+      "mainSha": "e969d078187bc121dcc8f3adbf085634ae30dd00",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/commit/e969d078187bc121dcc8f3adbf085634ae30dd00"
     },
     "Legacy.Maliev.CompatibilityContracts": {
       "mainSha": "47f8f94df02b6d5bb6dfda614ea179fea5d52588",
@@ -33,16 +33,16 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ContactService/commit/14449bb228b17135632579c1c8fa867b39f1e595"
     },
     "Legacy.Maliev.CountryService": {
-      "mainSha": "c1e6222e9b7de6431b0e5115e4e43419e12e1323",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CountryService/commit/c1e6222e9b7de6431b0e5115e4e43419e12e1323"
+      "mainSha": "dd44db99c149272faecd79093ac2c137d70ee30f",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CountryService/commit/dd44db99c149272faecd79093ac2c137d70ee30f"
     },
     "Legacy.Maliev.CustomerService": {
-      "mainSha": "d70051778809133168b6ed1fce0acf973471e5f0",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/d70051778809133168b6ed1fce0acf973471e5f0"
+      "mainSha": "dc090542c02d675f54c3be59e33654dc24ecca9e",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CustomerService/commit/dc090542c02d675f54c3be59e33654dc24ecca9e"
     },
     "Legacy.Maliev.DataMigration": {
-      "mainSha": "5e968505c118bed2f8be3ec88ad9713124d4dd37",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/5e968505c118bed2f8be3ec88ad9713124d4dd37"
+      "mainSha": "c41d1b206ab7d13e8a2c0d1f0aa4764f87482c9c",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.DataMigration/commit/c41d1b206ab7d13e8a2c0d1f0aa4764f87482c9c"
     },
     "Legacy.Maliev.DocumentService": {
       "mainSha": "0ac95bbbd1b16408ddb989dfe3b7fbe0d348c6c8",
@@ -57,8 +57,8 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.FileService/commit/3e31bc4c2fc951e4382e26bf128acb3163ed8eee"
     },
     "Legacy.Maliev.Intranet": {
-      "mainSha": "455b81ca90ffb3e018d0e9dad6bcb07cd9426071",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/commit/455b81ca90ffb3e018d0e9dad6bcb07cd9426071"
+      "mainSha": "82bfb2a5d31417aff887f0452335f8a3628ee2dd",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Intranet/commit/82bfb2a5d31417aff887f0452335f8a3628ee2dd"
     },
     "Legacy.Maliev.NotificationService": {
       "mainSha": "cfc4a8cfdb5e9f1a266589d2f972008183cac535",
@@ -81,17 +81,17 @@
       "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.ServiceDefaults/commit/515c5898a478eef914d5515eabd95930c1d2d8b7"
     },
     "Legacy.Maliev.Web": {
-      "mainSha": "241663931deba5169413252257b73eb2f84d60a0",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/241663931deba5169413252257b73eb2f84d60a0"
+      "mainSha": "dcc9bb8d6a27483a839059d08ec87bcd74f0d46d",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/commit/dcc9bb8d6a27483a839059d08ec87bcd74f0d46d"
     },
     "Legacy.Maliev.Workflows": {
-      "mainSha": "075f3c80a77e04cf41f1480f885af8d1477aea49",
-      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/075f3c80a77e04cf41f1480f885af8d1477aea49"
+      "mainSha": "edcfbd14d585966f051cce1ada657c2ac805653f",
+      "evidence": "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/commit/edcfbd14d585966f051cce1ada657c2ac805653f"
     }
   },
-  "commitCount": 1096,
-  "nonMergeCommitCount": 1070,
-  "mergeCommitCount": 26,
+  "commitCount": 1098,
+  "nonMergeCommitCount": 1071,
+  "mergeCommitCount": 27,
   "records": [
     {
       "ordinal": 1,
@@ -100621,6 +100621,577 @@
           ],
           "disposition": "approved-retirement",
           "decision": "The Legacy Intranet uses protected image/GitOps workflows and a .NET 10 Blazor asset pipeline; the source's direct deploy script and npm lockfile are not runtime or release inputs."
+        }
+      ]
+    },
+    {
+      "ordinal": 1097,
+      "commit": "7b4703576cf183abc09cf558148b5c8afb97d20c",
+      "authoredAt": "2026-09-30T17:20:20+07:00",
+      "parents": [
+        "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db"
+      ],
+      "isMerge": false,
+      "subject": "Replace PC-ESD with automatically quoted PA612-ESD and ABS-ESD",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/7b4703576cf183abc09cf558148b5c8afb97d20c",
+      "classifications": [
+        {
+          "path": ".gitattributes",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.MaterialService.Common/InstantQuotationMaterialCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.CatalogService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.MaterialService.Tests/InstantQuotationCatalogReconcilerTests.cs",
+          "owners": [
+            "Legacy.Maliev.CatalogService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveMaterialComparisonEndpointTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/EsdMaterialProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Resolved/maliev-esun-abs-esd-x1c-filament.resolved.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Resolved/maliev-esun-abs-esd-x1c-process.resolved.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Resolved/maliev-fiberon-pa612-esd-x1c-filament.resolved.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Resolved/maliev-fiberon-pa612-esd-x1c-process.resolved.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/esun-abs-esd-x1c-filament.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/esun-abs-esd-x1c-process.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/fiberon-pa612-esd-x1c-filament.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/fiberon-pa612-esd-x1c-process.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/maliev-esun-abs-esd-x1c-filament.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/maliev-esun-abs-esd-x1c-process.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/maliev-fiberon-pa612-esd-x1c-filament.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/maliev-fiberon-pa612-esd-x1c-process.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/esd-profile-evidence.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/runtime-fdm-profiles.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/RuntimeAdditiveSimulationProfileProvider.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/data/printing-material-details.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/printing/materials/material-abs-esd.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/printing/materials/material-pa612-esd.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/esd-material-replacement-2026-09-30.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        }
+      ]
+    },
+    {
+      "ordinal": 1098,
+      "commit": "bed10c7d15e0698e0b75f1329d0f312937f5d77f",
+      "authoredAt": "2026-09-30T17:56:23+07:00",
+      "parents": [
+        "4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db",
+        "7b4703576cf183abc09cf558148b5c8afb97d20c"
+      ],
+      "isMerge": true,
+      "subject": "Merge pull request #65 from MALIEV-Co-Ltd/codex/replace-pc-esd-pa612-esd",
+      "sourceEvidence": "https://github.com/MALIEV-Co-Ltd/maliev-web/commit/bed10c7d15e0698e0b75f1329d0f312937f5d77f",
+      "classifications": [
+        {
+          "path": ".gitattributes",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.MaterialService.Common/InstantQuotationMaterialCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.CatalogService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.MaterialService.Tests/InstantQuotationCatalogReconcilerTests.cs",
+          "owners": [
+            "Legacy.Maliev.CatalogService"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/AdditiveMaterialComparisonEndpointTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/EsdMaterialProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/FdmSimulationProfileTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/InstantQuotationPricingBrowserTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/PricingEngineTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/ServicePageRedesignSourceTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TechnicalFilamentMinimumPricingTests.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web.Tests/TestAssets/AdditiveBenchmark/filament-profile-catalog.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/InstantQuotation/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pages/Services/3D-Printing.cshtml",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/PricingCatalog.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Resolved/maliev-esun-abs-esd-x1c-filament.resolved.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Resolved/maliev-esun-abs-esd-x1c-process.resolved.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Resolved/maliev-fiberon-pa612-esd-x1c-filament.resolved.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Resolved/maliev-fiberon-pa612-esd-x1c-process.resolved.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/esun-abs-esd-x1c-filament.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/esun-abs-esd-x1c-process.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/fiberon-pa612-esd-x1c-filament.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/fiberon-pa612-esd-x1c-process.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/maliev-esun-abs-esd-x1c-filament.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/maliev-esun-abs-esd-x1c-process.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/maliev-fiberon-pa612-esd-x1c-filament.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/Sources/maliev-fiberon-pa612-esd-x1c-process.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/esd-profile-evidence.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/Profiles/runtime-fdm-profiles.v1.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/Pricing/RuntimeAdditiveSimulationProfileProvider.cs",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/app/js/model-viewer/model-viewer.js",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/data/printing-material-details.json",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/printing/materials/material-abs-esd.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "Maliev.Web/wwwroot/src/images/services/printing/materials/material-pa612-esd.webp",
+          "owners": [
+            "Legacy.Maliev.Web"
+          ],
+          "disposition": "migration-required",
+          "decision": null
+        },
+        {
+          "path": "docs/esd-material-replacement-2026-09-30.md",
+          "owners": [
+            "Legacy.Maliev.Workflows"
+          ],
+          "disposition": "migration-required",
+          "decision": null
         }
       ]
     }
