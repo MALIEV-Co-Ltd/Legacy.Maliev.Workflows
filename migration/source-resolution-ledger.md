@@ -1,7 +1,7 @@
 # Source-commit resolution ledger (#56)
 
 `source-page-acceptance.json` separately inventories all 79 Razor Pages with a
-first-line `@page` directive at source `4198baa6b0e7903f2b9b6e3d5d68f9d2c2b5b0db`
+first-line `@page` directive at source `bed10c7d15e0698e0b75f1329d0f312937f5d77f`
 (35 Web, 44 Intranet). Pages remain `unverified` except the two owner-approved
 Travelers retirements. A source-file mapping, an existing Legacy route, and a
 passing unit suite do not prove
@@ -20,6 +20,20 @@ observed `maliev-web` main, including merges. Merge paths are the first-parent
 tree delta, so merge-time conflict resolutions are not silently omitted. Path
 ownership and a proposed retirement classification are **not** proof that a
 change is migrated, validated, or approved for retirement.
+
+September 30 ESD wave advances the complete source inventory from 1,096 to
+1,098 commits. Source `7b4703576cf183abc09cf558148b5c8afb97d20c` and merge
+`bed10c7d15e0698e0b75f1329d0f312937f5d77f` retain separate pending records;
+their Catalog, Web and Workflows owners link shared issues #29, #418 and #234,
+respectively. The merged tree delta includes automatic PA612-ESD/ABS-ESD
+pricing, profiles, generated assets, material descriptions and producer
+reconciliation, not CNC expansion. Existing PC-ESD keys/relationships must
+remain intact. Source objects were acquired only in an isolated bare cache;
+the original checkout and refs were not fetched, edited or executed.
+The page-tree checkpoint is refreshed without changing any route/acceptance
+status. The prior 1,096 resolution records and evidence remain unchanged:
+157 resolved, with 941 pending/partial after the two new commits. This is
+inventory and tracking evidence, not migrated ESD behavior or release approval.
 
 Workflows #193 corrects the source owner map: `Maliev.MessageService.*` belongs
 to ContactService, while `Maliev.EmailService.*` remains NotificationService.
