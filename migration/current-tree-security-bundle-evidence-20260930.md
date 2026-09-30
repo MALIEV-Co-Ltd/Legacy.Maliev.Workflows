@@ -161,3 +161,17 @@ successful job therefore supplies runtime identity/acquisition proof that the
 local JSON simulations cannot provide. Inspect checkout SHA against the
 called-workflow commit. The subdirectory job must show its configured caller
 working directory while obtaining tools from the separate immutable checkout.
+
+The first hosted run `36699949641` passed all main validation-job steps,
+including called-job identity, immutable acquisition and both scanner gates.
+Its nested caller was cancelled by the reusable workflow's shared concurrency
+group, so that run is not full hosted acceptance. A regression using the two
+actual caller configurations reproduced one group instead of two (RED1/1).
+The group now includes solution and working-directory inputs while preserving
+same-caller cancellation; the regression passed GREEN1/1. Root rebuilt Release
+with warnings as errors (zero warnings/errors), then ran the complete affected
+suite: 133/133 passed, zero skips. Formatting, workflow lint and diff whitespace
+passed. The durable RED, GREEN and full-suite TRX files are retained in the
+off-repository root acceptance directory above. Replacement hosted two-job
+proof remains required before merge; local expression evaluation does not
+prove GitHub's runtime scheduling behavior.

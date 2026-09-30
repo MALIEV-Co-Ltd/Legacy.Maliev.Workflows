@@ -8,6 +8,38 @@ namespace Legacy.Maliev.Workflows.Tests;
 public sealed class CurrentTreeCredentialScannerTests
 {
     [Fact]
+    public void ReusableValidation_WhenBothActualCallersRun_UsesDistinctConcurrencyGroups()
+    {
+        YamlMappingNode Read(string path)
+        {
+            YamlStream yaml = new();
+            yaml.Load(new StringReader(File.ReadAllText(Path.Combine(RepositoryContractTests.FindRepositoryRoot(), path))));
+            return (YamlMappingNode)yaml.Documents.Single().RootNode;
+        }
+
+        YamlMappingNode reusable = Read(".github/workflows/dotnet-validate.yml");
+        YamlMappingNode concurrency = (YamlMappingNode)reusable.Children[new YamlScalarNode("concurrency")];
+        string expression = Scalar(concurrency, "group");
+        Assert.Equal("true", Scalar(concurrency, "cancel-in-progress"));
+        YamlMappingNode callers = (YamlMappingNode)Read(".github/workflows/validate.yml").Children[new YamlScalarNode("jobs")];
+        List<string> groups = [];
+        foreach (YamlMappingNode caller in callers.Children.Values.Cast<YamlMappingNode>())
+        {
+            YamlMappingNode inputs = (YamlMappingNode)caller.Children[new YamlScalarNode("with")];
+            string directory = Scalar(inputs, "working-directory");
+            if (directory.Length == 0) { directory = "."; }
+            string group = expression.Replace("${{ github.workflow }}", "validate", StringComparison.Ordinal)
+                .Replace("${{ github.ref }}", "refs/pull/246/merge", StringComparison.Ordinal)
+                .Replace("${{ inputs.solution }}", Scalar(inputs, "solution"), StringComparison.Ordinal)
+                .Replace("${{ inputs.working-directory }}", directory, StringComparison.Ordinal);
+            Assert.DoesNotContain("${{", group, StringComparison.Ordinal);
+            groups.Add(group);
+        }
+        Assert.Equal(2, groups.Count);
+        Assert.Equal(groups.Count, groups.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+
+    [Fact]
     public void BothValidationSurfaces_WhenParsed_GateCurrentTreeBeforeRestoreWithoutReplacingExistingChecks()
     {
         foreach (string path in new[] { "actions/dotnet-validate/action.yml", ".github/workflows/dotnet-validate.yml" })
