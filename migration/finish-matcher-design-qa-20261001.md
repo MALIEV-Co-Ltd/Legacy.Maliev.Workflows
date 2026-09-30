@@ -63,9 +63,14 @@ was explicitly excluded; rebuilding the actual finishing asset was deterministic
 
 ## Acceptance gates
 
-PR #427 required-head CI and post-merge exact-main CI are still pending in this
-draft. Do not resolve the Workflows owner or close #225 until their protected-main
-evidence is recorded and this repository's PR and exact-main checks also pass.
+The original draft held resolution pending protected-main acceptance. That gate
+passed: Web PR #427 merged at `636ad950dc6a7d37e51a7d6bc4886dadd7ab20a9`,
+required-head run 36768471894 and exact-main run 36771208716 both succeeded.
+Workflows PR #252 merged this portable record at
+`b665f3245666b3285205a1db81ad3fef912019a5`; required-head run 36771843019
+and exact-main run 36772137594 both succeeded. Deployment remained skipped.
+The follow-up ledger change resolves only this source SHA's Workflows owner;
+close #225 only after that ledger PR and its exact-main checks also pass.
 Preserve the Web owner's historical PR #167/target SHA evidence separately.
 Telemetry privacy and external GTM/GA4 release verification in #229 are separate;
 this record neither activates tags nor proves conversions. No application, data,
