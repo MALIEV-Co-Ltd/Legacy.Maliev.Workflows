@@ -45,6 +45,23 @@ has a separate disposition and is never labeled runtime migration.
 
 ## September 30 Country and authenticated-profile bundles
 
+The shared additive pricing issue Web #275 also tracks eight previously
+unlinked, still-pending Web source entries independently:
+`e5432817078e133604239ebfe2b806465ed8e436`,
+`a8c358f338e6d6853517d1c546061c338f5895f8`,
+`5320f8ea6cf9ffdeb1c3f2bf51c75b3511f525a1`,
+`a3c5c4a53907e03ac202620cc051393c20fc28e3`,
+`f0ae0e8f4f71231d5a4cbb9adebbb107323519e2`,
+`499b6eb0841829ca7c91b7e1e6b756dbbd7530cc`,
+`2712f7d05d982ba7a3a2e4905c3ff61073d0f13a`, and
+`faf702a7f7990aaca6b60c652bae64fbc62987f3`.
+The last entry also links to Web #309 for STEP/active-upload physical-pricing
+acceptance. The source trees were inspected read-only, and the existing issues
+are reused rather than creating duplicate commit tickets. These are tracking
+links, not migration, test, or source-behavior acceptance evidence. All eight
+statuses, target SHAs and validation lists remain pending/empty; the overall
+resolved count stays 157/1,096. CNC expansion remains outside this bundle.
+
 Country issue #30 / PR #31 resolves only the Country owner of
 `03eaff1194c3ae2a54ceefeae31deffaff90436f`,
 `9e51e6c5da29de8e617b65b59d46882cde6d3b64`, and
