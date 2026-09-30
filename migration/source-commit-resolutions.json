@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-30T11:34:58.5568614+00:00",
+  "generatedAt": "2026-09-30T19:14:50.9911884+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "bed10c7d15e0698e0b75f1329d0f312937f5d77f",
   "sourceCommitCount": 1098,
@@ -10572,14 +10572,21 @@
     {
       "sourceSha": "1c611bb96d3a077090a8c65587cb7c4270af0aa4",
       "isMerge": false,
-      "status": "pending",
+      "status": "partial",
       "ownerResolutions": {
         "Legacy.Maliev.CatalogService": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "partial",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/issues/29"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/pull/30"
+          ],
+          "mergedTargetSha": "a961b28f959c5814d7c2ff97c246c61843a88616",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/actions/runs/36719487180",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/actions/runs/36719486203"
+          ]
         },
         "Legacy.Maliev.Web": {
           "status": "pending",
@@ -23401,13 +23408,18 @@
       "status": "partial",
       "ownerResolutions": {
         "Legacy.Maliev.CatalogService": {
-          "status": "pending",
+          "status": "partial",
           "issueUrls": [
             "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/issues/29"
           ],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/pull/30"
+          ],
+          "mergedTargetSha": "a961b28f959c5814d7c2ff97c246c61843a88616",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/actions/runs/36719487180",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/actions/runs/36719486203"
+          ]
         },
         "Legacy.Maliev.Web": {
           "status": "partial",
@@ -23440,13 +23452,18 @@
       "status": "partial",
       "ownerResolutions": {
         "Legacy.Maliev.CatalogService": {
-          "status": "pending",
+          "status": "partial",
           "issueUrls": [
             "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/issues/29"
           ],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/pull/30"
+          ],
+          "mergedTargetSha": "a961b28f959c5814d7c2ff97c246c61843a88616",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/actions/runs/36719487180",
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.CatalogService/actions/runs/36719486203"
+          ]
         },
         "Legacy.Maliev.Web": {
           "status": "partial",
