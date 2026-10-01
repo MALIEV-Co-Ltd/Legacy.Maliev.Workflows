@@ -50,6 +50,36 @@ Legacy service Docker contexts that depend on the public `Maliev.Aspire`,
 `.dependencies` with persisted credentials disabled before building. Empty inputs perform no extra
 checkout; branch names and floating tags are forbidden by the caller's repository contract.
 
+### Exact-commit image validation prerequisite
+
+The publisher's prerequisite job has only `contents: read` and `actions: read`,
+not OIDC. The protected-environment publication job depends on its success and
+rechecks the same self-contained trusted guard before checkout, immediately
+before cloud authentication and immediately before registry push. YAML aliases
+reuse the exact guard without executing a helper from caller-controlled source.
+Caller checkout is pinned to `github.sha` and its actual HEAD is verified.
+
+The fixed validation identity is the caller's active `ci-main.yml`, resolved to
+its numeric workflow ID. Evidence must bind the same caller/head repository,
+exact SHA, main push event and same-SHA `_build-and-test.yml` reference. The
+selected latest run attempt must contain exactly one successful
+`validate / validate` job, and every paginated job must be successful with the
+same run ID, attempt and SHA. Missing, pending, failed, skipped, malformed,
+duplicate, truncated or inaccessible evidence refuses publication without
+printing API bodies or credentials. Run and latest-run evidence is read again
+after job pagination. No historical green fallback is allowed: **all observed
+matching runs must be completed successfully**, including an older run's rerun.
+Operators must successfully rerun failed matching runs; starting another green
+run does not erase failure evidence. Pagination exhaustion also fails closed.
+
+Consumers adopting this immutable publisher version must grant `actions: read`
+in their reusable-workflow caller job's permission ceiling. Existing pins and
+default-off deployment gates are unchanged until a separately validated caller
+adoption. This is not publication/provider readiness or deployment authorization.
+Protected workflow review remains necessary; API success cannot prove that an
+approved workflow's tests are sufficient. Rechecks narrow, but cannot atomically
+eliminate, a GitHub-validation/registry-write race after the last observation.
+
 ## GitOps handoff adoption
 
 Contract `v1` initially allowlists only this established mapping:

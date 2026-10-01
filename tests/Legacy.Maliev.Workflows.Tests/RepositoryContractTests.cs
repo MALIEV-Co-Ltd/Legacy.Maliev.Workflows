@@ -355,7 +355,17 @@ public sealed class RepositoryContractTests
         Assert.Contains("legacy-service-defaults-ref:", source, StringComparison.Ordinal);
         Assert.Contains("compatibility-contracts-ref:", source, StringComparison.Ordinal);
         Assert.Contains("outputs:\n      digest:", normalizedSource, StringComparison.Ordinal);
-        Assert.Contains("permissions:\n  contents: read\n  id-token: write", normalizedSource, StringComparison.Ordinal);
+        YamlMappingNode root = Assert.IsType<YamlMappingNode>(ReadYaml(source).Documents.Single().RootNode);
+        YamlMappingNode permissions = Assert.IsType<YamlMappingNode>(ReadNode(root, "permissions"));
+        Assert.Equal("read", ReadScalar(permissions, "contents"));
+        Assert.Equal("read", ReadScalar(permissions, "actions"));
+        Assert.False(permissions.Children.ContainsKey(new YamlScalarNode("id-token")));
+        YamlMappingNode jobs = Assert.IsType<YamlMappingNode>(ReadNode(root, "jobs"));
+        YamlMappingNode publish = Assert.IsType<YamlMappingNode>(ReadNode(jobs, "publish"));
+        YamlMappingNode publishPermissions = Assert.IsType<YamlMappingNode>(ReadNode(publish, "permissions"));
+        Assert.Equal("read", ReadScalar(publishPermissions, "contents"));
+        Assert.Equal("read", ReadScalar(publishPermissions, "actions"));
+        Assert.Equal("write", ReadScalar(publishPermissions, "id-token"));
         Assert.Contains("environment: ${{ inputs.environment }}", source, StringComparison.Ordinal);
         Assert.Contains("github.ref == 'refs/heads/main'", source, StringComparison.Ordinal);
         Assert.Contains("github.ref_protected == true", source, StringComparison.Ordinal);
