@@ -15,8 +15,8 @@ public sealed class AllServiceSourceCommitLedgerContractTests
         using var resolutions = Load("migration/source-commit-resolutions.json");
         var root = resolutions.RootElement;
         Assert.Equal(1098, root.GetProperty("sourceCommitCount").GetInt32());
-        Assert.Equal(158, root.GetProperty("fullyResolvedCommitCount").GetInt32());
-        Assert.Equal(940, root.GetProperty("unresolvedCommitCount").GetInt32());
+        Assert.Equal(159, root.GetProperty("fullyResolvedCommitCount").GetInt32());
+        Assert.Equal(939, root.GetProperty("unresolvedCommitCount").GetInt32());
         Assert.False(root.GetProperty("complete").GetBoolean());
         var record = Assert.Single(root.GetProperty("records").EnumerateArray(),
             item => item.GetProperty("sourceSha").GetString() == "5fac706a7983a6d359b39acbd670e6800afe020e");

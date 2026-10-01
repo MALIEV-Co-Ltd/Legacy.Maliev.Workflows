@@ -1,5 +1,30 @@
 # Source-commit resolution ledger (#56)
 
+### October 1 verified Search Console bundle
+
+Source `dd9de3053cffd082df603950e8e3be3669d89ccb` now has complete evidence
+for both owners: Web PR430/main `6d0dc9f7095b4128becbf25af5f4de2b22ed7731`
+with exact-main run36809860319, and Workflows PR257/main
+`7752b418ff5c93fdd51a8a1a251f61dfb5bd9a41` with exact-main run36810479590.
+Both are green. The reporter/fixture preserve source blobs; actual ten offline
+cases pass from main. Historical query/page measurements are retained and all19
+numeric tuples were independently compared against the committed source.
+This does not prove present-time Google performance, authorize release/indexing,
+or include separately excluded CNC expansion. Other SEO source owners stay open.
+
+The complete inventory remains 1,098 source commits; this one two-owner bundle
+advances fully resolved entries to 159 and leaves 939 unresolved/partial.
+`complete=false` remains mandatory. Current target-main references are refreshed
+without changing any of the 1,098 ownership records. Historical counts below
+describe their earlier checkpoints, not the current total.
+
+Independent ledger validation: Release build zero warnings/errors; focused
+58 and full 135 tests passed with zero skips; formatting, both package audits,
+credential scan and whitespace checks passed. Both reviewed generators checked
+live source main before/after inventory. All source ownership records and every
+other resolution record remain byte-semantically unchanged. This ledger bundle
+still requires its own protected-main PR and exact-main CI acceptance.
+
 `source-page-acceptance.json` separately inventories all 79 Razor Pages with a
 first-line `@page` directive at source `bed10c7d15e0698e0b75f1329d0f312937f5d77f`
 (35 Web, 44 Intranet). Pages remain `unverified` except the two owner-approved
