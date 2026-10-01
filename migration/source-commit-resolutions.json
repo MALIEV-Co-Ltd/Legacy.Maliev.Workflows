@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-30T20:52:25.8065468+00:00",
+  "generatedAt": "2026-10-01T03:43:47.8766614+00:00",
   "sourceRepository": "MALIEV-Co-Ltd/maliev-web",
   "sourceCheckpoint": "bed10c7d15e0698e0b75f1329d0f312937f5d77f",
   "sourceCommitCount": 1098,
-  "fullyResolvedCommitCount": 158,
-  "unresolvedCommitCount": 940,
+  "fullyResolvedCommitCount": 159,
+  "unresolvedCommitCount": 939,
   "complete": false,
   "records": [
     {
@@ -4458,21 +4458,33 @@
     {
       "sourceSha": "dd9de3053cffd082df603950e8e3be3669d89ccb",
       "isMerge": false,
-      "status": "pending",
+      "status": "migrated",
       "ownerResolutions": {
         "Legacy.Maliev.Web": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/issues/429"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/pull/430"
+          ],
+          "mergedTargetSha": "6d0dc9f7095b4128becbf25af5f4de2b22ed7731",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Web/actions/runs/36809860319"
+          ]
         },
         "Legacy.Maliev.Workflows": {
-          "status": "pending",
-          "issueUrls": [],
-          "prUrls": [],
-          "mergedTargetSha": null,
-          "validationEvidenceUrls": []
+          "status": "migrated",
+          "issueUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/issues/256"
+          ],
+          "prUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/pull/257"
+          ],
+          "mergedTargetSha": "7752b418ff5c93fdd51a8a1a251f61dfb5bd9a41",
+          "validationEvidenceUrls": [
+            "https://github.com/MALIEV-Co-Ltd/Legacy.Maliev.Workflows/actions/runs/36810479590"
+          ]
         }
       },
       "retirementApproval": null
