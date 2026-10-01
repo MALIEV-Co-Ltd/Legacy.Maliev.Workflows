@@ -2,29 +2,19 @@
 
 Reusable CI/CD and publication gates for services migrated from the private MALIEV legacy monorepo into fresh public repositories.
 
-## All-service source commit ledger
+## Repository scope
 
-`migration/source-commit-ledger.json` is the fail-closed inventory of every
-non-merge commit in the read-only `maliev-web` source history. Each changed
-path is assigned to one or more canonical Legacy repositories, or to an
-explicit approved retirement/source-tooling disposition, by
-`migration/source-path-owners.json`. The generated artifact also pins every
-owning repository's live remote `origin/main` SHA and evidence URL at generation
-time. Each source record carries its full SHA, parent SHAs, subject, and
-path-level disposition so grouped migration issues cannot obscure a commit.
+This repository contains reusable CI/CD actions, publication/security gates and
+their infrastructure contract tests. Project-specific source-commit ledgers,
+acceptance manifests, automation reports and tracking generators belong in
+`Legacy.Maliev.MigrationTracking`, not in the reusable workflow dependency.
 
-Refresh it locally from committed Git objects only:
-
-```powershell
-.\scripts\New-SourceCommitLedger.ps1 `
-  -SourceRepository R:\maliev-web `
-  -SourceRef origin/main
-```
-
-An unmapped or ambiguously mapped historical path stops generation. The ledger
-is a classification and traceability contract; it is not by itself evidence
-that runtime behavior has been migrated. Migration evidence remains mandatory
-in each owning repository and in Project #2.
+The tracking repository is currently local at
+`B:\maliev-legacy\Legacy.Maliev.MigrationTracking`. Its extraction manifest
+preserves the original files from Workflows commit
+`eb4441d94c7f4d6a13619f7431fb3ceaee3d841d`; existing issue/PR evidence links and
+Project #2 remain authoritative. This relocation does not declare any migration
+complete. Reusable workflows do not check out or depend on that tracking repository.
 
 ## Trust boundaries
 
