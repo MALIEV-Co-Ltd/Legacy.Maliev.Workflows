@@ -262,7 +262,8 @@ class CurrentTreeSecretTests(unittest.TestCase):
             ".github/workflows/validate.yml",
             "tests/Legacy.Maliev.Workflows.Tests/RepositoryContractTests.cs",
             "tests/Legacy.Maliev.Workflows.Tests/CurrentTreeCredentialScannerTests.cs",
-            "migration/current-tree-security-bundle-evidence-20260930.md",
+            "README.md",
+            "tests/Legacy.Maliev.Workflows.Tests/RepositoryScopeContractTests.cs",
         ]
         for relative in paths:
             with self.subTest(path=relative):
