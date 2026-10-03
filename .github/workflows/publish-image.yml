@@ -312,6 +312,82 @@ jobs:
           load: true
           tags: ${{ inputs.image }}:${{ github.sha }}
 
+      - name: Verify packaged Intranet assets
+        shell: python
+        env:
+          CALLER_REPOSITORY: ${{ github.repository }}
+          SOURCE_DOCKERFILE: ${{ inputs.dockerfile }}
+          BUILT_IMAGE: ${{ env.COMMIT_TAG }}
+        run: |
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          import tarfile
+          import tempfile
+          import uuid
+
+          def native(arguments):
+              result = subprocess.run(["docker", *arguments], capture_output=True, timeout=120)
+              if result.returncode != 0 or len(result.stdout) > 65536:
+                  raise ValueError("Image inspection unavailable")
+              return result.stdout.decode("ascii").strip()
+
+          def inspect():
+              if os.environ.get("CALLER_REPOSITORY") != "MALIEV-Co-Ltd/Legacy.Maliev.Intranet":
+                  return {"status": "not-applicable"}
+              dockerfile = os.environ.get("SOURCE_DOCKERFILE")
+              if dockerfile == "Legacy.Maliev.Intranet.Bff/Dockerfile":
+                  return {"status": "not-applicable"}
+              if dockerfile != "Legacy.Maliev.Intranet/Dockerfile":
+                  raise ValueError("Unreviewed Intranet artifact identity")
+              image = os.environ.get("BUILT_IMAGE", "")
+              if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]{1,511}", image):
+                  raise ValueError("Invalid local image identity")
+              image_id = native(["image", "inspect", "--format", "{{.Id}}", image])
+              if not re.fullmatch(r"sha256:[0-9a-f]{64}", image_id):
+                  raise ValueError("Invalid immutable image identity")
+              assets = {
+                  "app/wwwroot/dist/" + name for name in (
+                      "vendor.min.css.gz", "app.min.css.gz", "vendor.min.js.gz", "app.min.js.gz",
+                      "jquery.min.js.gz", "jquery.validate.min.js.gz", "jquery.validate.unobtrusive.min.js.gz")
+              }
+              container = "legacy-packaged-assets-check-" + uuid.uuid4().hex
+              try:
+                  native(["create", "--name", container, "--network", "none", "--read-only",
+                          "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+                          "--entrypoint", "/maliev-never-started", image_id])
+                  with tempfile.TemporaryDirectory(prefix="legacy-packaged-assets-") as temporary:
+                      archive = os.path.join(temporary, "filesystem.tar")
+                      native(["container", "export", "--output", archive, container])
+                      if os.path.getsize(archive) > 4 * 1024 ** 3:
+                          raise ValueError("Image inspection bound exceeded")
+                      found = set()
+                      with tarfile.open(archive, mode="r|") as filesystem:
+                          for index, member in enumerate(filesystem):
+                              if index >= 100000:
+                                  raise ValueError("Image entry bound exceeded")
+                              name = member.name.removeprefix("./")
+                              if name not in assets:
+                                  continue
+                              if name in found or not member.isfile() or member.size < 1:
+                                  raise ValueError("Packaged asset is missing or empty")
+                              found.add(name)
+                      if found != assets:
+                          raise ValueError("Packaged asset corpus incomplete")
+                  return {"status": "accepted", "assetCount": len(found), "imageId": image_id}
+              finally:
+                  # This unique name was generated here; never remove caller or sibling containers.
+                  native(["container", "rm", "--force", container])
+
+          try:
+              receipt = inspect()
+          except Exception:
+              print("[packaged-assets] FAILED: image inspection incomplete; details redacted", file=sys.stderr)
+              sys.exit(2)
+          print(json.dumps(receipt, sort_keys=True))
+
       - name: Scan the built image before publication
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:

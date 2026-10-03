@@ -80,6 +80,17 @@ Protected workflow review remains necessary; API success cannot prove that an
 approved workflow's tests are sufficient. Rechecks narrow, but cannot atomically
 eliminate, a GitHub-validation/registry-write race after the last observation.
 
+For the Intranet compatibility Dockerfile `Legacy.Maliev.Intranet/Dockerfile`,
+the trusted publisher also verifies all seven nonempty generated assets in the
+built image before publication. It resolves the local image to an immutable ID,
+exports a stopped disposable container's filesystem, and never starts the
+application or executes its entrypoint. The known Intranet BFF Dockerfile is
+exempt; an unknown Intranet Dockerfile fails closed. Other service repositories
+retain their own asset contracts. Missing, empty, nonregular, duplicate or
+uninspectable assets refuse publication with redacted diagnostics, and only the
+check's uniquely named container is removed. Consumer adoption still requires
+its pinned publisher update, image acceptance and deployment approval.
+
 ## GitOps handoff adoption
 
 Contract `v1` initially allowlists only this established mapping:
