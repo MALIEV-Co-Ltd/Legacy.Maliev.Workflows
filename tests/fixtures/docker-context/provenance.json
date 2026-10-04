@@ -1,0 +1,20 @@
+[
+  {
+    "SourceSha": "15077df15879488b2010808bf38f94a2e91f3bf5",
+    "SourceParent": "e6f1f980130b227eef56bbc1a077b37d736beeb7",
+    "OriginalPath": ".dockerignore",
+    "Blob": "ece2d7285720dd494e87940ab47fc7e0a2600151",
+    "Fixture": "15077df15879488b2010808bf38f94a2e91f3bf5.dockerignore",
+    "Sha256": "086BC334C86323D6D5D690939521CC07B4AC8E9A1BE2EDFBE39B20CA35C63200",
+    "Disposition": "migration-required; test fixture only; no consumer parity/closure"
+  },
+  {
+    "SourceSha": "6268fb47c8a3ebdb9e9fe3935d16b47f93e9bb32",
+    "SourceParent": "7f24b244aabe1c845bf09ab041e476c474be0c2d",
+    "OriginalPath": ".dockerignore",
+    "Blob": "de7c1e0e04f80efbab602ca8ae4c48d89ef4dbf1",
+    "Fixture": "6268fb47c8a3ebdb9e9fe3935d16b47f93e9bb32.dockerignore",
+    "Sha256": "A5F5031411855D206F65B31E1403D3BC33352C13BA29D2764F7EB412E5217D47",
+    "Disposition": "migration-required; test fixture only; no consumer parity/closure"
+  }
+]
