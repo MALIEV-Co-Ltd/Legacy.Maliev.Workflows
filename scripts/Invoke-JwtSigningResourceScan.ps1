@@ -6,7 +6,13 @@ $ErrorActionPreference = 'Stop'
 
 try {
     $resolvedRepositoryPath = (Resolve-Path -LiteralPath $RepositoryPath).Path
-    $trackedOutput = & git -C $resolvedRepositoryPath ls-files -z 2>$null
+    $repositoryRoot = @(& git -C $resolvedRepositoryPath rev-parse --show-toplevel 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $repositoryRoot.Count -ne 1 -or
+        [string]::IsNullOrWhiteSpace($repositoryRoot[0])) {
+        throw [System.InvalidOperationException]::new('Unable to enumerate tracked candidate files.')
+    }
+    $resolvedRepositoryPath = (Resolve-Path -LiteralPath $repositoryRoot[0]).Path
+    $trackedOutput = & git -C $resolvedRepositoryPath ls-files --full-name -z 2>$null
     if ($LASTEXITCODE -ne 0) {
         throw [System.InvalidOperationException]::new('Unable to enumerate tracked candidate files.')
     }
