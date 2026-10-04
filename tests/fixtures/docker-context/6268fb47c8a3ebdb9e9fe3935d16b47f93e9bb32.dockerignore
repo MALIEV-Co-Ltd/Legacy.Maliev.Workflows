@@ -1,0 +1,56 @@
+**/.git
+**/.github
+**/.vscode
+**/.vs
+**/.idea
+**/.backups/__*_done.marker
+
+# User-specific files
+**/*.csproj.user
+**/*.suo
+**/*.user
+**/*.userosscache
+**/*.sln.docstates
+
+# Build and package outputs (including generated assets)
+**/bin
+**/obj
+**/out
+**/build
+**/packages
+**/_node_modules
+
+# Logs and backups
+**/*.log
+**/*.bak
+**/*.backup
+
+# Node.js and frontend artifacts
+**/node_modules
+**/npm-debug.log*
+**/yarn-error.log*
+
+# Tests and build caches
+**/TestResults
+
+# Coverage and Python caches
+**/coverage
+**/__pycache__
+**/*.py[cod]
+
+# System-generated files
+**/*.db
+**/Thumbs.db
+**/ehthumbs.db
+**/Icon?
+**/Desktop.ini
+**/.DS_Store
+
+# Workspace-only directories that should never enter service Docker context
+**/.codex
+**/.codex-staging-*
+**/.superpowers
+**/.worktrees
+**/.agents
+**/.qwen
+.project2.json
