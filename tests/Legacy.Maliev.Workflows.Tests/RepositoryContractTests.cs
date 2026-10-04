@@ -195,7 +195,8 @@ public sealed class RepositoryContractTests
         Assert.Contains("working-directory: ${{ inputs.working-directory }}", action[scan..restore], StringComparison.Ordinal);
         Assert.Contains("-RepositoryPath (Get-Location).Path", action[scan..restore], StringComparison.Ordinal);
         Assert.DoesNotContain("-RepositoryPath $env:GITHUB_WORKSPACE", action[scan..restore], StringComparison.Ordinal);
-        Assert.Contains("git -C $resolvedRepositoryPath ls-files -z", runner, StringComparison.Ordinal);
+        Assert.Contains("git -C $resolvedRepositoryPath rev-parse --show-toplevel", runner, StringComparison.Ordinal);
+        Assert.Contains("git -C $resolvedRepositoryPath ls-files --full-name -z", runner, StringComparison.Ordinal);
         Assert.Contains("JwtSigningResourceScanner.ps1", runner, StringComparison.Ordinal);
         Assert.Contains("$settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit", scanner, StringComparison.Ordinal);
         Assert.Contains("value redacted", runner, StringComparison.Ordinal);
