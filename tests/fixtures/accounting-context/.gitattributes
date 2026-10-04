@@ -1,0 +1,3 @@
+# Exact frozen committed identity fixtures; prevent checkout conversion.
+accounting.dockerignore -text
+Accounting.Api.Dockerfile -text
