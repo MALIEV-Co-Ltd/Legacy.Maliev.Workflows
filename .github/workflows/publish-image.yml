@@ -311,6 +311,7 @@ jobs:
           push: false
           load: true
           tags: ${{ inputs.image }}:${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Verify packaged Intranet assets
         shell: python
@@ -385,6 +386,134 @@ jobs:
               receipt = inspect()
           except Exception:
               print("[packaged-assets] FAILED: image inspection incomplete; details redacted", file=sys.stderr)
+              sys.exit(2)
+          print(json.dumps(receipt, sort_keys=True))
+
+      - name: Verify packaged Web assets and source revision
+        shell: python
+        env:
+          CALLER_REPOSITORY: ${{ github.repository }}
+          SOURCE_DOCKERFILE: ${{ inputs.dockerfile }}
+          BUILT_IMAGE: ${{ env.COMMIT_TAG }}
+          EXPECTED_SOURCE_REVISION: ${{ github.sha }}
+        run: |
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          import tarfile
+          import tempfile
+          import uuid
+
+          def native(arguments):
+              result = subprocess.run(["docker", *arguments], capture_output=True, timeout=120)
+              if result.returncode != 0 or len(result.stdout) > 65536:
+                  raise ValueError("Image inspection unavailable")
+              return result.stdout.decode("ascii").strip()
+
+          def unique_object(pairs):
+              result = {}
+              for key, value in pairs:
+                  if key in result:
+                      raise ValueError("Ambiguous manifest")
+                  result[key] = value
+              return result
+
+          def inspect():
+              if os.environ.get("CALLER_REPOSITORY") != "MALIEV-Co-Ltd/Legacy.Maliev.Web":
+                  return {"status": "not-applicable"}
+              if os.environ.get("SOURCE_DOCKERFILE") != "Legacy.Maliev.Web/Dockerfile":
+                  raise ValueError("Unreviewed Web artifact identity")
+              revision = os.environ.get("EXPECTED_SOURCE_REVISION", "")
+              if not re.fullmatch(r"[0-9a-f]{40}", revision):
+                  raise ValueError("Invalid source revision")
+              image = os.environ.get("BUILT_IMAGE", "")
+              if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]{1,511}", image):
+                  raise ValueError("Invalid local image identity")
+              image_id = native(["image", "inspect", "--format", "{{.Id}}", image])
+              if not re.fullmatch(r"sha256:[0-9a-f]{64}", image_id):
+                  raise ValueError("Invalid immutable image identity")
+              label = native(["image", "inspect", "--format",
+                              '{{index .Config.Labels "org.opencontainers.image.revision"}}', image_id])
+              if label != revision:
+                  raise ValueError("Packaged source revision mismatch")
+              manifest = {
+                  "scripts": ["vendor.min.js", "app.min.js"],
+                  "routeScripts": ["route-inquiry.js", "route-error.js", "route-instant-quotation.js",
+                                   "route-member-order.js", "route-service-finder.js", "route-service-cnc.js",
+                                   "route-service-finishing.js", "route-service-printing.js",
+                                   "route-service-scanning.js", "route-service-toc.js"],
+                  "routeScopedModules": {"instantQuotationViewer": "instant-quotation-viewer.mjs",
+                                         "instantQuotationWorkflow": "instant-quotation-workflow.mjs"},
+                  "styles": ["site.min.css"],
+                  "routeStyles": ["route-about.css", "route-home.css", "route-inquiry.css", "route-error.css",
+                                  "route-instant-quotation.css", "route-services.css", "route-services-index.css"],
+              }
+              names = manifest["scripts"] + manifest["routeScripts"] + list(manifest["routeScopedModules"].values())
+              names += manifest["styles"] + manifest["routeStyles"]
+              required = {"app/wwwroot/dist/" + name for name in names}
+              manifest_path = "app/wwwroot/dist/asset-manifest.json"
+              texts = required & {"app/wwwroot/dist/" + name for name in manifest["styles"] + manifest["routeStyles"]}
+              texts.add(manifest_path)
+              container = "legacy-web-assets-check-" + uuid.uuid4().hex
+              try:
+                  native(["create", "--name", container, "--network", "none", "--read-only", "--cap-drop", "ALL",
+                          "--security-opt", "no-new-privileges", "--entrypoint", "/maliev-never-started", image_id])
+                  with tempfile.TemporaryDirectory(prefix="legacy-web-assets-") as temporary:
+                      archive = os.path.join(temporary, "filesystem.tar")
+                      native(["container", "export", "--output", archive, container])
+                      if os.path.getsize(archive) > 4 * 1024 ** 3:
+                          raise ValueError("Image inspection bound exceeded")
+                      files = {}
+                      contents = {}
+                      with tarfile.open(archive, mode="r|") as filesystem:
+                          for index, member in enumerate(filesystem):
+                              if index >= 100000:
+                                  raise ValueError("Image entry bound exceeded")
+                              name = member.name.removeprefix("./")
+                              if not name.startswith("app/wwwroot/"):
+                                  continue
+                              if name in files:
+                                  raise ValueError("Ambiguous packaged path")
+                              files[name] = member.size if member.isfile() else 0
+                              if name in texts:
+                                  if not member.isfile() or not 0 < member.size <= 4 * 1024 ** 2:
+                                      raise ValueError("Invalid packaged metadata")
+                                  contents[name] = filesystem.extractfile(member).read().decode("utf-8")
+                      if any(files.get(name, 0) < 1 for name in required) or manifest_path not in contents:
+                          raise ValueError("Packaged asset corpus incomplete")
+                      if json.loads(contents[manifest_path], object_pairs_hook=unique_object) != manifest:
+                          raise ValueError("Packaged manifest contract mismatch")
+                      fonts = set()
+                      for path in texts - {manifest_path}:
+                          for reference in re.findall(r'url\(\s*["\']?([^\s)"\']+)', contents[path]):
+                              if not re.search(r"\.(?:woff2?|ttf|otf)(?:[?#]|$)", reference):
+                                  continue
+                              if re.fullmatch(r"\./assets/[A-Za-z0-9._-]+\.(?:woff2?|ttf|otf)", reference):
+                                  font = "app/wwwroot/dist/" + reference.removeprefix("./")
+                              elif re.fullmatch(r"/lib/(?:outfit|ibm-plex)/[A-Za-z0-9._-]+\.woff2", reference):
+                                  font = "app/wwwroot" + reference
+                              else:
+                                  raise ValueError("Unreviewed packaged font reference")
+                              if files.get(font, 0) < 1:
+                                  raise ValueError("Packaged font missing or empty")
+                              fonts.add(font)
+                      families = ["outfit-latin-" + weight + "-normal-" for weight in ("400", "500", "600")]
+                      families += ["noto-sans-thai-thai-" + weight + "-normal-" for weight in ("400", "500", "600")]
+                      families += ["fa-brands-400-", "fa-regular-400-", "fa-solid-900-", "fa-v4compatibility-"]
+                      if any(not any(os.path.basename(font).startswith(family) and font.endswith(".woff2")
+                                     for font in fonts) for family in families):
+                          raise ValueError("Packaged font family corpus incomplete")
+                  return {"status": "accepted", "assetCount": len(required), "fontCount": len(fonts),
+                          "imageId": image_id, "sourceRevision": revision}
+              finally:
+                  native(["container", "rm", "--force", container])
+
+          try:
+              receipt = inspect()
+          except Exception:
+              print("[web-packaged-assets] FAILED: image inspection incomplete; details redacted", file=sys.stderr)
               sys.exit(2)
           print(json.dumps(receipt, sort_keys=True))
 
