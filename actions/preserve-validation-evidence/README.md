@@ -1,5 +1,10 @@
 # Final caller evidence retention
 
+Source-candidate metadata accepts the exact net10.0 SDK basename
+`.NETCoreApp,Version=v10.0.AssemblyAttributes.cs` under an `obj` component.
+This narrow exception does not allow punctuation in inputs or retained payload
+paths, copy source text, bypass symlink checks, or certify compiled membership.
+
 Invoke this separate action with `if: always()` **after** the caller's existing
 collector and coverage guard. An upload inside `dotnet-validate` runs before
 Intranet's later collector and cannot preserve its output. Pin an accepted full
