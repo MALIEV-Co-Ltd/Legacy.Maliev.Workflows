@@ -161,6 +161,42 @@ class RetentionTests(unittest.TestCase):
         self.write('coverage.runsettings', b'<RunSettings><RunConfiguration><EnvironmentVariables><PRIVATE>private-canary</PRIVATE></EnvironmentVariables></RunConfiguration></RunSettings>')
         with self.assertRaises(evidence.EvidenceFailure): self.prepare()
 
+    def test_actual_sdk_generated_source_filename_retains_hash_and_partial_evidence(self):
+        name = self.project + '/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs'
+        payload = b'// synthetic SDK generated target framework attribute\n'
+        self.write(name, payload)
+        (self.root/'TestResults/fixture/coverage.cobertura.xml').unlink()
+        stage, complete = self.prepare()
+        self.assertFalse(complete)
+        mapping = json.loads((stage/'source-map.json').read_text())
+        self.assertIn(name, json.dumps(mapping))
+        self.assertIn(evidence.digest(payload), json.dumps(mapping))
+        self.assertFalse(mapping['compiledMembershipCertified'])
+        self.assertFalse((stage/name).exists())
+
+    def test_sdk_source_exception_never_allows_arbitrary_punctuation_inputs_or_links(self):
+        filename = '.NETCoreApp,Version=v10.0.AssemblyAttributes.cs'
+        for path in ('../obj/'+filename, '/obj/'+filename, 'obj//'+filename,
+                     'obj/'+filename+'/private', 'obj/private,environment=canary.cs',
+                     'src/'+filename, 'obj/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs:secret',
+                     'obj/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs\\private'):
+            with self.subTest(path=path), self.assertRaises(evidence.EvidenceFailure):
+                evidence.relative_source_name(path)
+        with self.assertRaises(evidence.EvidenceFailure): evidence.relative_name('obj/'+filename)
+        name = self.project+'/obj/Release/net10.0/'+filename
+        path = self.root/name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        target = self.stage/'outside.cs'
+        target.write_bytes(b'private-canary')
+        try:
+            path.symlink_to(target)
+        except OSError:
+            # Existing symlink control exercises the same filesystem preflight;
+            # this direct control must fail rather than silently skip.
+            self.fail('SDK filename symlink control unavailable')
+        with self.assertRaises(evidence.EvidenceFailure): self.prepare()
+        self.assertFalse(any(self.stage.glob('validation-evidence-*')))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

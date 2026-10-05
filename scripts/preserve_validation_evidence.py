@@ -33,6 +33,18 @@ def relative_name(value):
     return value
 
 
+def relative_source_name(value):
+    # Only source-candidate metadata may use this exact net10.0 SDK basename.
+    # Inputs and retained payload paths keep the original strict allowlist.
+    require(isinstance(value, str) and len(value) <= 256)
+    directory, separator, filename = value.rpartition('/')
+    if filename == '.NETCoreApp,Version=v10.0.AssemblyAttributes.cs':
+        require(separator and 'obj' in directory.split('/'))
+        relative_name(directory)
+        return value
+    return relative_name(value)
+
+
 def read_owned(root, path):
     require(path.resolve().is_relative_to(root) and path.is_file())
     current = path
@@ -157,7 +169,7 @@ def prepare(*, workspace, runner_temp, repository, source_revision, results_dire
                 retain(path.relative_to(workspace).as_posix(), data, digest(data), 'verbatim')
         source_start = len(sources)
         for path in sorted(directory.rglob('*.cs')):
-            name = relative_name(path.relative_to(workspace).as_posix())
+            name = relative_source_name(path.relative_to(workspace).as_posix())
             data = read_owned(workspace, path)
             require(len(selected)+len(sources) < MAX_FILES)
             sources.append({'path':name,'sha256':digest(data),'bytes':len(data)})
