@@ -80,6 +80,7 @@ class PolicyTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("handoff_policy", SCRIPT)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
+        self.module = module
         return module.run_handoff("Legacy.Maliev.NotificationService", COMMIT, DIGEST, tools, **kwargs)
 
     def test_success_order_and_independent_state(self):
@@ -248,6 +249,15 @@ class PolicyTests(unittest.TestCase):
         with self.assertRaises(Exception) as caught:
             self.run_policy(tool)
         self.assertNotIn("owned-private-output-canary", str(caught.exception))
+
+    def test_callback_policy_exception_cannot_bypass_redaction_or_exit_bounds(self):
+        def tool(step, request):
+            raise self.module.HandoffFailure("owned-private-output-canary", -73)
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(tool)
+        self.assertNotIn("owned-private-output-canary", str(caught.exception))
+        self.assertEqual("SNAPSHOT", caught.exception.step)
+        self.assertEqual(1, caught.exception.exit_code)
 
     def test_oversized_receipt_rejected(self):
         def fault(step, receipt, tools):

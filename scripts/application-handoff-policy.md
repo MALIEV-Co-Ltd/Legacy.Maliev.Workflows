@@ -4,6 +4,11 @@
 
 The injected boundary receives one approved `STEPS` operation and a structured request. It returns exactly `exitCode` (a nonnegative integer) and `receipt` (a JSON-compatible dictionary bounded to 16 KiB). Nonzero exit codes propagate in `HandoffFailure.exit_code`; public failure messages contain only the reviewed step. A callback exception normalizes to a redacted failure. There is no operation for provider/IAM/database/configuration migration or arbitrary resource mutation.
 
+Thrown callback exceptions, including an instance of this library's own public
+exception class, normalize to the requested step and exit 1. Only the structured
+response's bounded nonnegative exit code is trusted for propagation; callback-
+supplied exception messages, steps and codes cannot bypass that boundary.
+
 The policy binds the caller's immutable source and image digest before creating a workload. It snapshots a healthy original and service identity, requests two equivalent temporary replica slots, proves owned standby green, uses service UID/resource-version/ports and exact target deployment UID in selector compare-and-swap requests, observes public health/endpoints for 180 seconds, rechecks surge capacity, and then changes only the canonical application. Exact owned rollout settings are min-ready 90, drain 60, termination 90, surge 1 and unavailable 0.
 
 This adapter's service revision receipt contract is a positive canonical decimal token, bounded by the complete 16 KiB receipt rather than a fixed bit/digit width. It passes the exact captured token back in CAS requests and compares successful same-Service numeric receipts by digit length and lexicographic order, without integer conversion. It is not a universal Kubernetes resource-version adapter: callers targeting an opaque-version contract must supply a separately reviewed adapter rather than infer numeric ordering. Numeric ordering here never compares different resources or substitutes for UID/ports/selector fences.

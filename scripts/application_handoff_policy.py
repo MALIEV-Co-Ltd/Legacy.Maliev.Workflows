@@ -71,6 +71,11 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         request = copy.deepcopy(dict(context, **arguments))
         try:
             response = tool(step, request)
+        except Exception:
+            # Callback failures never carry trusted phase/exit metadata, even
+            # when a caller throws this library's public exception class.
+            raise HandoffFailure(step) from None
+        try:
             require(isinstance(response, dict) and set(response) == {"exitCode", "receipt"}, step)
             code = response["exitCode"]
             require(type(code) is int and 0 <= code <= 2147483647, step)
