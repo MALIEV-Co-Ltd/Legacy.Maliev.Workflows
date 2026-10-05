@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('evidence', ROOT / 'scripts/preserve_validation_evidence.py')
@@ -142,6 +143,19 @@ class RetentionTests(unittest.TestCase):
         finally:
             if old is None: os.environ.pop('GIT_DIR',None)
             else: os.environ['GIT_DIR'] = old
+
+    def test_each_requested_production_project_requires_its_own_source_inventory(self):
+        second = 'Legacy.Maliev.Intranet.Server'
+        for extension in ('dll','pdb'):
+            self.write(second+'/bin/Release/net10.0/'+second+'.'+extension, b'synthetic opaque binary')
+        stage, complete = self.prepare(production_projects=[self.project,second])
+        self.assertFalse(complete)
+
+    def test_total_retention_and_file_count_limits_fail_before_staging(self):
+        for name in ('MAX_TOTAL','MAX_FILES'):
+            with patch.object(evidence,name,1):
+                with self.assertRaises(evidence.EvidenceFailure): self.prepare()
+        self.assertFalse(any(self.stage.glob('validation-evidence-*')))
 
 
 if __name__ == '__main__':

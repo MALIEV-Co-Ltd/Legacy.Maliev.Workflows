@@ -111,6 +111,13 @@ def prepare(*, workspace, runner_temp, repository, source_revision, results_dire
         require(re.fullmatch(r'[A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z][A-Za-z0-9]*)*', project))
         require((project == stem or project.startswith(stem+'.')) and not any(part.endswith('Tests') or part in ('Tests','Acceptance') for part in project.split('.')))
     selected = []
+    sources = []
+    retained_bytes = 0
+    def retain(name, data, original_hash, transform):
+        nonlocal retained_bytes
+        require(len(selected)+len(sources) < MAX_FILES and retained_bytes+len(data) <= MAX_TOTAL)
+        selected.append((name, data, original_hash, transform))
+        retained_bytes += len(data)
     coverage_available = False
     trx_available = False
     results = workspace/results_directory
@@ -122,18 +129,17 @@ def prepare(*, workspace, runner_temp, repository, source_revision, results_dire
             name = relative_name(path.relative_to(workspace).as_posix())
             data = read_owned(workspace, path)
             if path.suffix == '.trx':
-                selected.append((name, outcome_trx(data), digest(data), 'outcome-only-trx/v1'))
+                retain(name, outcome_trx(data), digest(data), 'outcome-only-trx/v1')
                 trx_available = True
             else:
-                selected.append((name, coverage_bytes(data), digest(data), 'verbatim'))
+                retain(name, coverage_bytes(data), digest(data), 'verbatim')
                 coverage_available = True
     settings = workspace/'coverage.runsettings'
     if settings.exists():
         data = read_owned(workspace, settings)
         require(parse_xml(data).tag == 'RunSettings')
-        selected.append(('coverage.runsettings', data, digest(data), 'verbatim'))
+        retain('coverage.runsettings', data, digest(data), 'verbatim')
     binaries = {}
-    sources = []
     for project in production_projects:
         binaries[project] = {}
         directory = workspace/project
@@ -143,11 +149,14 @@ def prepare(*, workspace, runner_temp, repository, source_revision, results_dire
             if path.exists():
                 data = read_owned(workspace, path)
                 require(len(data) > 0)
-                selected.append((path.relative_to(workspace).as_posix(), data, digest(data), 'verbatim'))
+                retain(path.relative_to(workspace).as_posix(), data, digest(data), 'verbatim')
+        source_start = len(sources)
         for path in sorted(directory.rglob('*.cs')):
             name = relative_name(path.relative_to(workspace).as_posix())
             data = read_owned(workspace, path)
+            require(len(selected)+len(sources) < MAX_FILES)
             sources.append({'path':name,'sha256':digest(data),'bytes':len(data)})
+        binaries[project]['sourceCandidates'] = len(sources)-source_start
     require(len(selected)+len(sources) <= MAX_FILES and sum(len(data) for _,data,_,_ in selected) <= MAX_TOTAL)
     require(source_head(workspace) == source_revision)
     stage = Path(tempfile.mkdtemp(prefix='validation-evidence-', dir=runner_temp))
