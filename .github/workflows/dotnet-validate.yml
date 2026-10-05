@@ -143,11 +143,11 @@ jobs:
       - name: Build
         run: dotnet build "${{ inputs.solution }}" --configuration Release --no-restore
 
-      - name: Test
-        run: dotnet test "${{ inputs.solution }}" --configuration Release --no-build --no-restore
-
       - name: Verify formatting
         run: dotnet format "${{ inputs.solution }}" --verify-no-changes --no-restore
+
+      - name: Test
+        run: dotnet test "${{ inputs.solution }}" --configuration Release --no-build --no-restore
 
       - name: Audit vulnerable packages
         run: dotnet list "${{ inputs.solution }}" package --vulnerable --include-transitive --no-restore

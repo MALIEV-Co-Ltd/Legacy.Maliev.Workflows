@@ -758,8 +758,8 @@ public sealed class RepositoryContractTests
         [
             "dotnet restore \"${{ inputs.solution }}\"",
             "dotnet build \"${{ inputs.solution }}\" --configuration Release --no-restore",
-            "dotnet test \"${{ inputs.solution }}\" --configuration Release --no-build --no-restore",
             "dotnet format \"${{ inputs.solution }}\" --verify-no-changes --no-restore",
+            "dotnet test \"${{ inputs.solution }}\" --configuration Release --no-build --no-restore",
             "dotnet list \"${{ inputs.solution }}\" package --vulnerable --include-transitive --no-restore",
         ];
 
@@ -804,8 +804,8 @@ public sealed class RepositoryContractTests
         [
             "dotnet restore \"${{ inputs.solution }}\"",
             "dotnet build \"${{ inputs.solution }}\" --configuration Release --no-restore",
-            "dotnet test \"${{ inputs.solution }}\" --configuration Release --no-build --no-restore",
             "dotnet format \"${{ inputs.solution }}\" --verify-no-changes --no-restore",
+            "dotnet test \"${{ inputs.solution }}\" --configuration Release --no-build --no-restore",
             "dotnet list \"${{ inputs.solution }}\" package --vulnerable --include-transitive --no-restore",
         ];
 
