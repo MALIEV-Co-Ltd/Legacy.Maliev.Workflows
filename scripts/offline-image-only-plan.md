@@ -1,0 +1,9 @@
+# Offline image-only Deployment plan
+
+Dot-source `New-OfflineImageOnlyDeploymentPlan.ps1`, then call its matching function with `DeploymentJson`, `SourceCommit`, `ApprovedImageRepository`, and `ImageProof`. The only contract is `legacy-file-image-only/v1`. `ImageProof` is exactly a hashtable containing `sourceCommit`, `image`, and Boolean `approved=true`; the source is an exact lowercase 40-character commit and the image is the approved File repository followed by `@sha256:` and 64 lowercase hexadecimal characters.
+
+The supplied Deployment must be `apps/v1`, named `legacy-maliev-file` in `maliev-legacy`, using KSA `legacy-maliev-file`, with exactly one container named `legacy-maliev-file-service`. All containers must have unique names and nonempty images. Invalid or duplicate JSON names, foreign identities, unsupported contracts and ambiguous provenance fail with fixed messages that do not echo supplied content.
+
+The returned `Deployment` is a separately parsed copy with only the selected container's image changed. All other JSON values remain unchanged, including timestamp strings. PowerShell 7.5 or later is required for explicit string date parsing. `DeploymentAllowed` and `LiveAccepted` are always false. No native command, resource mutation, file write, image build or network adapter exists.
+
+The caller owns identity/token/IAM policy checks and must complete them before its controlled image construction and this transformation. Approval and source fields are supplied assertions; this helper does not authenticate a registry, source checkout, snapshot or live workload. Deployment/container names describe the dormant File plan, not an observed runtime Deployment. The inspected GitOps source has no File Deployment; a synthetic fixture establishes only offline contract behavior. This helper does not accept the six File runtime guards or authorize deployment.
