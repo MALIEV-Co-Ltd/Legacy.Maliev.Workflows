@@ -95,15 +95,6 @@ runs:
         fi
         dotnet build "${{ inputs.solution }}" --configuration Release --no-restore
 
-    - name: Test
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      run: |
-        if [[ "$USE_LOCAL_MALIEV_DEPENDENCIES" == "true" ]]; then
-          export GITHUB_ACTIONS=false
-        fi
-        dotnet test "${{ inputs.solution }}" --configuration Release --no-build --no-restore
-
     - name: Verify formatting
       shell: bash
       working-directory: ${{ inputs.working-directory }}
@@ -112,6 +103,15 @@ runs:
           export GITHUB_ACTIONS=false
         fi
         dotnet format "${{ inputs.solution }}" --verify-no-changes --no-restore
+
+    - name: Test
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [[ "$USE_LOCAL_MALIEV_DEPENDENCIES" == "true" ]]; then
+          export GITHUB_ACTIONS=false
+        fi
+        dotnet test "${{ inputs.solution }}" --configuration Release --no-build --no-restore
 
     - name: Audit vulnerable packages
       shell: bash
