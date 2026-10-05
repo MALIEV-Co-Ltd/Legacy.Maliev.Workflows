@@ -137,7 +137,12 @@ def prepare(*, workspace, runner_temp, repository, source_revision, results_dire
     settings = workspace/'coverage.runsettings'
     if settings.exists():
         data = read_owned(workspace, settings)
-        require(parse_xml(data).tag == 'RunSettings')
+        settings_xml = parse_xml(data)
+        require(settings_xml.tag == 'RunSettings')
+        safe_settings = {'RunSettings','DataCollectionRunSettings','DataCollectors','DataCollector','Configuration',
+                         'Format','ExcludeByFile','ExcludeByAttribute','Include','Exclude','SkipAutoProps','SingleHit',
+                         'UseSourceLink','IncludeTestAssembly'}
+        require(all(node.tag in safe_settings for node in settings_xml.iter()))
         retain('coverage.runsettings', data, digest(data), 'verbatim')
     binaries = {}
     for project in production_projects:

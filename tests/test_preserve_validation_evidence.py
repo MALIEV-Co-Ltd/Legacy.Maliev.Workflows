@@ -157,6 +157,10 @@ class RetentionTests(unittest.TestCase):
                 with self.assertRaises(evidence.EvidenceFailure): self.prepare()
         self.assertFalse(any(self.stage.glob('validation-evidence-*')))
 
+    def test_runsettings_cannot_smuggle_an_environment_dump_into_the_retained_artifact(self):
+        self.write('coverage.runsettings', b'<RunSettings><RunConfiguration><EnvironmentVariables><PRIVATE>private-canary</PRIVATE></EnvironmentVariables></RunConfiguration></RunSettings>')
+        with self.assertRaises(evidence.EvidenceFailure): self.prepare()
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

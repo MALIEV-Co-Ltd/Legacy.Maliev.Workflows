@@ -67,7 +67,7 @@ public sealed class ValidationEvidenceRetentionTests
 
         string diagnostics = await error;
         Assert.Equal(0, process.ExitCode);
-        Assert.Contains("Ran 12 tests", diagnostics, StringComparison.Ordinal);
+        Assert.Contains("Ran 13 tests", diagnostics, StringComparison.Ordinal);
         Assert.Contains("OK", diagnostics, StringComparison.Ordinal);
         Assert.DoesNotContain("skipped", diagnostics, StringComparison.Ordinal);
         Assert.Equal("", await output);
