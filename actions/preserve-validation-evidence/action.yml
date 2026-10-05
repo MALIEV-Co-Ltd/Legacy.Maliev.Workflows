@@ -1,0 +1,28 @@
+name: Preserve existing validation evidence
+description: Retain allowlisted runner evidence after the caller collector, without certifying coverage or test acceptance.
+inputs:
+  results-directory:
+    description: Relative caller results directory containing actual coverage XML and optional TRX.
+    required: true
+  production-projects:
+    description: Newline-separated reviewed production project names under the caller repository namespace.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Prepare allowlisted existing evidence
+      id: prepare
+      shell: bash
+      env:
+        RESULTS_DIRECTORY: ${{ inputs.results-directory }}
+        PRODUCTION_PROJECTS: ${{ inputs.production-projects }}
+      run: python3 "$GITHUB_ACTION_PATH/../../scripts/preserve_validation_evidence.py"
+    - name: Preserve complete or explicitly partial evidence
+      if: always() && steps.prepare.outputs.artifact-path != ''
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: validation-evidence-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}-${{ runner.os }}
+        path: ${{ steps.prepare.outputs.artifact-path }}
+        retention-days: 7
+        if-no-files-found: error
+        include-hidden-files: false
