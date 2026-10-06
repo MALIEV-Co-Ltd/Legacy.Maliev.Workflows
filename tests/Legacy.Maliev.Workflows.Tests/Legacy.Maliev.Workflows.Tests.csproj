@@ -19,4 +19,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../tools/additive-benchmark/Legacy.Maliev.AdditiveBenchmark.csproj" />
+  </ItemGroup>
+
 </Project>
