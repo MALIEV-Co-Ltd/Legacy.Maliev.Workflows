@@ -228,9 +228,11 @@ class SourceGuardTests(unittest.TestCase):
         with mock.patch.dict(os.environ, injected):
             self.assert_rejected('ORIGIN')
 
-    def bridge_fixture(self, body):
+    def bridge_fixture(self, body, *, read_request=True):
         fixture = self.root / 'native bridge fixture.py'
-        fixture.write_text('import json,sys,time\n' + body, encoding='utf-8')
+        # Normal protocol fixtures consume the request before replying or exiting.
+        request_read = 'json.loads(sys.stdin.buffer.read(8193))\n' if read_request else ''
+        fixture.write_text('import json,sys,time\n' + request_read + body, encoding='utf-8')
         harness = pathlib.Path(__file__).with_name('Invoke-OfflineSourceGuardFixture.ps1')
         result = subprocess.run(['pwsh', '-NoProfile', '-File', str(harness),
                                  '-SourceGuardScriptPath', str(MODULE.with_name('Assert-OfflineReleaseSource.ps1')),
@@ -282,7 +284,7 @@ class SourceGuardTests(unittest.TestCase):
 
     def test_actual_bridge_time_budget_kills_child_that_never_reads_stdin(self):
         started = time.monotonic()
-        proof = self.bridge_fixture('time.sleep(60)\n')
+        proof = self.bridge_fixture('time.sleep(60)\n', read_request=False)
         elapsed = time.monotonic() - started
         self.assertTrue(proof['rejected'])
         self.assertGreaterEqual(elapsed, 19)
