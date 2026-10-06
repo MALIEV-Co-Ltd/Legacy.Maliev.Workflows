@@ -50,7 +50,7 @@ def service_shape(service, step):
     require(valid_uid(service.get("selectorUid")), step)
 
 
-def run_handoff(application, source_commit, image_digest, tool, *, require_read_only_startup=False, startup_contract=None):
+def run_handoff(application, source_commit, image_digest, tool, *, require_read_only_startup=False, startup_contract=None, green_contract=None):
     """Execute reviewed logical operations through a caller-supplied boundary.
 
     This module cannot attest a real cluster, scheduler, image or consumer adoption.
@@ -60,6 +60,21 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
     require(isinstance(source_commit, str) and re.fullmatch(r"[0-9a-f]{40}", source_commit), "VERIFY_SOURCE")
     require(isinstance(image_digest, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", image_digest), "VERIFY_IMAGE")
     require(callable(tool) and type(require_read_only_startup) is bool, "SNAPSHOT")
+    green_arguments = None
+    green_metadata_plan = None
+    green_metadata_baseline = None
+    if green_contract is not None:
+        try:
+            spec = importlib.util.spec_from_file_location("legacy_workflows_green_metadata", Path(__file__).resolve().with_name("green_metadata.py"))
+            require(spec is not None and spec.loader is not None, "VERIFY_GREEN_SOURCE")
+            green_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(green_module)
+            MetadataRejected = green_module.MetadataRejected
+            plan_green_metadata = green_module.plan_green_metadata
+            verify_green_metadata = green_module.verify_green_metadata
+            green_arguments = green_module.contract_shape(application, green_contract)
+        except Exception:
+            raise HandoffFailure("VERIFY_GREEN_SOURCE") from None
     startup_plan = None
     startup_arguments = None
     if startup_contract is not None:
@@ -124,6 +139,13 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
             deployment_shape(deployment, step)
             require(canonical_started and baseline is not None and deployment["imageDigest"] in (baseline["imageDigest"], image_digest), step)
         service_shape(service, step)
+        if green_arguments is not None and require_healthy:
+            require("greenMetadata" in deployment, step)
+            if green_metadata_baseline is not None and not canonical_started:
+                try:
+                    verify_green_metadata(green_metadata_baseline, deployment["greenMetadata"])
+                except MetadataRejected:
+                    raise HandoffFailure(step) from None
         if startup_arguments is not None and require_healthy:
             require("startupProbe" in deployment, step)
             if startup_plan is not None:
@@ -170,6 +192,12 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         require(isinstance(settings, dict) and settings == ROLLOUT and all(type(v) is int for v in settings.values()), step)
         if target is green:
             require(receipt.get("runId") == run_id and receipt.get("standbyVerified") is True, step)
+            if green_metadata_plan is not None:
+                require("greenMetadataPlan" in receipt, step)
+                try:
+                    verify_green_metadata(green_metadata_plan, receipt["greenMetadataPlan"])
+                except MetadataRejected:
+                    raise HandoffFailure(step) from None
         if startup_plan is not None:
             require("startupProbe" in receipt, step)
             try:
@@ -195,6 +223,17 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
                 startup_plan = plan_startup_update(application=application, current_probe=baseline["startupProbe"], rollout=ROLLOUT, **startup_arguments)
             except StartupRejected:
                 raise HandoffFailure("SNAPSHOT") from None
+        if green_arguments is not None:
+            require("greenMetadata" in baseline, "SNAPSHOT")
+            if green_arguments["artifact"] == "maliev-materialservice-api":
+                require(startup_plan is not None, "SNAPSHOT")
+                require_read_only_startup = True
+            try:
+                green_metadata_baseline = copy.deepcopy(baseline["greenMetadata"])
+                green_metadata_plan = plan_green_metadata(green_arguments, green_metadata_baseline, image_digest,
+                    startup_probe=startup_plan["desiredProbe"] if startup_plan else None, read_only=require_read_only_startup)
+            except MetadataRejected:
+                raise HandoffFailure("SNAPSHOT") from None
         require(invoke("VERIFY_SOURCE").get("sourceCommit") == source_commit, "VERIFY_SOURCE")
         image = invoke("VERIFY_IMAGE")
         require(image.get("sourceCommit") == source_commit and image.get("imageDigest") == image_digest and image.get("immutable") is True, "VERIFY_IMAGE")
@@ -202,8 +241,16 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         capacity = invoke("RESERVE_CAPACITY", additionalSlots=temporary_slots, peakReplicas=baseline["replicas"] + temporary_slots)
         require(type(capacity.get("availableSlots")) is int and capacity["availableSlots"] >= temporary_slots and type(capacity.get("reservedSlots")) is int and capacity["reservedSlots"] == temporary_slots and valid_uid(capacity.get("reservationId")), "RESERVE_CAPACITY")
         reservation = capacity["reservationId"]
-        green = invoke("CREATE_GREEN", reservationId=reservation, replicas=baseline["replicas"], standby=True, rollout=ROLLOUT, **({"startupProbe": startup_plan["desiredProbe"]} if startup_plan else {}))
+        green = invoke("CREATE_GREEN", reservationId=reservation, replicas=baseline["replicas"], standby=True, rollout=ROLLOUT,
+            **({"startupProbe": startup_plan["desiredProbe"]} if startup_plan else {}),
+            **({"greenMetadataPlan": green_metadata_plan} if green_metadata_plan else {}))
         require(valid_uid(green.get("uid")) and green.get("uid") != baseline["uid"] and green.get("runId") == run_id and green.get("imageDigest") == image_digest, "CREATE_GREEN")
+        if green_metadata_plan is not None:
+            require("greenMetadataPlan" in green, "CREATE_GREEN")
+            try:
+                verify_green_metadata(green_metadata_plan, green["greenMetadataPlan"])
+            except MetadataRejected:
+                raise HandoffFailure("CREATE_GREEN") from None
         prove("VERIFY_GREEN", green)
         _, service = current(expected_selector="original", expected_image=baseline["imageDigest"])
         route("ROUTE_GREEN", service, "green")
@@ -211,8 +258,14 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         capacity = invoke("RECHECK_CAPACITY", reservationId=reservation, additionalSlots=1)
         require(capacity.get("reservationId") == reservation and type(capacity.get("availableSlots")) is int and capacity["availableSlots"] >= 1 and type(capacity.get("reservedSlots")) is int and capacity["reservedSlots"] == temporary_slots, "RECHECK_CAPACITY")
         _, service = current(expected_selector="green", expected_image=baseline["imageDigest"])
+        if green_metadata_plan is not None:
+            prove("VERIFY_GREEN", green)
         canonical_started = True  # An unsuccessful operation can still have applied.
-        invoke("MUTATE_CANONICAL", deploymentUid=baseline["uid"], expectedImage=baseline["imageDigest"], rollout=ROLLOUT, service=service, **({"startupProbe": startup_plan["desiredProbe"], "expectedStartupProbe": startup_plan["previousProbe"]} if startup_plan else {}))
+        invoke("MUTATE_CANONICAL", deploymentUid=baseline["uid"], expectedImage=baseline["imageDigest"], rollout=ROLLOUT, service=service,
+            **({"startupProbe": startup_plan["desiredProbe"], "expectedStartupProbe": startup_plan["previousProbe"]} if startup_plan else {}),
+            **({"greenDeploymentUid": green["uid"], "expectedGreenMetadataPlan": green_metadata_plan,
+                "expectedCanonicalMetadata": green_metadata_baseline, "expectedCanonicalReplicas": baseline["replicas"],
+                "expectedGreenReplicas": baseline["replicas"]} if green_metadata_plan else {}))
         prove("VERIFY_CANONICAL", baseline)
         _, service = current(expected_selector="green", expected_image=image_digest)
         route("ROUTE_CANONICAL", service, "original")
