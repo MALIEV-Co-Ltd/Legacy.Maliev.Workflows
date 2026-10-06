@@ -15,19 +15,21 @@ RESERVATION = "44444444-4444-4444-4444-444444444444"
 
 
 class FakeTools:
-    def __init__(self, fail=None, mutate=None):
+    def __init__(self, fail=None, mutate=None, replicas=1):
         self.events = []
+        self.requests = []
         self.fail = fail
         self.mutate = mutate
-        self.deployment = dict(uid=UID, imageDigest=OLD, replicas=1, ready=1, available=1, settingsSignature="original")
+        self.deployment = dict(uid=UID, imageDigest=OLD, replicas=replicas, ready=replicas, available=replicas, settingsSignature="original")
         self.service = dict(uid=SERVICE, resourceVersion="1", selector="original", selectorUid=UID, portsSignature="preserved")
         self.green = None
-        self.capacity = 2
+        self.capacity = replicas + 1
         self.reserved = 0
         self.states = []
 
     def __call__(self, step, request):
         self.events.append(step)
+        self.requests.append((step, copy.deepcopy(request)))
         receipt = {}
         if step in ("SNAPSHOT", "READ_CURRENT"):
             receipt = dict(deployment=copy.deepcopy(self.deployment), service=copy.deepcopy(self.service))
@@ -36,11 +38,12 @@ class FakeTools:
         elif step == "VERIFY_IMAGE":
             receipt = dict(sourceCommit=COMMIT, imageDigest=DIGEST, immutable=True)
         elif step in ("RESERVE_CAPACITY", "RECHECK_CAPACITY"):
-            receipt = dict(availableSlots=self.capacity, reservedSlots=2, reservationId=RESERVATION)
             if step == "RESERVE_CAPACITY":
-                self.reserved = 2
+                self.reserved = request["additionalSlots"]
+            receipt = dict(availableSlots=self.capacity, reservedSlots=self.reserved, reservationId=RESERVATION)
         elif step == "CREATE_GREEN":
-            self.green = dict(uid=GREEN, runId=request["runId"], imageDigest=DIGEST, replicas=1, ready=1, available=1, rollout=copy.deepcopy(request["rollout"]))
+            count = request["replicas"]
+            self.green = dict(uid=GREEN, runId=request["runId"], imageDigest=DIGEST, replicas=count, ready=count, available=count, rollout=copy.deepcopy(request["rollout"]))
             receipt = copy.deepcopy(self.green)
         elif step in ("VERIFY_GREEN", "VERIFY_CANONICAL", "VERIFY_FALLBACK"):
             item = self.deployment if step == "VERIFY_CANONICAL" else self.green
@@ -53,9 +56,9 @@ class FakeTools:
             receipt = copy.deepcopy(self.service)
         elif step in ("GREEN_HEALTH", "CANONICAL_HEALTH", "FINAL_HEALTH"):
             assert self.service["selector"] == ("green" if step == "GREEN_HEALTH" else "original")
-            receipt = dict(imageDigest=DIGEST, publicHealthy=True, endpointsVerified=True, observedSeconds=180)
+            receipt = dict(imageDigest=DIGEST, publicHealthy=True, endpointsVerified=True, observedSeconds=180, processRouteVerified=True, deploymentUid=self.service["selectorUid"])
         elif step == "MUTATE_CANONICAL":
-            assert self.service["selector"] == "green" and self.green["ready"] == 1
+            assert self.service["selector"] == "green" and self.green["ready"] == self.deployment["replicas"]
             self.deployment.update(imageDigest=DIGEST, settingsSignature="owned-rollout", rollout=copy.deepcopy(request["rollout"]))
             receipt = copy.deepcopy(self.deployment)
         elif step == "DRAIN_GREEN":
@@ -300,6 +303,87 @@ class PolicyTests(unittest.TestCase):
         tools.service["resourceVersion"] = "1" + "0" * 40
         receipt = self.run_policy(tools)
         self.assertEqual("CONTROLLED_HANDOFF_COMPLETED", receipt["status"])
+
+    def test_baseline_capacity_is_preserved_for_green_and_canonical(self):
+        for count in (1, 3, 10):
+            with self.subTest(replicas=count):
+                tools = FakeTools(replicas=count)
+                receipt = self.run_policy(tools)
+                requests = dict(tools.requests)
+                self.assertEqual("CONTROLLED_HANDOFF_COMPLETED", receipt["status"])
+                self.assertEqual(count, requests["CREATE_GREEN"]["replicas"])
+                self.assertEqual(count + 1, requests["RESERVE_CAPACITY"]["additionalSlots"])
+                self.assertEqual(2 * count + 1, requests["RESERVE_CAPACITY"]["peakReplicas"])
+                self.assertEqual(count, tools.deployment["replicas"])
+                self.assertTrue(all(s["originalReady"] == count and s["originalAvailable"] == count for s in tools.states))
+                self.assertEqual(GREEN, requests["GREEN_HEALTH"]["deploymentUid"])
+                self.assertEqual(UID, requests["CANONICAL_HEALTH"]["deploymentUid"])
+                self.assertEqual(UID, requests["FINAL_HEALTH"]["deploymentUid"])
+
+    def test_missing_false_or_foreign_process_route_proof_fails_at_actual_gate(self):
+        for phase in ("GREEN_HEALTH", "CANONICAL_HEALTH", "FINAL_HEALTH"):
+            for change in ({"processRouteVerified": None}, {"processRouteVerified": False}, {"processRouteVerified": "true"}, {"deploymentUid": SERVICE}):
+                with self.subTest(phase=phase, change=change):
+                    def fault(step, receipt, tools):
+                        if step == phase:
+                            receipt.update(change)
+                    tools = FakeTools(replicas=3, mutate=fault)
+                    with self.assertRaises(Exception) as caught:
+                        self.run_policy(tools)
+                    self.assertEqual(phase, caught.exception.step)
+                    self.assertEqual(1, caught.exception.exit_code)
+                    self.assertEqual(3, tools.deployment["replicas"])
+                    if phase == "GREEN_HEALTH":
+                        self.assertNotIn("MUTATE_CANONICAL", tools.events)
+                        self.assertEqual("original", tools.service["selector"])
+                    elif phase == "CANONICAL_HEALTH":
+                        self.assertNotIn("DRAIN_GREEN", tools.events)
+                        self.assertEqual("green", tools.service["selector"])
+                    else:
+                        self.assertTrue(caught.exception.fallback_blocked)
+                        self.assertNotIn("RELEASE_CAPACITY", tools.events)
+
+    def test_capacity_and_owned_replica_admission_rejects_without_original_scale_down(self):
+        for mode in ("unavailable", "short-reservation", "lost-reservation", "short-green"):
+            with self.subTest(mode=mode):
+                def fault(step, receipt, tools):
+                    if mode == "unavailable" and step == "RESERVE_CAPACITY":
+                        receipt["availableSlots"] = 3
+                    if mode == "short-reservation" and step == "RESERVE_CAPACITY":
+                        receipt["reservedSlots"] = 3
+                    if mode == "lost-reservation" and step == "RECHECK_CAPACITY":
+                        receipt["reservedSlots"] = 3
+                    if mode == "short-green" and step == "VERIFY_GREEN":
+                        receipt.update(replicas=1, ready=1, available=1)
+                tools = FakeTools(replicas=3, mutate=fault)
+                with self.assertRaises(Exception):
+                    self.run_policy(tools)
+                self.assertNotIn("MUTATE_CANONICAL", tools.events)
+                self.assertEqual(3, tools.deployment["replicas"])
+                self.assertEqual(3, tools.deployment["ready"])
+                self.assertEqual("original", tools.service["selector"])
+
+    def test_replica_inventory_bound_rejects_before_image_or_capacity_requests(self):
+        for count in (0, 11, True):
+            with self.subTest(replicas=count):
+                tools = FakeTools(replicas=count)
+                with self.assertRaises(Exception) as caught:
+                    self.run_policy(tools)
+                self.assertEqual("SNAPSHOT", caught.exception.step)
+                self.assertNotIn("VERIFY_IMAGE", tools.events)
+                self.assertNotIn("RESERVE_CAPACITY", tools.events)
+
+    def test_multi_replica_canonical_failure_retains_proven_owned_green_capacity(self):
+        tools = FakeTools(replicas=3, fail="CANONICAL_HEALTH")
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(tools)
+        self.assertEqual(73, caught.exception.exit_code)
+        self.assertFalse(caught.exception.fallback_blocked)
+        self.assertEqual("green", tools.service["selector"])
+        self.assertEqual(3, tools.green["ready"])
+        self.assertEqual(3, tools.green["replicas"])
+        self.assertEqual(4, tools.reserved)
+        self.assertNotIn("DRAIN_GREEN", tools.events)
 
 
 if __name__ == "__main__":
