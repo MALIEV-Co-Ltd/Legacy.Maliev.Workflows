@@ -21,3 +21,37 @@ jobs:
     with:
       working-directory: tools/analytics/WireFixtures
       solution: WireFixtures.csproj
+
+  analytics-wire:
+    name: analytics wire fixtures and verifier
+    needs: [validate, scanner-caller-subdirectory]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-analytics-wire
+      cancel-in-progress: true
+    env:
+      DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
+      MSBUILDDISABLENODEREUSE: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Check out caller repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build synthetic wire fixture generator
+        run: dotnet build tools/analytics/WireFixtures/WireFixtures.csproj --configuration Release --disable-build-servers -m:1 /p:UseSharedCompilation=false /nr:false
+
+      - name: Verify all nine synthetic fixture snapshots
+        run: dotnet run --no-build --no-restore --configuration Release --project tools/analytics/WireFixtures -- --verify tools/analytics/fixtures
+
+      - name: Test analytics receipts and producer proof verifier
+        run: python3 -B -W error -m unittest discover -s tools/analytics/tests -p 'test_*.py' -v

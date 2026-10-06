@@ -22,9 +22,13 @@ public sealed class CurrentTreeCredentialScannerTests
         string expression = Scalar(concurrency, "group");
         Assert.Equal("true", Scalar(concurrency, "cancel-in-progress"));
         YamlMappingNode callers = (YamlMappingNode)Read(".github/workflows/validate.yml").Children[new YamlScalarNode("jobs")];
+        Assert.Equal(2, callers.Children.Values.Cast<YamlMappingNode>()
+            .Count(caller => Scalar(caller, "uses") == "./.github/workflows/dotnet-validate.yml"));
         List<string> groups = [];
-        foreach (YamlMappingNode caller in callers.Children.Values.Cast<YamlMappingNode>())
+        foreach (string callerName in new[] { "validate", "scanner-caller-subdirectory" })
         {
+            YamlMappingNode caller = Assert.IsType<YamlMappingNode>(callers.Children[new YamlScalarNode(callerName)]);
+            Assert.Equal("./.github/workflows/dotnet-validate.yml", Scalar(caller, "uses"));
             YamlMappingNode inputs = (YamlMappingNode)caller.Children[new YamlScalarNode("with")];
             string directory = Scalar(inputs, "working-directory");
             if (directory.Length == 0) { directory = "."; }
