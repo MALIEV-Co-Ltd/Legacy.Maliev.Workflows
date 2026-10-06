@@ -34,6 +34,35 @@ function New-OfflineImageOnlyDeploymentPlan {
             foreach ($item in $Element.EnumerateArray()) { Assert-UniqueJsonNames $item }
         }
     }
+    # Resource-free metadata admission for the selected existing container. Keep
+    # values and array shapes intact; optional probes are not new-green creation.
+    function Assert-CopyableContainerMetadata([Collections.IDictionary]$Container) {
+        foreach ($probe in @('readinessProbe', 'livenessProbe', 'startupProbe')) {
+            $definition = $Container[$probe]
+            if ($null -eq $definition) { continue }
+            if ($definition -isnot [Collections.IDictionary]) { throw 'Invalid probe metadata.' }
+            $allowed = @('httpGet', 'tcpSocket', 'grpc', 'initialDelaySeconds', 'timeoutSeconds', 'periodSeconds', 'successThreshold', 'failureThreshold', 'terminationGracePeriodSeconds')
+            $actions = @(@('httpGet', 'tcpSocket', 'grpc') | Where-Object { $definition.Contains($_) })
+            if ($actions.Count -ne 1 -or @($definition.Keys | Where-Object { $_ -cnotin $allowed }).Count -ne 0) { throw 'Invalid probe metadata.' }
+            $handler = $definition[$actions[0]]
+            if ($handler -isnot [Collections.IDictionary]) { throw 'Invalid probe metadata.' }
+            $handlerFields = switch ($actions[0]) {
+                'httpGet' { @('path', 'port', 'host', 'scheme') }
+                'tcpSocket' { @('port', 'host') }
+                'grpc' { @('port', 'service') }
+            }
+            if (-not $handler.Contains('port') -or @($handler.Keys | Where-Object { $_ -cnotin $handlerFields }).Count -ne 0) { throw 'Invalid probe metadata.' }
+        }
+        if ($null -eq $Container['env']) { return }
+        if ($Container['env'] -isnot [array]) { throw 'Invalid environment metadata.' }
+        foreach ($entry in $Container['env']) {
+            if ($entry -isnot [Collections.IDictionary]) { throw 'Invalid environment metadata.' }
+            if (-not $entry.Contains('valueFrom')) { continue }
+            $reference = $entry['valueFrom']
+            if ($reference -isnot [Collections.IDictionary] -or $reference.Count -ne 1 -or
+                @($reference.Keys | Where-Object { $_ -cnotin @('secretKeyRef', 'configMapKeyRef', 'fieldRef', 'resourceFieldRef') }).Count -ne 0) { throw 'Invalid configuration reference metadata.' }
+        }
+    }
     $document = $null
     try {
         if ($DeploymentJson.Length -gt 1048576) { throw 'Document too large.' }
@@ -54,6 +83,7 @@ function New-OfflineImageOnlyDeploymentPlan {
         }
         $selected = @($containers | Where-Object { $_.name -ceq 'legacy-maliev-file-service' })
         if ($selected.Count -ne 1) { throw 'Missing target container.' }
+        Assert-CopyableContainerMetadata $selected[0]
     } catch { throw 'Offline image plan existing Deployment is invalid.' }
     finally { if ($null -ne $document) { $document.Dispose() } }
     $selected[0].image = $ImageProof.image
