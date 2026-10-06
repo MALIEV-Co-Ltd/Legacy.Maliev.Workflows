@@ -11,3 +11,5 @@ Include a concise impact description, affected workflow or script, reproduction 
 ## Supported versions
 
 Only the latest commit on the protected default branch is supported. Shared workflow consumers must pin an audited full commit SHA so that updates are explicit and reviewable.
+
+See [provider credential configuration and release gates](docs/provider-credential-deployment-gates.md) for the external Brevo configuration mapping, tracked-resource inspection contracts, and separately authorized release and rotation sequence.
