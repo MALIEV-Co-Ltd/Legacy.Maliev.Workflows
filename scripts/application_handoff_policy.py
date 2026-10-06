@@ -31,7 +31,7 @@ def valid_uid(value):
 def deployment_shape(deployment, step):
     require(isinstance(deployment, dict) and valid_uid(deployment.get("uid")), step)
     count = deployment.get("replicas")
-    require(type(count) is int and 1 <= count <= 1000, step)
+    require(type(count) is int and 1 <= count <= 10, step)
     require(type(deployment.get("ready")) is int and type(deployment.get("available")) is int and 0 <= deployment["ready"] <= count and 0 <= deployment["available"] <= count, step)
     require(isinstance(deployment.get("imageDigest"), str) and re.fullmatch(r"sha256:[0-9a-f]{64}", deployment["imageDigest"]), step)
 
@@ -132,8 +132,7 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         receipt = invoke(step, deploymentUid=target["uid"])
         healthy(receipt, step)
         require(receipt["uid"] == target["uid"] and receipt["imageDigest"] == image_digest and receipt.get("processVerified") is True, step)
-        expected_replicas = 1 if target is green else baseline["replicas"]
-        require(receipt["replicas"] == expected_replicas, step)
+        require(receipt["replicas"] == baseline["replicas"], step)
         settings = receipt.get("rollout")
         require(isinstance(settings, dict) and settings == ROLLOUT and all(type(v) is int for v in settings.values()), step)
         if target is green:
@@ -143,8 +142,10 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         return receipt
 
     def observe(step):
-        receipt = invoke(step, minimumSeconds=180)
-        require(receipt.get("imageDigest") == image_digest and receipt.get("publicHealthy") is True and receipt.get("endpointsVerified") is True, step)
+        target = green if step == "GREEN_HEALTH" else baseline
+        receipt = invoke(step, minimumSeconds=180, deploymentUid=target["uid"])
+        require(receipt.get("imageDigest") == image_digest and receipt.get("publicHealthy") is True and receipt.get("endpointsVerified") is True
+                and receipt.get("processRouteVerified") is True and receipt.get("deploymentUid") == target["uid"], step)
         seconds = receipt.get("observedSeconds")
         require(type(seconds) is int and 180 <= seconds <= 3600, step)
 
@@ -153,17 +154,18 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         require(invoke("VERIFY_SOURCE").get("sourceCommit") == source_commit, "VERIFY_SOURCE")
         image = invoke("VERIFY_IMAGE")
         require(image.get("sourceCommit") == source_commit and image.get("imageDigest") == image_digest and image.get("immutable") is True, "VERIFY_IMAGE")
-        capacity = invoke("RESERVE_CAPACITY", additionalSlots=2, peakReplicas=baseline["replicas"] + 2)
-        require(type(capacity.get("availableSlots")) is int and capacity["availableSlots"] >= 2 and type(capacity.get("reservedSlots")) is int and capacity["reservedSlots"] == 2 and valid_uid(capacity.get("reservationId")), "RESERVE_CAPACITY")
+        temporary_slots = baseline["replicas"] + ROLLOUT["maxSurge"]
+        capacity = invoke("RESERVE_CAPACITY", additionalSlots=temporary_slots, peakReplicas=baseline["replicas"] + temporary_slots)
+        require(type(capacity.get("availableSlots")) is int and capacity["availableSlots"] >= temporary_slots and type(capacity.get("reservedSlots")) is int and capacity["reservedSlots"] == temporary_slots and valid_uid(capacity.get("reservationId")), "RESERVE_CAPACITY")
         reservation = capacity["reservationId"]
-        green = invoke("CREATE_GREEN", reservationId=reservation, replicas=1, standby=True, rollout=ROLLOUT)
+        green = invoke("CREATE_GREEN", reservationId=reservation, replicas=baseline["replicas"], standby=True, rollout=ROLLOUT)
         require(valid_uid(green.get("uid")) and green.get("uid") != baseline["uid"] and green.get("runId") == run_id and green.get("imageDigest") == image_digest, "CREATE_GREEN")
         prove("VERIFY_GREEN", green)
         _, service = current(expected_selector="original", expected_image=baseline["imageDigest"])
         route("ROUTE_GREEN", service, "green")
         observe("GREEN_HEALTH")
         capacity = invoke("RECHECK_CAPACITY", reservationId=reservation, additionalSlots=1)
-        require(capacity.get("reservationId") == reservation and type(capacity.get("availableSlots")) is int and capacity["availableSlots"] >= 1 and type(capacity.get("reservedSlots")) is int and capacity["reservedSlots"] == 2, "RECHECK_CAPACITY")
+        require(capacity.get("reservationId") == reservation and type(capacity.get("availableSlots")) is int and capacity["availableSlots"] >= 1 and type(capacity.get("reservedSlots")) is int and capacity["reservedSlots"] == temporary_slots, "RECHECK_CAPACITY")
         _, service = current(expected_selector="green", expected_image=baseline["imageDigest"])
         canonical_started = True  # An unsuccessful operation can still have applied.
         invoke("MUTATE_CANONICAL", deploymentUid=baseline["uid"], expectedImage=baseline["imageDigest"], rollout=ROLLOUT, service=service)
