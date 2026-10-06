@@ -6,7 +6,18 @@ namespace Legacy.Maliev.Workflows.Tests;
 public sealed class OfflineImageOnlyPlanTests
 {
     [Fact]
+    public async Task OfflinePlan_AdmitsOptionalProbeShapesAndPreservesSingletonMetadata()
+    {
+        await RunScenarios("OfflineImageMetadataScenarios.ps1", "offline-image-metadata-controls:35 passed");
+    }
+
+    [Fact]
     public async Task OfflinePlan_PreservesOtherFieldsAndRejectsForeignIdentityAndProvenance()
+    {
+        await RunScenarios("OfflineImageOnlyPlanScenarios.ps1", "offline-image-only-controls:25 passed");
+    }
+
+    private static async Task RunScenarios(string script, string expected)
     {
         string root = RepositoryContractTests.FindRepositoryRoot();
         ProcessStartInfo start = new("pwsh")
@@ -18,7 +29,7 @@ public sealed class OfflineImageOnlyPlanTests
         };
         start.ArgumentList.Add("-NoProfile");
         start.ArgumentList.Add("-File");
-        start.ArgumentList.Add(Path.Combine(root, "tests", "OfflineImageOnlyPlanScenarios.ps1"));
+        start.ArgumentList.Add(Path.Combine(root, "tests", script));
         start.ArgumentList.Add("-RepositoryRoot");
         start.ArgumentList.Add(root);
         using Process process = new() { StartInfo = start };
@@ -32,7 +43,7 @@ public sealed class OfflineImageOnlyPlanTests
             await process.WaitForExitAsync(budget.Token);
             await Task.WhenAll(output, error).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
             Assert.True(process.ExitCode == 0, await error);
-            Assert.Contains("offline-image-only-controls:25 passed", await output);
+            Assert.Contains(expected, await output);
         }
         finally
         {
