@@ -70,10 +70,14 @@ Cross-stage funnel ratios are unsupported because the cohorts differ.
 The quotation fixture shape matches the canonical .NET 10
 `Legacy.Maliev.QuotationService` DTO and System.Text.Json settings. The invoice
 fixture preserves the approved source contract, but
-`Legacy.Maliev.AccountingService` does not yet expose the corresponding
-paid-invoice outcome DTO or route. The fixture harness therefore owns an
-explicit local contract model and must be updated when that producer boundary
-lands; passing fixture verification is not deployed invoice-readback evidence.
+`Legacy.Maliev.AccountingService` now owns the paid-invoice outcome DTO.
+The local fixture harness retains an explicit contract copy; its verification
+alone does not prove producer serialization or deployed invoice-readback behavior.
+Use the separately approved producer wire receipts described below to verify
+all nine synthetic quotation, invoice and qualification fixture bytes.
+Invoice day vectors now use UTC `Z` values to match the actual Accounting
+serializer; the historical local Unspecified-date vectors are explicitly
+adapted, with fixture names, counts and amounts retained.
 The qualification fixture matches the authenticated Intranet BFF readback and
 QuotationRequestService current-projection contract. These fixtures are synthetic
 and do not prove that a live, authorized receipt has been collected.
@@ -90,3 +94,33 @@ git diff --check
 
 Use `--write` only for a reviewed producer-wire change. No collection,
 deployment or campaign-performance claim is configured here.
+
+## Producer wire evidence
+
+`verify_producer_wire.py` requires two externally supplied producer receipts
+and a Root-reviewed approval file, whose exact SHA-256 is supplied separately.
+It retains the seven quotation/invoice fixtures and also checks qualification
+empty/mixed. Every fixture's exact UTF-8 bytes must match its producer receipt.
+The null-currency invoice fixture remains a deliberate rejected control.
+Native producer bytes take precedence over local generator snapshots. Any
+field-order, decimal-scale or newline difference requires an explicit reviewed
+fixture adaptation; never rewrite producer output to meet copied hashes.
+
+Quotation owns five fixtures and Accounting owns four. Each native producer
+witness must serialize its actual production DTO using its actual route/service
+JSON settings. The producer receipt binds repository, full commit, native run,
+DTO and serializer source hashes, and every emitted fixture hash. See
+`producer-wire-proof.md` for the v1 contract. Missing or changed approved
+evidence exits two with an opaque unavailable result. No network request,
+private source checkout or credential access is made by the verifier.
+
+```powershell
+python tools/analytics/verify_producer_wire.py --approval <reviewed-pins.json> --approval-sha256 <reviewed-file-sha256> --receipts <synthetic-receipts-directory>
+```
+
+The caller must obtain the approval digest from trusted Root review. Passing
+these local checks establishes equality with that approved synthetic proof;
+it does not authenticate a self-created receipt, verify a live CI run, prove
+deployed readback, accept a source-wide migration or infer customer/Ads outcomes.
+Private producer source and non-synthetic receipts must stay outside this public
+repository. Native producer and BFF proofs stay with their existing owners.
