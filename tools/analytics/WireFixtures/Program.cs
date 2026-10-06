@@ -10,6 +10,11 @@ JsonSerializerOptions settings = new()
 DateTime from = new(2026, 8, 25, 17, 0, 0, DateTimeKind.Utc);
 DateTime to = from.AddDays(7);
 DateTime day = new(2026, 8, 26, 0, 0, 0, DateTimeKind.Unspecified);
+DateTime invoiceDay = DateTime.SpecifyKind(day, DateTimeKind.Utc);
+JsonSerializerOptions qualificationSettings = new(JsonSerializerDefaults.Web)
+{
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+};
 QuotationOutcomeReadback quote = new(from, to, []);
 PaidInvoiceOutcomeReadback invoice = new(from, to, []);
 SortedDictionary<string, string> fixtures = [];
@@ -20,7 +25,7 @@ void Add(string name, object value) =>
 Add("quotation-empty.json", quote);
 Add("invoice-empty.json", invoice);
 quote = quote with { Days = [new(day, 0, 0, 0, 0, 0, 0, [])] };
-invoice = invoice with { Days = [new(day, 0, 0, 0, [])] };
+invoice = invoice with { Days = [new(invoiceDay, 0, 0, 0, [])] };
 Add("quotation-zero.json", quote);
 Add("invoice-zero.json", invoice);
 quote = quote with
@@ -42,16 +47,30 @@ invoice = invoice with
 {
     Days =
     [
-        new(day, 3, 1, 2, [new("THB", 120.5000m, 2), new("USD", 25.01m, 1)]),
+        new(invoiceDay, 3, 1, 2, [new("THB", 120.5000m, 2), new("USD", 25.01m, 1)]),
     ],
 };
 Add("quotation-mixed.json", quote);
 Add("invoice-mixed.json", invoice);
 invoice = invoice with
 {
-    Days = [new(day, 1, 0, 1, [new(null, 0.0m, 1)])],
+    Days = [new(invoiceDay, 1, 0, 1, [new(null, 0.0m, 1)])],
 };
 Add("invoice-null-currency.json", invoice);
+
+
+// Synthetic local fixture models are not producer acceptance evidence.
+// The external approved producer receipts independently bind all nine outputs.
+fixtures.Add("qualification-empty.json", JsonSerializer.Serialize(
+    new QualificationOutcomeReadback(from, to, []), qualificationSettings) + "\n");
+fixtures.Add("qualification-mixed.json", JsonSerializer.Serialize(
+    new QualificationOutcomeReadback(from, to,
+    [
+        new(41, invoiceDay.AddHours(1), "request-41", new Guid("11111111-2222-3333-4444-555555555555"), "qualified"),
+        new(42, invoiceDay.AddHours(2), null, null, "unreviewed"),
+        new(43, invoiceDay.AddHours(3), "request-43", new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), "not_qualified"),
+        new(44, invoiceDay.AddHours(4), null, null, "qualified"),
+    ]), qualificationSettings) + "\n");
 
 if (args.Length != 2 || (args[0] != "--write" && args[0] != "--verify"))
 {
@@ -117,3 +136,15 @@ internal sealed record PaidInvoiceAmountByCurrency(
     string? Currency,
     decimal PaidInvoiceTotal,
     int PaidInvoiceCount);
+
+internal sealed record QualificationOutcomeReadback(
+    DateTime FromUtc,
+    DateTime ToUtc,
+    IReadOnlyList<QualificationOutcomeReadbackRequest> Requests);
+
+internal sealed record QualificationOutcomeReadbackRequest(
+    int RequestId,
+    DateTime CreatedUtc,
+    string? TransactionId,
+    Guid? JourneyId,
+    string State);
