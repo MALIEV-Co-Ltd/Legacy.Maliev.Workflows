@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="tools/additive-benchmark/Legacy.Maliev.AdditiveBenchmark.csproj" />
   <Project Path="tools/analytics/WireFixtures/WireFixtures.csproj" />
   <Project Path="tests/Legacy.Maliev.Workflows.Tests/Legacy.Maliev.Workflows.Tests.csproj" />
 </Solution>
