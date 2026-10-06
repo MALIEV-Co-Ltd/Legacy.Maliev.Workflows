@@ -3,6 +3,8 @@ import copy
 import json
 import re
 import uuid
+import importlib.util
+from pathlib import Path
 
 STEPS = frozenset({"SNAPSHOT", "VERIFY_SOURCE", "VERIFY_IMAGE", "RESERVE_CAPACITY", "RECHECK_CAPACITY", "CREATE_GREEN", "VERIFY_GREEN", "READ_CURRENT", "ROUTE_GREEN", "GREEN_HEALTH", "MUTATE_CANONICAL", "VERIFY_CANONICAL", "ROUTE_CANONICAL", "CANONICAL_HEALTH", "DRAIN_GREEN", "FINAL_HEALTH", "RELEASE_CAPACITY", "ROLLBACK_SELECTOR", "VERIFY_FALLBACK", "FALLBACK_SELECTOR"})
 ROLLOUT = dict(minReadySeconds=90, drainSeconds=60, terminationGracePeriodSeconds=90, maxSurge=1, maxUnavailable=0)
@@ -48,7 +50,7 @@ def service_shape(service, step):
     require(valid_uid(service.get("selectorUid")), step)
 
 
-def run_handoff(application, source_commit, image_digest, tool, *, require_read_only_startup=False):
+def run_handoff(application, source_commit, image_digest, tool, *, require_read_only_startup=False, startup_contract=None):
     """Execute reviewed logical operations through a caller-supplied boundary.
 
     This module cannot attest a real cluster, scheduler, image or consumer adoption.
@@ -58,6 +60,29 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
     require(isinstance(source_commit, str) and re.fullmatch(r"[0-9a-f]{40}", source_commit), "VERIFY_SOURCE")
     require(isinstance(image_digest, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", image_digest), "VERIFY_IMAGE")
     require(callable(tool) and type(require_read_only_startup) is bool, "SNAPSHOT")
+    startup_plan = None
+    startup_arguments = None
+    if startup_contract is not None:
+        require(type(startup_contract) is dict and set(startup_contract) == {"target_application", "source_sha", "endpoint", "source_probe"}, "VERIFY_STARTUP_SOURCE")
+        # Existing callers load this file directly with spec_from_file_location
+        # and do not place scripts/ on sys.path. Bind only the trusted sibling
+        # module; leave default callers free of the optional module dependency.
+        try:
+            spec = importlib.util.spec_from_file_location("legacy_workflows_startup_protection", Path(__file__).resolve().with_name("startup_protection.py"))
+            require(spec is not None and spec.loader is not None, "VERIFY_STARTUP_SOURCE")
+            startup_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(startup_module)
+            StartupRejected = startup_module.StartupRejected
+            plan_startup_update = startup_module.plan_startup_update
+            verify_startup_readback = startup_module.verify_startup_readback
+        except Exception:
+            raise HandoffFailure("VERIFY_STARTUP_SOURCE") from None
+        try:
+            admitted = plan_startup_update(application=application, current_probe=None, rollout=ROLLOUT, **startup_contract)
+            if admitted["changed"]:
+                startup_arguments = copy.deepcopy(startup_contract)
+        except StartupRejected:
+            raise HandoffFailure("VERIFY_STARTUP_SOURCE") from None
     run_id = uuid.uuid4().hex
     context = dict(application=application, sourceCommit=source_commit, imageDigest=image_digest, runId=run_id)
     canonical_started = False
@@ -99,6 +124,14 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
             deployment_shape(deployment, step)
             require(canonical_started and baseline is not None and deployment["imageDigest"] in (baseline["imageDigest"], image_digest), step)
         service_shape(service, step)
+        if startup_arguments is not None and require_healthy:
+            require("startupProbe" in deployment, step)
+            if startup_plan is not None:
+                stage = "canonical" if canonical_started else "preflight"
+                try:
+                    verify_startup_readback(startup_plan, deployment["startupProbe"], stage)
+                except StartupRejected:
+                    raise HandoffFailure(step) from None
         if baseline is not None:
             require(deployment["uid"] == baseline["uid"] and deployment["replicas"] == baseline["replicas"], step)
             require(service["uid"] == original_service["uid"] and service["portsSignature"] == original_service["portsSignature"], step)
@@ -112,7 +145,7 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
             require(service["selectorUid"] == target_uid, step)
         if expected_image is not None:
             require(deployment["imageDigest"] == expected_image, step)
-            if expected_image == baseline["imageDigest"]:
+            if expected_image == baseline["imageDigest"] and not canonical_started:
                 require(deployment.get("settingsSignature") == baseline.get("settingsSignature"), step)
         return deployment, service
 
@@ -137,6 +170,12 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         require(isinstance(settings, dict) and settings == ROLLOUT and all(type(v) is int for v in settings.values()), step)
         if target is green:
             require(receipt.get("runId") == run_id and receipt.get("standbyVerified") is True, step)
+        if startup_plan is not None:
+            require("startupProbe" in receipt, step)
+            try:
+                verify_startup_readback(startup_plan, receipt["startupProbe"], "canonical" if target is baseline else "green")
+            except StartupRejected:
+                raise HandoffFailure(step) from None
         if require_read_only_startup:
             require(receipt.get("readOnlyStartupVerified") is True, step)
         return receipt
@@ -151,6 +190,11 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
 
     try:
         baseline, original_service = current("SNAPSHOT", expected_selector="original")
+        if startup_arguments is not None:
+            try:
+                startup_plan = plan_startup_update(application=application, current_probe=baseline["startupProbe"], rollout=ROLLOUT, **startup_arguments)
+            except StartupRejected:
+                raise HandoffFailure("SNAPSHOT") from None
         require(invoke("VERIFY_SOURCE").get("sourceCommit") == source_commit, "VERIFY_SOURCE")
         image = invoke("VERIFY_IMAGE")
         require(image.get("sourceCommit") == source_commit and image.get("imageDigest") == image_digest and image.get("immutable") is True, "VERIFY_IMAGE")
@@ -158,7 +202,7 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         capacity = invoke("RESERVE_CAPACITY", additionalSlots=temporary_slots, peakReplicas=baseline["replicas"] + temporary_slots)
         require(type(capacity.get("availableSlots")) is int and capacity["availableSlots"] >= temporary_slots and type(capacity.get("reservedSlots")) is int and capacity["reservedSlots"] == temporary_slots and valid_uid(capacity.get("reservationId")), "RESERVE_CAPACITY")
         reservation = capacity["reservationId"]
-        green = invoke("CREATE_GREEN", reservationId=reservation, replicas=baseline["replicas"], standby=True, rollout=ROLLOUT)
+        green = invoke("CREATE_GREEN", reservationId=reservation, replicas=baseline["replicas"], standby=True, rollout=ROLLOUT, **({"startupProbe": startup_plan["desiredProbe"]} if startup_plan else {}))
         require(valid_uid(green.get("uid")) and green.get("uid") != baseline["uid"] and green.get("runId") == run_id and green.get("imageDigest") == image_digest, "CREATE_GREEN")
         prove("VERIFY_GREEN", green)
         _, service = current(expected_selector="original", expected_image=baseline["imageDigest"])
@@ -168,7 +212,7 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         require(capacity.get("reservationId") == reservation and type(capacity.get("availableSlots")) is int and capacity["availableSlots"] >= 1 and type(capacity.get("reservedSlots")) is int and capacity["reservedSlots"] == temporary_slots, "RECHECK_CAPACITY")
         _, service = current(expected_selector="green", expected_image=baseline["imageDigest"])
         canonical_started = True  # An unsuccessful operation can still have applied.
-        invoke("MUTATE_CANONICAL", deploymentUid=baseline["uid"], expectedImage=baseline["imageDigest"], rollout=ROLLOUT, service=service)
+        invoke("MUTATE_CANONICAL", deploymentUid=baseline["uid"], expectedImage=baseline["imageDigest"], rollout=ROLLOUT, service=service, **({"startupProbe": startup_plan["desiredProbe"], "expectedStartupProbe": startup_plan["previousProbe"]} if startup_plan else {}))
         prove("VERIFY_CANONICAL", baseline)
         _, service = current(expected_selector="green", expected_image=image_digest)
         route("ROUTE_CANONICAL", service, "original")
@@ -184,6 +228,9 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         return dict(status="CONTROLLED_HANDOFF_COMPLETED", sourceCommit=source_commit, imageDigest=image_digest, runId=run_id, runtimeAccepted=False, consumerAdoptionAccepted=False)
     except HandoffFailure as failure:
         failure.canonical_mutation_started = canonical_started
+        if startup_plan is not None:
+            failure.startup_rollback_available = True
+            failure.previous_startup_probe = copy.deepcopy(startup_plan["previousProbe"])
         failure.green_uid = green.get("uid") if green else None
         failure.run_id = run_id
         if baseline is not None:
