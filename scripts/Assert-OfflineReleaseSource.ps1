@@ -27,16 +27,40 @@ function Assert-OfflineReleaseSource {
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $start
     $started = $false
+    $stdout = [IO.MemoryStream]::new()
     try {
         $started = $process.Start()
-        $output = $process.StandardOutput.ReadToEndAsync()
-        $errorOutput = $process.StandardError.ReadToEndAsync()
-        $process.StandardInput.Write($request)
-        $process.StandardInput.Close()
-        if (-not $process.WaitForExit(20000)) { throw 'Source observation timed out.' }
-        $text = $output.GetAwaiter().GetResult()
-        $errorText = $errorOutput.GetAwaiter().GetResult()
-        if ($process.ExitCode -ne 0 -or $errorText.Length -ne 0 -or $text.Length -gt 2048) { throw 'Source observation rejected.' }
+        $clock = [Diagnostics.Stopwatch]::StartNew()
+        $streams = @(
+            @{ Pipe = $process.StandardOutput.BaseStream; Buffer = [byte[]]::new(4096); Limit = 2048; Bytes = 0; Done = $false; Read = $null; Keep = $true },
+            @{ Pipe = $process.StandardError.BaseStream; Buffer = [byte[]]::new(4096); Limit = 16384; Bytes = 0; Done = $false; Read = $null; Keep = $false }
+        )
+        foreach ($stream in $streams) { $stream.Read = $stream.Pipe.ReadAsync($stream.Buffer, 0, $stream.Buffer.Length) }
+        # An unresponsive child must not block stdin before output draining starts.
+        $process.StandardInput.AutoFlush = $true
+        $inputWrite = $process.StandardInput.WriteAsync($request)
+        $inputClosed = $false
+        while (-not $process.HasExited -or @($streams | Where-Object { -not $_.Done }).Count -ne 0 -or -not $inputClosed) {
+            if ($clock.ElapsedMilliseconds -ge 20000) { throw 'Source observation timed out.' }
+            if (-not $inputClosed -and $inputWrite.IsCompleted) {
+                $null = $inputWrite.GetAwaiter().GetResult()
+                $process.StandardInput.Close()
+                $inputClosed = $true
+            }
+            foreach ($stream in $streams) {
+                if ($stream.Done -or -not $stream.Read.IsCompleted) { continue }
+                $count = $stream.Read.GetAwaiter().GetResult()
+                if ($count -eq 0) { $stream.Done = $true; continue }
+                $stream.Bytes += $count
+                if ($stream.Bytes -gt $stream.Limit) { throw 'Source observation output exceeded its bound.' }
+                if ($stream.Keep) { $stdout.Write($stream.Buffer, 0, $count) }
+                # Stderr is bounded and discarded, never joined to stdout or decoded.
+                $stream.Read = $stream.Pipe.ReadAsync($stream.Buffer, 0, $stream.Buffer.Length)
+            }
+            [Threading.Thread]::Sleep(5)
+        }
+        if ($process.ExitCode -ne 0) { throw 'Source observation rejected.' }
+        $text = [Text.UTF8Encoding]::new($false, $true).GetString($stdout.ToArray())
         $proof = ConvertFrom-Json -InputObject $text -AsHashtable -ErrorAction Stop
         if ($proof.Count -ne 7 -or $proof.schemaVersion -cne 'offline-release-source/v1' -or
             $proof.sourceCommit -cne $ExpectedSourceCommit -or
@@ -53,5 +77,6 @@ function Assert-OfflineReleaseSource {
     } finally {
         if ($started -and -not $process.HasExited) { $process.Kill($true) }
         $process.Dispose()
+        $stdout.Dispose()
     }
 }
