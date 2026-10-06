@@ -6,6 +6,8 @@ import unittest
 from unittest import mock
 import sys
 import os
+import json
+import time
 
 MODULE = pathlib.Path(__file__).resolve().parents[1] / 'scripts/offline_release_source.py'
 
@@ -225,6 +227,66 @@ class SourceGuardTests(unittest.TestCase):
         injected = {'GIT_CONFIG_COUNT': '1', 'GIT_CONFIG_KEY_0': 'url.' + self.url + '.insteadOf', 'GIT_CONFIG_VALUE_0': foreign_url}
         with mock.patch.dict(os.environ, injected):
             self.assert_rejected('ORIGIN')
+
+    def bridge_fixture(self, body):
+        fixture = self.root / 'native bridge fixture.py'
+        fixture.write_text('import json,sys,time\n' + body, encoding='utf-8')
+        harness = pathlib.Path(__file__).with_name('Invoke-OfflineSourceGuardFixture.ps1')
+        result = subprocess.run(['pwsh', '-NoProfile', '-File', str(harness),
+                                 '-SourceGuardScriptPath', str(MODULE.with_name('Assert-OfflineReleaseSource.ps1')),
+                                 '-SourceGuardModulePath', str(fixture), '-RepositoryRoot', str(self.repo),
+                                 '-ExpectedSourceCommit', self.sha, '-ApprovedSourceRepository', self.url,
+                                 '-CaptureFailure'], capture_output=True, text=True, timeout=30)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual('', result.stderr)
+        self.assertNotIn('private-bridge-canary', result.stdout + result.stderr)
+        return json.loads(result.stdout)
+
+    def bridge_receipt_code(self):
+        proof = dict(schemaVersion='offline-release-source/v1', sourceCommit=self.sha,
+                     repositoryIdentity='isolated-fixture-origin', cleanObserved=True,
+                     remoteMainObserved=True, deploymentAllowed=False, liveAccepted=False)
+        return 'sys.stdout.write(' + repr(json.dumps(proof)) + ');sys.stdout.flush()\n'
+
+    def test_actual_bridge_bounded_warning_stderr_keeps_valid_receipt_stdout_private(self):
+        # This tests the actual bridge's stream protocol, not source authenticity.
+        body = 'sys.stderr.write("private-bridge-canary"*100);sys.stderr.flush()\n' + self.bridge_receipt_code()
+        proof = self.bridge_fixture(body)
+        self.assertEqual(self.sha, proof['sourceCommit'])
+        self.assertFalse(proof['deploymentAllowed'])
+        self.assertFalse(proof['liveAccepted'])
+
+    def test_actual_bridge_nonzero_exit_rejects_even_valid_stdout_and_preserves_code(self):
+        body = 'sys.stderr.write("private-bridge-canary");sys.stderr.flush()\n' + self.bridge_receipt_code() + 'sys.exit(17)\n'
+        proof = self.bridge_fixture(body)
+        self.assertTrue(proof['rejected'])
+        self.assertEqual(17, proof['exitCode'])
+        self.assertEqual('Offline release source validation failed; details withheld.', proof['message'])
+
+    def test_actual_bridge_zero_exit_malformed_or_empty_stdout_rejects_opaquely(self):
+        for output in ('', 'private-bridge-canary-not-json'):
+            with self.subTest(output=output):
+                proof = self.bridge_fixture('sys.stderr.write("private-bridge-canary");sys.stderr.flush()\nsys.stdout.write(' + repr(output) + ')\n')
+                self.assertTrue(proof['rejected'])
+                self.assertEqual('Offline release source validation failed; details withheld.', proof['message'])
+
+    def test_actual_bridge_rejects_oversized_stdout_and_stderr_before_complete_capture(self):
+        for stream in ('stdout', 'stderr'):
+            with self.subTest(stream=stream):
+                body = 'sys.' + stream + '.write("private-bridge-canary"*10000);sys.' + stream + '.flush()\n'
+                if stream == 'stderr':
+                    body += self.bridge_receipt_code()
+                proof = self.bridge_fixture(body)
+                self.assertTrue(proof['rejected'])
+                self.assertEqual('Offline release source validation failed; details withheld.', proof['message'])
+
+    def test_actual_bridge_time_budget_kills_child_that_never_reads_stdin(self):
+        started = time.monotonic()
+        proof = self.bridge_fixture('time.sleep(60)\n')
+        elapsed = time.monotonic() - started
+        self.assertTrue(proof['rejected'])
+        self.assertGreaterEqual(elapsed, 19)
+        self.assertLess(elapsed, 28)
 
 
 if __name__ == '__main__':

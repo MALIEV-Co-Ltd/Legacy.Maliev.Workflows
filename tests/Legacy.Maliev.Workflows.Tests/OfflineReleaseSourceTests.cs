@@ -20,7 +20,7 @@ public sealed class OfflineReleaseSourceTests
         start.ArgumentList.Add(Path.Combine(root, "tests", "test_offline_release_source.py"));
         using Process process = new() { StartInfo = start };
         using CancellationTokenSource budget = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        budget.CancelAfter(TimeSpan.FromSeconds(60));
+        budget.CancelAfter(TimeSpan.FromSeconds(90));
         Assert.True(process.Start());
         try
         {
@@ -30,7 +30,7 @@ public sealed class OfflineReleaseSourceTests
             await Task.WhenAll(output, error).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
             string diagnostics = await error;
             Assert.True(process.ExitCode == 0, diagnostics);
-            Assert.Contains("Ran 24 tests", diagnostics);
+            Assert.Contains("Ran 29 tests", diagnostics);
             Assert.Contains("OK", diagnostics);
         }
         finally
