@@ -1,0 +1,36 @@
+{
+  "application": "Legacy.Maliev.DocumentService",
+  "separationSource": "3a393215d883fa35e1461f69c876bf2ead7ce36e",
+  "sourceYamlPath": "Maliev.PdfService.Api/service.yaml",
+  "sourceYamlSha256": "0a379555cbd0d679bf4adc6f240e1720d50236d5b12bc09263acd1afefd16749",
+  "checkpoint": "135e526d0dab85c415b3afdcefd7b70fe2c82e2f",
+  "wrapperPath": "Maliev.PdfService.Api/deploy-service.ps1",
+  "checkpointWrapperSha256": "7888bc34f6a865845b828ad33a57df65491cef8c1116e16f813e790e3e1bdb5f",
+  "manifest": {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "annotations": {},
+      "labels": {
+        "run": "maliev-pdfservice-api"
+      },
+      "name": "maliev-pdfservice-api",
+      "namespace": "maliev"
+    },
+    "spec": {
+      "ports": [
+        {
+          "port": 8080,
+          "protocol": "TCP",
+          "targetPort": 8080,
+          "name": "http"
+        }
+      ],
+      "selector": {
+        "run": "maliev-pdfservice-api"
+      },
+      "sessionAffinity": "None",
+      "type": "NodePort"
+    }
+  }
+}
