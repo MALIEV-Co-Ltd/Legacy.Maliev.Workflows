@@ -39,3 +39,11 @@ The output is the merged settings object, not an envelope. `include` is removed;
 `BambuStudioCli.BuildArguments` only constructs an argument list. Fixed-pose requests require a prepared3MF filename and omit orientation/arrangement switches; search requests retain the original switches and exact order. Callers remain responsible for artifact hashes, transforms, provenance and vendor execution. Empty/control-containing or oversized arguments, undefined policies, option-like model filenames, ambiguous settings-bundle delimiters and nonportable output basenames reject. Spaces and apostrophes remain literal argument content.
 
 These helpers do not launch Bambu Studio, discover vendor/private profiles, inspect customer CAD/G-code, generate references, publish a result report or establish physical/provider acceptance. Only synthetic regressions are included. Existing manifest and profile commands are unchanged.
+
+## Pure filament catalog gate
+
+`FilamentProfileCatalogValidator.Validate` checks caller-provided catalog JSON and expected material keys. It preserves case-insensitive coverage/duplicate decisions, ordinal output ordering, profile/hash pairing and the submitted exact-match/operator-approved/automation-eligible flags. Consumers must require `IsValid` before using entries. An eligibility flag reflects supplied metadata; it does not verify approval or physical behavior.
+
+The helper admits at most4MiB UTF-8 with depth64,256catalog entries,256observed expected keys,256UTF-8 bytes per material key and1024UTF-8 bytes per optional profile field or slicer version. Expected enumerators must yield promptly; this pure helper bounds observation count rather than promising interruption of a blocked caller iterator. Wrong JSON kinds, malformed/duplicate properties, mismatched keys and invalid eligibility return an invalid outcome. Digest syntax must be exactly64uppercase hexadecimal characters, with no trailing newline. Tests use synthetic profiles and digests, including all eight eligibility-input combinations.
+
+No catalog payload, profile discovery, operator approval, vendor execution, customer corpus, material-price update or Web activation is included.
