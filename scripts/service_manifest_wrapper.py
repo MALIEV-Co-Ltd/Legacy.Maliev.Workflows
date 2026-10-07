@@ -11,6 +11,11 @@ SERVICES = {
     "Legacy.Maliev.DocumentService": "maliev-pdfservice-api",
     "Legacy.Maliev.NotificationService": "maliev-emailservice-api",
 }
+CANONICAL_IDENTITIES = {
+    "Legacy.Maliev.FileService": {"legacy-maliev-file", "legacy-maliev-file-service"},
+    "Legacy.Maliev.DocumentService": {"legacy-maliev-document-service"},
+    "Legacy.Maliev.NotificationService": {"legacy-maliev-notification-service"},
+}
 
 
 class ServiceWrapperFailure(RuntimeError):
@@ -88,4 +93,51 @@ def run_service_wrapper(application, source_commit, manifest, tool):
     _require(receipt["sourceCommit"] == source_commit and receipt["manifestSha256"] == digest)
     return dict(schemaVersion="offline-service-wrapper/v1", sourceCommit=source_commit,
                 application=application, manifestSha256=digest, exitCode=0,
+                deploymentAllowed=False, runtimeAccepted=False, consumerAdoptionAccepted=False)
+
+
+def verify_canonical_service_projection(application, source_commit, services, active_identities):
+    """Admit the dormant canonical Service projection without an apply boundary.
+
+    The caller renders committed GitOps source and supplies only Service documents
+    and kind/name/namespace identities from the active environment. No secrets or
+    workload configuration are returned. Observations are not runtime attestation.
+    """
+    _require(type(application) is str and application in CANONICAL_IDENTITIES)
+    _require(type(source_commit) is str and re.fullmatch(r"[0-9a-f]{40}", source_commit) is not None)
+    _require(type(services) is list and type(active_identities) is list)
+    service_copy, service_digest = _snapshot(services)
+    active_copy, active_digest = _snapshot(active_identities)
+    for identity in active_copy:
+        _require(type(identity) is dict and set(identity) == {"kind", "name", "namespace"})
+        _require(all(type(identity[key]) is str and identity[key] for key in ("kind", "name")))
+        _require(type(identity["namespace"]) is str)
+        _require(identity["namespace"] == "" or re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", identity["namespace"]) is not None)
+        _require(not (identity["namespace"] == "maliev-legacy" and identity["name"] in CANONICAL_IDENTITIES[application]))
+    if application != "Legacy.Maliev.NotificationService":
+        # File has no Service lane; Document currently renders only its secret projection.
+        _require(service_copy == [])
+    else:
+        _require(len(service_copy) == 1)
+        document = service_copy[0]
+        _require(type(document) is dict and set(document) == {"apiVersion", "kind", "metadata", "spec"})
+        _require(document["apiVersion"] == "v1" and document["kind"] == "Service")
+        metadata = document["metadata"]
+        _require(type(metadata) is dict and set(metadata) == {"name", "namespace", "labels"})
+        name = "legacy-maliev-notification-service"
+        _require(metadata["name"] == name and metadata["namespace"] == "maliev-legacy")
+        labels = {"app.kubernetes.io/name": name, "app.kubernetes.io/environment": "legacy"}
+        _require(metadata["labels"] == labels)
+        spec = document["spec"]
+        _require(type(spec) is dict and set(spec) == {"type", "selector", "ports"})
+        _require(spec["type"] == "ClusterIP" and spec["selector"] == labels)
+        ports = spec["ports"]
+        _require(type(ports) is list and len(ports) == 1 and type(ports[0]) is dict)
+        port = ports[0]
+        _require(set(port) == {"name", "port", "targetPort", "protocol"})
+        _require(port["name"] == "http" and type(port["port"]) is int and port["port"] == 8080
+                 and port["targetPort"] == "http" and port["protocol"] == "TCP")
+    return dict(schemaVersion="offline-canonical-service-projection/v1", application=application,
+                sourceCommit=source_commit, servicesSha256=service_digest, activeIdentitiesSha256=active_digest,
+                serviceCount=len(service_copy), dormantProjectionConsistent=True,
                 deploymentAllowed=False, runtimeAccepted=False, consumerAdoptionAccepted=False)

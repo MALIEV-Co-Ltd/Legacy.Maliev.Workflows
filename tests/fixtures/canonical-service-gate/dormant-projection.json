@@ -1,0 +1,313 @@
+{
+  "gitopsSourceCommit": "c9cf2ed4cd7501e989baf6b9af5bf08c87d78893",
+  "notificationService": {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "labels": {
+        "app.kubernetes.io/environment": "legacy",
+        "app.kubernetes.io/name": "legacy-maliev-notification-service"
+      },
+      "name": "legacy-maliev-notification-service",
+      "namespace": "maliev-legacy"
+    },
+    "spec": {
+      "ports": [
+        {
+          "name": "http",
+          "port": 8080,
+          "protocol": "TCP",
+          "targetPort": "http"
+        }
+      ],
+      "selector": {
+        "app.kubernetes.io/environment": "legacy",
+        "app.kubernetes.io/name": "legacy-maliev-notification-service"
+      },
+      "type": "ClusterIP"
+    }
+  },
+  "documentServiceCount": 0,
+  "activeIdentities": [
+    {
+      "kind": "Namespace",
+      "name": "maliev-legacy",
+      "namespace": ""
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "legacy-redis-config",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Service",
+      "name": "legacy-redis",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Deployment",
+      "name": "legacy-redis",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ObjectStore",
+      "name": "legacy-postgres-backup-main",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-auth",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-country",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-currency",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-customer",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-customer-identity",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-data-protection-keys",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-data-protection-keys-employee",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-employee",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-employee-identity",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-invoice",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-job-offers",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-material",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-message",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-order",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-order-status",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-payment",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-purchase-order",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-quotation",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-quotation-request",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-receipt",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-superuser",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-supplier",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-postgres-upload",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ExternalSecret",
+      "name": "legacy-redis",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "PodMonitor",
+      "name": "legacy-postgres-monitor",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "NetworkPolicy",
+      "name": "legacy-redis",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Cluster",
+      "name": "legacy-postgres-main",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-auth",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-country",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-currency",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-customer",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-customer-identity",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-data-protection-keys",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-data-protection-keys-employee",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-employee",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-employee-identity",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-invoice",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-job-offers",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-material",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-message",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-order",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-order-status",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-payment",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-purchase-order",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-quotation",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-quotation-request",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-receipt",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-supplier",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Database",
+      "name": "legacy-postgres-upload",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "Pooler",
+      "name": "legacy-postgres-pooler-rw",
+      "namespace": "maliev-legacy"
+    },
+    {
+      "kind": "ScheduledBackup",
+      "name": "legacy-postgres-daily-backup",
+      "namespace": "maliev-legacy"
+    }
+  ]
+}
