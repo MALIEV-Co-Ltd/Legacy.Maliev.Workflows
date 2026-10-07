@@ -1,5 +1,6 @@
 """Service wrapper regression controls; no process, provider or cluster calls."""
 import copy
+import hashlib
 import json
 import importlib.util
 from pathlib import Path
@@ -9,6 +10,19 @@ spec = importlib.util.spec_from_file_location("service_wrapper", Path(__file__).
 policy = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(policy)
 COMMIT = "1" * 40
+PINNED_FIXTURE_SHA256 = {
+    "DocumentService.json": "c015e0557c6306715e0fc995247fc7ff960184231e1dd7d5ec23a723f798b186",
+    "FileService.json": "c3d71a27cd88fded102e814dbdac910794ee60347a83281e8d94920a34ce8f70",
+    "NotificationService.json": "dd7571895e7cc51c9c77bf45ce5e79db9a2e657d8734237adf113e484220153f",
+}
+
+
+def verified_fixture(name, raw):
+    # Git checkout CRLF conversion must not change the committed canonical-LF pin.
+    raw = raw.replace(b'\r\n', b'\n')
+    if hashlib.sha256(raw).hexdigest() != PINNED_FIXTURE_SHA256[name]:
+        raise ValueError("Historical Service fixture digest mismatch.")
+    return json.loads(raw)
 
 
 def manifest(application="Legacy.Maliev.DocumentService"):
@@ -48,7 +62,7 @@ class ServiceWrapperTests(unittest.TestCase):
         self.assertEqual(len(paths), 3)
         applications = set()
         for path in paths:
-            fixture = json.loads(path.read_bytes())
+            fixture = verified_fixture(path.name, path.read_bytes())
             applications.add(fixture['application'])
             self.assertEqual(fixture['separationSource'], policy.SEPARATION_SOURCE)
             self.assertEqual(fixture['checkpoint'], policy.CHECKPOINT)
@@ -57,6 +71,26 @@ class ServiceWrapperTests(unittest.TestCase):
                 self.assertEqual(self.calls[0][1]['manifest'], fixture['manifest'])
                 self.assertEqual(result['sourceCommit'], fixture['checkpoint'])
         self.assertEqual(applications, set(policy.SERVICES))
+
+    def test_fixture_provenance_and_non_identity_manifest_drift_is_rejected(self):
+        for name in PINNED_FIXTURE_SHA256:
+            raw = (Path(__file__).parent / 'fixtures/service-wrapper' / name).read_bytes()
+            original = verified_fixture(name, raw)
+            self.assertEqual((json.dumps(original, indent=2) + '\n').encode(), raw.replace(b'\r\n', b'\n'))
+            for field in ('sourceYamlPath', 'sourceYamlSha256', 'wrapperPath', 'checkpointWrapperSha256', 'manifestPort'):
+                changed = copy.deepcopy(original)
+                if field == 'manifestPort':
+                    changed['manifest']['spec']['ports'][0]['targetPort'] = 9999
+                else:
+                    changed[field] = 'foreign'
+                with self.subTest(fixture=name, field=field), self.assertRaises(ValueError):
+                    verified_fixture(name, (json.dumps(changed, indent=2) + '\n').encode())
+
+    def test_fixture_pin_verifies_raw_bytes_independently(self):
+        for name in PINNED_FIXTURE_SHA256:
+            raw = (Path(__file__).parent / 'fixtures/service-wrapper' / name).read_bytes()
+            with self.subTest(fixture=name), self.assertRaises(ValueError):
+                verified_fixture(name, raw + b' ')
 
     def test_deployment_ingress_and_list_are_rejected_before_callback(self):
         for kind in ("Deployment", "Ingress", "List", "service"):
