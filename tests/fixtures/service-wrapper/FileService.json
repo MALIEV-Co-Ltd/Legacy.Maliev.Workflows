@@ -1,0 +1,36 @@
+{
+  "application": "Legacy.Maliev.FileService",
+  "separationSource": "3a393215d883fa35e1461f69c876bf2ead7ce36e",
+  "sourceYamlPath": "Maliev.UploadService.Api/service.yaml",
+  "sourceYamlSha256": "b2d8091d94508a3c99ea05ce0163aae81363c44c3185801a4a71b65124a6b3bc",
+  "checkpoint": "135e526d0dab85c415b3afdcefd7b70fe2c82e2f",
+  "wrapperPath": "Maliev.UploadService.Api/deploy-service.ps1",
+  "checkpointWrapperSha256": "7888bc34f6a865845b828ad33a57df65491cef8c1116e16f813e790e3e1bdb5f",
+  "manifest": {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "annotations": {},
+      "labels": {
+        "run": "maliev-uploadservice-api"
+      },
+      "name": "maliev-uploadservice-api",
+      "namespace": "maliev"
+    },
+    "spec": {
+      "ports": [
+        {
+          "port": 8080,
+          "protocol": "TCP",
+          "targetPort": 8080,
+          "name": "http"
+        }
+      ],
+      "selector": {
+        "run": "maliev-uploadservice-api"
+      },
+      "sessionAffinity": "None",
+      "type": "NodePort"
+    }
+  }
+}
