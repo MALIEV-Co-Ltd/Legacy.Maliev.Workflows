@@ -10,6 +10,7 @@ spec = importlib.util.spec_from_file_location("service_wrapper", Path(__file__).
 policy = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(policy)
 COMMIT = "1" * 40
+CANONICAL_FIXTURE_SHA256 = "88ea1f29eb4dfd3546ef49f456b961e413eccf91a025da2ff0c1d92363aab37d"
 PINNED_FIXTURE_SHA256 = {
     "DocumentService.json": "c015e0557c6306715e0fc995247fc7ff960184231e1dd7d5ec23a723f798b186",
     "FileService.json": "c3d71a27cd88fded102e814dbdac910794ee60347a83281e8d94920a34ce8f70",
@@ -202,6 +203,115 @@ class ServiceWrapperTests(unittest.TestCase):
             with self.assertRaises(policy.ServiceWrapperFailure):
                 self.invoke(document)
             self.assertEqual(self.calls, [])
+
+
+class CanonicalServiceProjectionTests(unittest.TestCase):
+    def setUp(self):
+        raw = (Path(__file__).parent / 'fixtures/canonical-service-gate/dormant-projection.json').read_bytes().replace(b'\r\n', b'\n')
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), CANONICAL_FIXTURE_SHA256)
+        self.fixture = json.loads(raw)
+        self.application = 'Legacy.Maliev.NotificationService'
+        self.services = [self.fixture['notificationService']]
+        self.active = self.fixture['activeIdentities']
+
+    def verify(self, application=None, services=None, active=None, commit=None):
+        return policy.verify_canonical_service_projection(application or self.application,
+            self.fixture['gitopsSourceCommit'] if commit is None else commit,
+            self.services if services is None else services, self.active if active is None else active)
+
+    def test_actual_rendered_dormant_notification_service_is_admitted_without_mutation(self):
+        before = copy.deepcopy((self.services, self.active))
+        result = self.verify()
+        self.assertEqual((self.services, self.active), before)
+        self.assertEqual(result['serviceCount'], 1)
+        self.assertIs(result['dormantProjectionConsistent'], True)
+        for field in ('deploymentAllowed', 'runtimeAccepted', 'consumerAdoptionAccepted'):
+            self.assertIs(result[field], False)
+
+    def test_document_and_file_require_absent_service_lanes(self):
+        for application in ('Legacy.Maliev.DocumentService', 'Legacy.Maliev.FileService'):
+            with self.subTest(application=application):
+                self.assertEqual(self.verify(application=application, services=[])['serviceCount'], 0)
+                with self.assertRaises(policy.ServiceWrapperFailure):
+                    self.verify(application=application)
+
+    def test_active_owned_resource_blocks_dormant_admission(self):
+        for application, names in policy.CANONICAL_IDENTITIES.items():
+            for name in names:
+                for kind in ('Service', 'Deployment', 'Ingress', 'ExternalSecret'):
+                    active = self.active + [dict(kind=kind, name=name, namespace='maliev-legacy')]
+                    with self.subTest(application=application, name=name, kind=kind), self.assertRaises(policy.ServiceWrapperFailure):
+                        self.verify(application=application, services=[] if application != self.application else None, active=active)
+
+    def test_cluster_scoped_identity_and_other_namespaces_are_not_target_adoption(self):
+        active = self.active + [dict(kind='Namespace', name='maliev-legacy', namespace=''),
+                               dict(kind='Service', name='legacy-maliev-notification-service', namespace='foreign')]
+        self.assertEqual(self.verify(active=active)['serviceCount'], 1)
+
+    def test_ingress_deployment_and_duplicate_service_documents_are_rejected(self):
+        for kind in ('Deployment', 'Ingress', 'List'):
+            document = copy.deepcopy(self.services[0])
+            document['kind'] = kind
+            with self.subTest(kind=kind), self.assertRaises(policy.ServiceWrapperFailure):
+                self.verify(services=[document])
+        with self.assertRaises(policy.ServiceWrapperFailure):
+            self.verify(services=self.services * 2)
+
+    def test_canonical_namespace_name_labels_and_selector_are_fenced(self):
+        for field in ('namespace', 'name', 'labels', 'selector'):
+            document = copy.deepcopy(self.services[0])
+            if field == 'selector':
+                document['spec'][field] = {'run': 'other'}
+            elif field == 'labels':
+                document['metadata'][field] = {}
+            else:
+                document['metadata'][field] = 'other'
+            with self.subTest(field=field), self.assertRaises(policy.ServiceWrapperFailure):
+                self.verify(services=[document])
+
+    def test_external_exposure_and_unknown_service_configuration_are_rejected(self):
+        for service_type in ('NodePort', 'LoadBalancer', 'ExternalName'):
+            document = copy.deepcopy(self.services[0])
+            document['spec']['type'] = service_type
+            with self.subTest(service_type=service_type), self.assertRaises(policy.ServiceWrapperFailure):
+                self.verify(services=[document])
+        for field in ('externalIPs', 'externalName', 'loadBalancerIP'):
+            document = copy.deepcopy(self.services[0])
+            document['spec'][field] = 'foreign'
+            with self.subTest(field=field), self.assertRaises(policy.ServiceWrapperFailure):
+                self.verify(services=[document])
+
+    def test_http_port_protocol_and_named_target_are_exact(self):
+        for field, value in [('port', True), ('port', '8080'), ('port', 80), ('targetPort', 8080), ('protocol', 'UDP'), ('name', 'other')]:
+            document = copy.deepcopy(self.services[0])
+            document['spec']['ports'][0][field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(policy.ServiceWrapperFailure):
+                self.verify(services=[document])
+
+    def test_ambiguous_active_identity_and_extra_data_fail_closed(self):
+        for identity in ({}, dict(kind='Service', name='x', namespace=None),
+                         dict(kind='Service', name='legacy-maliev-notification-service', namespace='maliev-legacy\n'),
+                         dict(kind='Service', name='legacy-maliev-notification-service', namespace='Maliev-legacy'),
+                         dict(kind='Service', name='x', namespace='maliev-legacy', token='private-marker')):
+            with self.subTest(identity=identity), self.assertRaises(policy.ServiceWrapperFailure) as caught:
+                self.verify(active=[identity])
+            self.assertNotIn('private-marker', str(caught.exception))
+
+    def test_unknown_application_and_source_commit_are_rejected(self):
+        for application in ('Legacy.Maliev.AuthService', 'legacy.maliev.NotificationService'):
+            with self.subTest(application=application), self.assertRaises(policy.ServiceWrapperFailure):
+                self.verify(application=application)
+        for commit in ('a' * 39, 'A' * 40, True):
+            with self.subTest(commit=commit), self.assertRaises(policy.ServiceWrapperFailure):
+                self.verify(commit=commit)
+
+    def test_oversized_or_non_json_observations_are_opaque(self):
+        with self.assertRaises(policy.ServiceWrapperFailure):
+            self.verify(active=[dict(kind='Service', name='x' * 16384, namespace='maliev-legacy')])
+        document = copy.deepcopy(self.services[0])
+        document['metadata']['labels']['bad'] = float('nan')
+        with self.assertRaises(policy.ServiceWrapperFailure):
+            self.verify(services=[document])
 
 
 if __name__ == "__main__":
