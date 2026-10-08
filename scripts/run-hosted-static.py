@@ -207,7 +207,7 @@ def main():
         validate_context(context,head)
         preflight=admission.preflight()
         if preflight['freeMiB']<policy['initialMemoryFloorMiB'] or admission.SLOT.exists(): raise RuntimeError('Additional initial headroom required')
-        command('candidate-checkout',['git','worktree','add','--detach',str(worktree),policy['baseSha']],trusted.parent)
+        command('candidate-checkout',['git','-c','core.autocrlf=true','worktree','add','--detach',str(worktree),policy['baseSha']],trusted.parent)
         for name,raw in entries.items():
             if name.startswith('worktree/'): safe_write(worktree,name[len('worktree/'):],raw)
         del entries  # Release sealed archive buffers before any native phase.

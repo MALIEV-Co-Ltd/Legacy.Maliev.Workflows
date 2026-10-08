@@ -332,4 +332,27 @@ class CheckoutByteIdentityControls(unittest.TestCase):
             self.assertIn(value,workflow)
         self.assertNotIn('git config --global core.autocrlf',workflow)
 
+
+class CandidateGitNormalizationControls(unittest.TestCase):
+    def test_candidate_birth_overrides_only_git_normalization(self):
+        import ast
+        tree=ast.parse((ROOT/'run-hosted-static.py').read_bytes())
+        calls=[node for node in ast.walk(tree) if isinstance(node,ast.Call) and isinstance(node.func,ast.Name) and node.func.id=='command' and node.args and isinstance(node.args[0],ast.Constant) and node.args[0].value=='candidate-checkout']
+        self.assertEqual(1,len(calls))
+        self.assertEqual(['git','-c','core.autocrlf=true','worktree','add','--detach'],[ast.literal_eval(node) for node in calls[0].args[1].elts[:6]])
+    def test_candidate_scope_preserves_original_frozen_guard(self):
+        import ast
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        entries=mod.verified_entries(data,policy);raw=entries['outputs/hosted_static_core.py']
+        tree=ast.parse(raw)
+        calls=[node for node in ast.walk(tree) if isinstance(node,ast.Call) and isinstance(node.func,ast.Attribute) and node.func.attr=='run_owned' and node.args and isinstance(node.args[0],ast.List) and any(isinstance(value,ast.Constant) and value.value=='status' for value in node.args[0].elts)]
+        self.assertEqual(1,len(calls))
+        self.assertEqual(['git','-c','core.autocrlf=true','status','--porcelain=v1','--untracked-files=all'],ast.literal_eval(calls[0].args[0]))
+        frozen=entries['outputs/workflows-gitleaks-toolchain-build-request-20261008-v3/scope-frozen.txt']
+        self.assertEqual('56263288362806c71c9cf79fb8fbddb2ee4e8b62a49436e899284cf7e95c3e0d',mod.digest(frozen))
+        self.assertEqual(3,len(frozen.splitlines()))
+        self.assertIn(b'scope.stdout != expected_scope.read_bytes()',raw)
+        self.assertIn(b"raise RuntimeError('Workflows owned or preserved source bytes changed')",raw)
+
 if __name__=='__main__':unittest.main()
