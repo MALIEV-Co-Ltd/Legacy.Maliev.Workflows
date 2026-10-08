@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       root_permit:
-        description: Fresh Root-issued nine-field hosted-static cooperative lease; not cryptographic issuer authentication
+        description: Fresh Root-issued nine-field hosted-qualification cooperative lease; not cryptographic issuer authentication
         type: string
         required: true
 permissions:
@@ -44,7 +44,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -B scripts/test-hosted-static.py
-      - name: Pinned SDK archive bootstrap then bounded restore format and typed audit
+      - name: Pinned SDK archive bootstrap then bounded build-first qualification
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -62,6 +62,13 @@ jobs:
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/strict-*-result.json
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/journal.jsonl
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/format.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/build.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/focused.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/suite.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/compiled-discovery.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/compiled-inventory.json
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/test-results/**/*.trx
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/audit.log
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-source.json
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-source.bin
