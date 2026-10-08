@@ -1,0 +1,189 @@
+import base64
+from datetime import datetime,timedelta,timezone
+import hashlib
+import importlib.util
+import io
+import json
+from pathlib import Path
+import unittest
+import uuid
+import zipfile
+
+ROOT=Path(__file__).resolve().parent
+spec=importlib.util.spec_from_file_location('guarded',ROOT/'run-hosted-static.py')
+mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
+
+class SealedStaticControls(unittest.TestCase):
+    def setUp(self):
+        self.now=datetime(2026,10,9,tzinfo=timezone.utc)
+        self.policy={'worktree':'D:/fixed','baseSha':'a'*40,'candidateSha':'b'*64}
+        self.permit={'issuedBy':mod.ROOT,'owner':mod.OWNER,'phase':'hosted-static','leaseId':str(uuid.uuid4()),'issuedUtc':self.now.isoformat(),'expiresUtc':(self.now+timedelta(minutes=10)).isoformat(),'worktree':'D:/fixed','baseSha':'a'*40,'candidateSha':'b'*64}
+        self.context={'repository':mod.REPOSITORY,'ref':'refs/heads/main','eventName':'workflow_dispatch','sha':'c'*40,'job':{'workflow_repository':mod.REPOSITORY,'workflow_sha':'c'*40}}
+    def encode(self,value): return json.dumps(value).encode()
+    def kit(self,names=None,symlink=False):
+        output=io.BytesIO();names=names or [('outputs/one.py',b'fixed')]
+        with zipfile.ZipFile(output,'w') as z:
+            for name,raw in names:
+                item=zipfile.ZipInfo(name)
+                if symlink:item.external_attr=0o120777<<16
+                z.writestr(item,raw)
+        data=output.getvalue()
+        policy={'entries':{name:{'bytes':len(raw),'sha256':mod.digest(raw)} for name,raw in names},'kitBytes':len(data),'kitSha256':mod.digest(data),'kitGitBlob':hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()}
+        return data,policy
+    def test_exact_context(self): mod.validate_context(self.context,'c'*40)
+    def test_foreign_context(self):
+        self.context['repository']='foreign'
+        with self.assertRaises(ValueError):mod.validate_context(self.context,'c'*40)
+    def test_branch_context(self):
+        self.context['ref']='refs/heads/proposal'
+        with self.assertRaises(ValueError):mod.validate_context(self.context,'c'*40)
+    def test_job_identity_missing(self):
+        self.context.pop('job')
+        with self.assertRaises(ValueError):mod.validate_context(self.context,'c'*40)
+    def test_foreign_job_sha(self):
+        self.context['job']['workflow_sha']='d'*40
+        with self.assertRaises(ValueError):mod.validate_context(self.context,'c'*40)
+    def test_exact_permit(self):self.assertEqual(self.permit,mod.validate_permit(self.encode(self.permit),self.policy,self.now))
+    def test_foreign_issuer(self):
+        self.permit['issuedBy']='foreign'
+        with self.assertRaises(ValueError):mod.validate_permit(self.encode(self.permit),self.policy,self.now)
+    def test_wrong_phase(self):
+        self.permit['phase']='validation'
+        with self.assertRaises(ValueError):mod.validate_permit(self.encode(self.permit),self.policy,self.now)
+    def test_expired(self):
+        with self.assertRaises(ValueError):mod.validate_permit(self.encode(self.permit),self.policy,self.now+timedelta(minutes=10))
+    def test_extended_permit(self):
+        self.permit['expiresUtc']=(self.now+timedelta(minutes=16)).isoformat()
+        with self.assertRaises(ValueError):mod.validate_permit(self.encode(self.permit),self.policy,self.now)
+    def test_extra_permit(self):
+        self.permit['floor']='0'
+        with self.assertRaises(ValueError):mod.validate_permit(self.encode(self.permit),self.policy,self.now)
+    def test_exact_kit(self):
+        data,policy=self.kit();self.assertEqual({'outputs/one.py':b'fixed'},mod.verified_entries(data,policy))
+    def test_extra_member(self):
+        data,policy=self.kit();policy['entries']={}
+        with self.assertRaises(ValueError):mod.verified_entries(data,policy)
+    def test_traversal_member(self):
+        data,policy=self.kit([('outputs/../one.py',b'x')])
+        with self.assertRaises(ValueError):mod.verified_entries(data,policy)
+    def test_symlink_member(self):
+        data,policy=self.kit(symlink=True)
+        with self.assertRaises(ValueError):mod.verified_entries(data,policy)
+    def test_changed_postimage(self):
+        data,policy=self.kit();policy['entries']['outputs/one.py']['sha256']='0'*64
+        with self.assertRaises(ValueError):mod.verified_entries(data,policy)
+    def test_member_quota(self):
+        data,policy=self.kit();policy['entries']['outputs/one.py']['bytes']=17*1024*1024
+        with self.assertRaises(ValueError):mod.verified_entries(data,policy)
+    def test_exact_git_blob(self):
+        data,policy=self.kit();raw=self.encode({'sha':policy['kitGitBlob'],'size':len(data),'encoding':'base64','content':base64.b64encode(data).decode()})
+        self.assertEqual(data,mod.decode_blob(raw,policy))
+    def test_foreign_blob(self):
+        data,policy=self.kit();raw=self.encode({'sha':'0'*40,'size':len(data),'encoding':'base64','content':base64.b64encode(data).decode()})
+        with self.assertRaises(ValueError):mod.decode_blob(raw,policy)
+    def test_duplicate_json(self):
+        with self.assertRaises(ValueError):mod.validate_permit(b'{"owner":"one","owner":"two"}',self.policy,self.now)
+    def test_real_sealed_candidate(self):
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        files=mod.verified_entries(data,policy)
+        self.assertEqual(177,len(files));self.assertEqual(policy['kitSha256'],mod.digest(data))
+        core=files['outputs/hosted_static_core.py'];self.assertEqual(policy['coreSha256'],mod.digest(core))
+        self.assertEqual(5120,policy['initialMemoryFloorMiB']);self.assertEqual(4096,policy['runtimeMemoryFloorMiB'])
+    def test_native_fixed_commands(self):
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        source=mod.verified_entries(data,policy)['outputs/hosted_static_core.py'].decode('utf-8')
+        self.assertNotIn("'focused': [",source);self.assertNotIn("'suite': [",source)
+        for token in ["'restore': [","'format': [","'audit': [","memory_limit=3 * 1024**3","cpu_rate=5000","output_limit=4 * 1024 * 1024","min(600", "--configfile"]:self.assertIn(token,source)
+
+
+class PreparationCustodyControls(unittest.TestCase):
+    def flags(self):
+        return {name:True for name in ('terminal_state_verified','job_caps_readback_verified','cleanup_verified','process_handle_closed','thread_handle_closed','job_handle_closed','pipe_handles_closed','readers_settled','attribute_list_disposed')}
+    def test_thrown_preparation_retains_birth_and_error_row(self):
+        ledger=[];first=RuntimeError('first');first.resource_row={'pid':123,'actual_start_filetime':456,'executable_identity':'fixed.exe'}
+        def failed(arguments,**kwargs):
+            kwargs['on_event']('suspended-root-owned',first.resource_row)
+            raise first
+        with self.assertRaises(RuntimeError) as caught:mod.preparation_command(failed,ledger,['fixed'])
+        self.assertIs(first,caught.exception);self.assertEqual(2,len(ledger));self.assertEqual(123,ledger[0]['pid']);self.assertEqual(456,ledger[1]['actual_start_filetime'])
+    def test_error_row_retained_without_callback(self):
+        ledger=[];first=OSError('first');first.resource_row={'pid':123}
+        def failed(arguments,**kwargs):raise first
+        with self.assertRaises(OSError):mod.preparation_command(failed,ledger,['fixed'])
+        self.assertEqual([{'pid':123}],ledger)
+    def test_success_requires_integer_zero_and_all_flags(self):
+        from types import SimpleNamespace
+        row=dict(self.flags(),remaining_job_processes=0)
+        def success(arguments,**kwargs):return SimpleNamespace(returncode=0,stdout=b'ok'),row
+        self.assertEqual(b'ok',mod.preparation_command(success,[],['fixed']))
+        row['remaining_job_processes']=False
+        with self.assertRaises(RuntimeError):mod.preparation_command(success,[],['fixed'])
+    def test_missing_cleanup_flag_refused(self):
+        from types import SimpleNamespace
+        row=dict(self.flags(),remaining_job_processes=0);row.pop('attribute_list_disposed')
+        with self.assertRaises(RuntimeError):mod.preparation_command(lambda *a,**k:(SimpleNamespace(returncode=0,stdout=b'ok'),row),[],['fixed'])
+    def test_primary_preserved_when_cleanup_and_receipt_throw(self):
+        first=RuntimeError('original')
+        def cleanup():raise OSError('secondary cleanup')
+        def receipt(state,errors):raise PermissionError('secondary receipt')
+        with self.assertRaises(RuntimeError) as caught:mod.preserve_first_failure(first,cleanup,receipt)
+        self.assertIs(first,caught.exception)
+    def test_receipt_failure_becomes_failure_if_body_succeeded(self):
+        failure=PermissionError('receipt')
+        def receipt(state,errors):raise failure
+        with self.assertRaises(PermissionError) as caught:mod.preserve_first_failure(None,lambda:{'cleanupVerified':True},receipt)
+        self.assertIs(failure,caught.exception)
+
+class PackageGraphControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from types import ModuleType
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        source=mod.verified_entries(data,policy)['outputs/hosted_package_graph.py']
+        cls.graph=ModuleType('sealed_package_graph')
+        exec(compile(source,'sealed/hosted_package_graph.py','exec'),cls.graph.__dict__)
+    def setUp(self):
+        import tempfile,copy
+        self.temporary=tempfile.TemporaryDirectory(prefix='sealed-graph-pure-');self.addCleanup(self.temporary.cleanup)
+        self.repo=Path(self.temporary.name);self.cache=self.repo/'cache';self.package=self.cache/'x/1.0/x.1.0.nupkg';self.package.parent.mkdir(parents=True)
+        raw=b'synthetic physical archive';self.package.write_bytes(raw)
+        pin={'bytes':len(raw),'sha256':mod.digest(raw),'filename':self.package.name,'archiveSha512':base64.b64encode(hashlib.sha512(raw).digest()).decode(),'sha512':'signed-content-hash'}
+        library={'type':'package','path':'x/1.0','sha512':'signed-content-hash'}
+        self.assets={'targets':{'net10.0':{'x/1.0':{'type':'package'}}},'libraries':{'x/1.0':library},'packageFolders':{str(self.cache):{}}}
+        self.snapshot={'projects':{},'packages':{'x/1.0':pin}}
+        for name in ['one','two','three']:
+            relative=name+'/obj/project.assets.json';path=self.repo/relative;path.parent.mkdir(parents=True);path.write_text(json.dumps(self.assets))
+            self.snapshot['projects'][relative]={'identity':self.graph.identity(copy.deepcopy(self.assets))}
+        self.assertTrue(self.graph.verify_restored(self.repo,self.snapshot,self.cache)['resolvedGraphMatched'])
+    def mutate_assets(self,change):
+        path=self.repo/'one/obj/project.assets.json';value=json.loads(path.read_bytes());change(value);path.write_text(json.dumps(value))
+    def test_declared_signed_content_hash_distinct_from_archive_hash(self):
+        self.assertNotEqual(self.snapshot['packages']['x/1.0']['sha512'],self.snapshot['packages']['x/1.0']['archiveSha512'])
+        self.assertEqual(1,self.graph.verify_restored(self.repo,self.snapshot,self.cache)['packageArchives'])
+    def test_package_version_drift(self):
+        self.mutate_assets(lambda a:a['libraries'].update({'foreign/9.9':{'type':'package','path':'foreign/9.9','sha512':'foreign'}}))
+        with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
+    def test_framework_drift(self):
+        self.mutate_assets(lambda a:a.update(targets={'net99.0':{}}))
+        with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
+    def test_semantic_content_hash_drift(self):
+        self.mutate_assets(lambda a:a['libraries']['x/1.0'].update(sha512='foreign'))
+        with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
+    def test_archive_bytes_drift(self):
+        self.package.write_bytes(b'changed')
+        with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
+    def test_foreign_cache_root(self):
+        self.mutate_assets(lambda a:a.update(packageFolders={str(self.repo/'foreign'): {}}))
+        with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
+    def test_missing_graph(self):
+        self.snapshot['projects'].pop(next(iter(self.snapshot['projects'])))
+        with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
+    def test_incomplete_closure(self):
+        self.snapshot['packages']['missing/9.9']={}
+        with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
+    def test_foreign_project_path(self):
+        self.snapshot['projects']['../outside.json']=self.snapshot['projects'].pop(next(iter(self.snapshot['projects'])))
+        with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
+
+if __name__=='__main__':unittest.main()
