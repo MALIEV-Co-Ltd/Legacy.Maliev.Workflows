@@ -186,4 +186,123 @@ class PackageGraphControls(unittest.TestCase):
         self.snapshot['projects']['../outside.json']=self.snapshot['projects'].pop(next(iter(self.snapshot['projects'])))
         with self.assertRaises(ValueError):self.graph.verify_restored(self.repo,self.snapshot,self.cache)
 
+class SdkIdentityControls(unittest.TestCase):
+    def setUp(self):
+        self.expected={mod.SDK_ROOT+'/'+name:'a'*64 for name in mod.SDK_RELATIVE}
+        self.records=[{'outcome':'read','bytes':length,'sha256':'a'*64} for length in mod.SDK_LENGTHS]
+        self.calls=[]
+    def reader(self,path):
+        self.calls.append(str(path));return dict(self.records[len(self.calls)-1])
+    def baseline(self):
+        result=mod.sdk_identity(self.expected,self.reader)
+        self.assertTrue(result['allFiveMatch']);self.assertFalse(result['observedHashesAreAuthority']);self.calls=[]
+    def test_five_fixed_identity_rows(self):
+        self.baseline();result=mod.sdk_identity(self.expected,self.reader)
+        self.assertEqual(list(range(5)),[r['index'] for r in result['files']])
+        self.assertEqual(5,len(self.calls));self.assertNotIn('path',json.dumps(result))
+    def test_hash_mismatch_does_not_become_authority(self):
+        self.baseline();self.records[0]['sha256']='b'*64
+        result=mod.sdk_identity(self.expected,self.reader)
+        self.assertFalse(result['allFiveMatch']);self.assertEqual('hash-mismatch',result['files'][0]['outcome']);self.assertEqual('a'*64,result['files'][0]['expectedSha256'])
+    def test_length_mismatch(self):
+        self.baseline();self.records[1]['bytes']+=1
+        self.assertEqual('length-mismatch',mod.sdk_identity(self.expected,self.reader)['files'][1]['outcome'])
+    def test_typed_missing_and_unreadable(self):
+        self.baseline();self.records[2]={'outcome':'missing','bytes':None,'sha256':None};self.records[3]={'outcome':'unreadable','bytes':None,'sha256':None}
+        result=mod.sdk_identity(self.expected,self.reader)
+        self.assertEqual('missing',result['files'][2]['outcome']);self.assertEqual('unreadable',result['files'][3]['outcome']);self.assertEqual(5,len(result['files']))
+    def test_typed_oversized_and_symlink(self):
+        self.baseline();self.records[2]={'outcome':'oversized','bytes':mod.SDK_FILE_QUOTA+1,'sha256':None};self.records[3]={'outcome':'symlink','bytes':None,'sha256':None}
+        result=mod.sdk_identity(self.expected,self.reader);self.assertFalse(result['allFiveMatch']);self.assertEqual('oversized',result['files'][2]['outcome']);self.assertEqual('symlink',result['files'][3]['outcome'])
+    def test_foreign_path_or_incomplete_map_refused_before_read(self):
+        self.baseline();self.expected['foreign']=self.expected.pop(next(iter(self.expected)))
+        with self.assertRaises(ValueError):mod.sdk_identity(self.expected,self.reader)
+        self.assertEqual([],self.calls)
+    def test_invalid_expected_hash_refused(self):
+        self.baseline();self.expected[next(iter(self.expected))]='unexpected'
+        with self.assertRaises(ValueError):mod.sdk_identity(self.expected,self.reader)
+    def test_shared_image_is_diagnostic_only(self):
+        self.baseline();result=mod.sdk_identity(self.expected,self.reader,shared_image=True)
+        self.assertEqual('shared-image',result['source']);self.assertFalse(result['observedHashesAreAuthority']);self.assertTrue(all(p.startswith('C:/Program Files/dotnet/') for p in self.calls))
+
+class SdkArchiveControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        spec=importlib.util.spec_from_file_location('sdk_bootstrap',ROOT/'hosted-sdk-bootstrap.py')
+        cls.bootstrap=importlib.util.module_from_spec(spec);spec.loader.exec_module(cls.bootstrap)
+    def archive(self,names):
+        data=io.BytesIO()
+        with zipfile.ZipFile(data,'w') as z:
+            for name,raw in names:z.writestr(name,raw)
+        return zipfile.ZipFile(io.BytesIO(data.getvalue()))
+    def test_fresh_canonical_archive_extracts(self):
+        import tempfile,time
+        with tempfile.TemporaryDirectory() as directory,self.archive([('sdk/one.dll',b'fixed')]) as archive:
+            result=self.bootstrap.safe_extract(archive,Path(directory),time.monotonic()+5)
+            self.assertTrue(result['canonicalInventoryVerified']);self.assertEqual(b'fixed',(Path(directory)/'sdk/one.dll').read_bytes())
+    def test_parent_traversal_refused(self):
+        with self.archive([('../escape.dll',b'fixed')]) as archive:
+            with self.assertRaises(ValueError):self.bootstrap.inventory(archive)
+    def test_absolute_path_refused(self):
+        with self.archive([('/escape.dll',b'fixed')]) as archive:
+            with self.assertRaises(ValueError):self.bootstrap.inventory(archive)
+    def test_drive_path_refused(self):
+        with self.archive([('C:/escape.dll',b'fixed')]) as archive:
+            with self.assertRaises(ValueError):self.bootstrap.inventory(archive)
+    def test_backslash_path_refused(self):
+        data=io.BytesIO()
+        with zipfile.ZipFile(data,'w') as writer:writer.writestr('sdk/escape.dll',b'fixed')
+        raw=data.getvalue().replace(b'sdk/escape.dll',b'sdk\\escape.dll')
+        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            with self.assertRaises(ValueError):self.bootstrap.inventory(archive)
+    def test_case_ambiguous_members_refused(self):
+        with self.archive([('sdk/one.dll',b'one'),('sdk/ONE.dll',b'two')]) as archive:
+            with self.assertRaises(ValueError):self.bootstrap.inventory(archive)
+    def test_duplicate_member_refused(self):
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            with self.archive([('sdk/one.dll',b'one'),('sdk/one.dll',b'two')]) as archive:
+                with self.assertRaises(ValueError):self.bootstrap.inventory(archive)
+    def test_symlink_archive_member_refused(self):
+        data=io.BytesIO();item=zipfile.ZipInfo('sdk/one.dll');item.external_attr=0o120777<<16
+        with zipfile.ZipFile(data,'w') as z:z.writestr(item,b'target')
+        with zipfile.ZipFile(io.BytesIO(data.getvalue())) as archive:
+            with self.assertRaises(ValueError):self.bootstrap.inventory(archive)
+    def test_existing_file_never_overwritten(self):
+        import tempfile,time
+        with tempfile.TemporaryDirectory() as directory,self.archive([('one.dll',b'new')]) as archive:
+            path=Path(directory)/'one.dll';path.write_bytes(b'prior')
+            with self.assertRaises(FileExistsError):self.bootstrap.safe_extract(archive,Path(directory),time.monotonic()+5)
+            self.assertEqual(b'prior',path.read_bytes())
+    def test_expired_extract_deadline_refused(self):
+        import tempfile,time
+        with tempfile.TemporaryDirectory() as directory,self.archive([('one.dll',b'new')]) as archive:
+            with self.assertRaises(TimeoutError):self.bootstrap.safe_extract(archive,Path(directory),time.monotonic()-1)
+    def test_archive_hash_and_length_positive_then_drift(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'archive.zip';path.write_bytes(b'fixed');expected=hashlib.sha512(b'fixed').hexdigest()
+            self.assertTrue(self.bootstrap.verify_archive(path,5,expected)['officialArchiveMatched'])
+            path.write_bytes(b'drift')
+            with self.assertRaises(ValueError):self.bootstrap.verify_archive(path,5,expected)
+            path.write_bytes(b'fixed')
+            with self.assertRaises(ValueError):self.bootstrap.verify_archive(path,6,expected)
+
+class SdkCleanupIdentityControls(unittest.TestCase):
+    def setUp(self):
+        self.permit={'leaseId':'synthetic-source-control','expiresUtc':'2000-01-01T00:00:00Z'}
+        self.owner={'owner':mod.OWNER,**self.permit,'persistentData':False}
+        mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit)
+    def test_exact_startup_lease_cleanup_without_renewal(self):
+        before=dict(self.permit);mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit);self.assertEqual(before,self.permit)
+    def test_foreign_lease_refused(self):
+        self.owner['leaseId']='foreign'
+        with self.assertRaises(ValueError):mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit)
+    def test_foreign_root_refused(self):
+        with self.assertRaises(ValueError):mod.validate_sdk_cleanup('C:/Program Files/dotnet',self.owner,self.permit)
+    def test_persistent_data_marker_refused(self):
+        self.owner['persistentData']=True
+        with self.assertRaises(ValueError):mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit)
+
 if __name__=='__main__':unittest.main()

@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import shutil
 import sys
 import time
 import urllib.request
@@ -136,12 +137,47 @@ def preserve_first_failure(primary, cleanup, receipt):
     if primary is not None: raise primary
 
 
+SDK_ROOT = 'D:/codex-temp/2026-10-09/workflows-hosted-sdk-10.0.401'
+SDK_RELATIVE = ('dotnet.exe','sdk/10.0.401/dotnet.dll','sdk/10.0.401/.version','sdk/10.0.401/NuGet.ProjectModel.dll','sdk/10.0.401/NuGet.Packaging.dll')
+SDK_LENGTHS = (167208,3520296,101,628520,1718056)
+SDK_FILE_QUOTA = 16 * 1024 * 1024
+
+def read_sdk_file(path):
+    path=Path(path)
+    if path.is_symlink(): return {'outcome':'symlink','bytes':None,'sha256':None}
+    try:
+        with path.open('rb') as stream: raw=stream.read(SDK_FILE_QUOTA+1)
+    except FileNotFoundError: return {'outcome':'missing','bytes':None,'sha256':None}
+    except OSError: return {'outcome':'unreadable','bytes':None,'sha256':None}
+    if len(raw)>SDK_FILE_QUOTA: return {'outcome':'oversized','bytes':len(raw),'sha256':None}
+    return {'outcome':'read','bytes':len(raw),'sha256':digest(raw)}
+
+def sdk_identity(expected, reader=read_sdk_file, *, shared_image=False):
+    fixed=tuple(SDK_ROOT+'/'+name for name in SDK_RELATIVE)
+    keys=tuple(str(path).replace('\\','/') for path in expected)
+    if keys!=fixed or any(type(pin) is not str or not re.fullmatch('[0-9a-f]{64}',pin) for pin in expected.values()):
+        raise ValueError('Exact five fixed SDK identities required')
+    rows=[]
+    for index,(key,pin) in enumerate(expected.items()):
+        path='C:/Program Files/dotnet/'+SDK_RELATIVE[index] if shared_image else key
+        actual=reader(path)
+        if actual['outcome']=='read':
+            outcome='matched' if actual['sha256']==pin and actual['bytes']==SDK_LENGTHS[index] else 'hash-mismatch' if actual['sha256']!=pin else 'length-mismatch'
+        else: outcome=actual['outcome']
+        rows.append({'index':index,'expectedSha256':pin,'expectedBytes':SDK_LENGTHS[index],'observedSha256':actual['sha256'],'observedBytes':actual['bytes'],'outcome':outcome})
+    return {'schemaVersion':1,'source':'shared-image' if shared_image else 'isolated-task-sdk','files':rows,'allFiveMatch':all(row['outcome']=='matched' for row in rows),'observedHashesAreAuthority':False}
+
+def validate_sdk_cleanup(root,owner,validated_permit):
+    root=Path(root)
+    if root.resolve()!=root.absolute() or root.resolve()!=Path(SDK_ROOT) or root.is_symlink() or owner!={'owner':OWNER,'leaseId':validated_permit['leaseId'],'expiresUtc':validated_permit['expiresUtc'],'persistentData':False}:
+        raise ValueError('Exact task-owned SDK cleanup identity required')
+
 def main():
     if sys.platform!='win32': raise ValueError('Qualified Windows provider required')
     trusted=Path(__file__).resolve().parent
     policy=json.loads((trusted/'hosted-static-policy.json').read_bytes(),object_pairs_hook=unique)
     permit_raw=os.environ['ROOT_STATIC_PERMIT'].encode('utf-8')
-    validate_permit(permit_raw,policy)
+    validated_permit=validate_permit(permit_raw,policy)
     context=json.loads(os.environ['TRUSTED_WORKFLOW_CONTEXT'],object_pairs_hook=unique)
     # The checkout action supplies the trusted control tree. Verify its actual
     # HEAD with the qualified provider after verifying that provider's bytes.
@@ -157,8 +193,8 @@ def main():
     admission=importlib.import_module('workflows_native_admission_v3')
     supervisor=importlib.import_module('workflows_cleanup_supervisor_v1')
     ledger=[]; failure=None
-    def command(name,args,cwd):
-        return preparation_command(owned.run_owned,ledger,args,cwd=cwd,timeout=30,memory_limit=256*1024**2,output_limit=4*1024**2,log_path=outputs/(name+'.log'))
+    def command(name,args,cwd,timeout=30):
+        return preparation_command(owned.run_owned,ledger,args,cwd=cwd,timeout=timeout,memory_limit=256*1024**2,output_limit=4*1024**2,log_path=outputs/(name+'.log'))
     try:
         head=command('trusted-head',['git','rev-parse','HEAD'],trusted.parent).decode().strip()
         validate_context(context,head)
@@ -172,6 +208,15 @@ def main():
         core=outputs/'hosted_static_core.py'
         if digest(core.read_bytes())!=policy['coreSha256']: raise ValueError('Reviewed native core pin')
         module=importlib.import_module('hosted_static_core')
+        identity={'sharedImage':sdk_identity(module.SDK_FILES,shared_image=True)}
+        (outputs/'sdk-identity.json').write_text(json.dumps(identity,indent=2))
+        remaining=(datetime.fromisoformat(validate_permit(permit_raw,policy)['expiresUtc'])-datetime.now(timezone.utc)).total_seconds()-25
+        if remaining<=0: raise RuntimeError('Insufficient current bootstrap lease')
+        bootstrap=trusted/'hosted-sdk-bootstrap.py'
+        if digest(bootstrap.read_bytes())!=policy['sdkBootstrapSha256']: raise ValueError('Reviewed SDK bootstrap pin')
+        command('sdk-bootstrap',[sys.executable,'-B',str(bootstrap)],trusted.parent,timeout=min(300,remaining))
+        identity['isolated']=sdk_identity(module.SDK_FILES)
+        (outputs/'sdk-identity.json').write_text(json.dumps(identity,indent=2))
         module.candidate_check()
         sys.argv=[str(core),'hosted-static',str(permit_path)]
         module.main()
@@ -183,12 +228,22 @@ def main():
         def recover(lease): ledger.append(owned.recover_quarantined(lease))
         def cleanup():
             while True:
-                try: return supervisor.supervise(owned._quarantined,recover,None,None,checkpoint)
+                try:
+                    state=supervisor.supervise(owned._quarantined,recover,None,None,checkpoint)
+                    sdk=Path(SDK_ROOT)
+                    if sdk.exists():
+                        owner=json.loads((sdk/'.codex-sdk-owner.json').read_bytes(),object_pairs_hook=unique)
+                        # Cleanup uses the identity admitted at startup; it does
+                        # not renew a permit or authorize another command.
+                        validate_sdk_cleanup(sdk,owner,validated_permit)
+                        shutil.rmtree(sdk)
+                    state['sdkRootRemoved']=not sdk.exists()
+                    return state
                 except BaseException:
                     if owned._quarantined: continue  # Retain and supervise exact owned handles.
                     raise
         def receipt(state,errors):
-            (outputs/'wrapper-receipt.json').write_text(json.dumps({'failureType':type(failure).__name__ if failure else None,'resources':ledger,'cleanup':state,'cleanupFailureTypes':errors,'buildOrTestsReplayed':False},indent=2))
+            (outputs/'wrapper-receipt.json').write_text(json.dumps({'owner':OWNER,'leaseId':validated_permit['leaseId'],'leaseExpiresUtc':validated_permit['expiresUtc'],'failureType':type(failure).__name__ if failure else None,'resources':ledger,'cleanup':state,'cleanupFailureTypes':errors,'buildOrTestsReplayed':False},indent=2))
         preserve_first_failure(failure,cleanup,receipt)
 
 

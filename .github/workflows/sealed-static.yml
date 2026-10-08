@@ -17,7 +17,8 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     env:
-      DOTNET_INSTALL_DIR: C:\Program Files\dotnet
+      DOTNET_INSTALL_DIR: D:/codex-temp/2026-10-09/workflows-hosted-sdk-10.0.401
+      DOTNET_ROOT: D:/codex-temp/2026-10-09/workflows-hosted-sdk-10.0.401
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       PYTHONDONTWRITEBYTECODE: '1'
@@ -31,17 +32,15 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $names = @('dotnet.exe','msbuild.exe','testhost.exe','testhost.x86.exe','vstest.console.exe','vbcscompiler.exe','csc.exe','vbc.exe','fsc.exe','fsi.exe')
+          if (Test-Path -LiteralPath $env:DOTNET_INSTALL_DIR) { throw 'Fresh task-owned SDK install root required.' }
           $free = [math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1024)
           if ($free -lt 5120 -or @(Get-CimInstance Win32_Process | Where-Object Name -In $names).Count -ne 0) { throw 'Initial resource admission refused.' }
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
-        with:
-          dotnet-version: 10.0.401
       - name: Pure sealed transport controls
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -B scripts/test-hosted-static.py
-      - name: Actual bounded restore prerequisite then format and typed audit
+      - name: Pinned SDK archive bootstrap then bounded restore format and typed audit
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -60,6 +59,12 @@ jobs:
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/journal.jsonl
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/format.log
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/audit.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-identity.json
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-record.json
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/restore.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/head.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/scope.log
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/wrapper-receipt.json
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/wrapper-cleanup.json
           if-no-files-found: error
