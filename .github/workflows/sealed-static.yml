@@ -1,0 +1,67 @@
+name: Reviewed sealed Workflows static validation
+on:
+  workflow_dispatch:
+    inputs:
+      root_permit:
+        description: Fresh Root-issued nine-field hosted-static cooperative lease; not cryptographic issuer authentication
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: workflows-sealed-static-candidate
+  cancel-in-progress: false
+jobs:
+  static:
+    if: github.repository == 'MALIEV-Co-Ltd/Legacy.Maliev.Workflows' && github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      DOTNET_INSTALL_DIR: C:\Program Files\dotnet
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Initial headroom before managed SDK bootstrap
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $names = @('dotnet.exe','msbuild.exe','testhost.exe','testhost.x86.exe','vstest.console.exe','vbcscompiler.exe','csc.exe','vbc.exe','fsc.exe','fsi.exe')
+          $free = [math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1024)
+          if ($free -lt 5120 -or @(Get-CimInstance Win32_Process | Where-Object Name -In $names).Count -ne 0) { throw 'Initial resource admission refused.' }
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.401
+      - name: Pure sealed transport controls
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -B scripts/test-hosted-static.py
+      - name: Actual bounded restore prerequisite then format and typed audit
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ROOT_STATIC_PERMIT: ${{ inputs.root_permit }}
+          TRUSTED_WORKFLOW_CONTEXT: >-
+            {"repository":"${{ github.repository }}","ref":"${{ github.ref }}","eventName":"${{ github.event_name }}","sha":"${{ github.sha }}","job":${{ toJSON(job) }}}
+        run: python -B scripts/run-hosted-static.py
+      - name: Retain strict raw evidence and cleanup receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: workflows-static-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/receipt.json
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/strict-*-result.json
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/journal.jsonl
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/format.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/audit.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/wrapper-receipt.json
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/wrapper-cleanup.json
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
