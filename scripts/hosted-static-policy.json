@@ -5,9 +5,9 @@
   "candidateSha": "e13b47a5336e2b8aebde4a6826be910d892833afce6a48572a943c8428e27162",
   "worktree": "D:\\codex-temp\\2026-10-08\\task\\workflows-gitleaks-toolchain-pin",
   "outputsRoot": "D:\\codex-temp\\2026-10-03\\legacy-code-workflows-20261003\\outputs",
-  "kitGitBlob": "5c1bc7c6c68d25caaa0ab8fca1fcad5ad947516f",
-  "kitSha256": "b749bfc7f2343ccc9201b73de6ec7dfb8d3ea9013be869b12d8ce39ef2cc2682",
-  "kitBytes": 32864042,
+  "kitGitBlob": "44c46d94bd787462c42a317f8139959d281597e2",
+  "kitSha256": "d43f531a3f9da9934586387d92132982ece91807ef10817a097030255c0191a5",
+  "kitBytes": 32864058,
   "entries": {
     "outputs/accepted-package-assets/tests/Legacy.Maliev.Workflows.Tests/obj/project.assets.json": {
       "sha256": "716a54bbcf69c6bcdca37f214a030f5e919a074a393a67c541712be74a2b191a",
@@ -38,8 +38,8 @@
       "bytes": 2913
     },
     "outputs/hosted_static_core.py": {
-      "sha256": "957119388cd0203458ddc7c6d33cfd17c5f688e939d723e2c9d6c2bf1c6f7374",
-      "bytes": 19356
+      "bytes": 19384,
+      "sha256": "0d7638c72cbfd1d47f8f92da61c5942b51737a5038485de800081de5252eac06"
     },
     "outputs/offline-packages/microsoft.applicationinsights.2.23.0.nupkg": {
       "sha256": "e6c7f76e0ec26598c7b1e2be1777e839c84486655e8a878fc4c655bd2e918dbd",
@@ -728,7 +728,7 @@
     "typed three-project official-feed audit"
   ],
   "buildOrTestReplayed": false,
-  "coreSha256": "957119388cd0203458ddc7c6d33cfd17c5f688e939d723e2c9d6c2bf1c6f7374",
+  "coreSha256": "0d7638c72cbfd1d47f8f92da61c5942b51737a5038485de800081de5252eac06",
   "qualifiedProviderSha256": "890e9279929e25dfc6839e753cc53121e82c589dd192d264165b052484638ed6",
   "protectedWorkflowNotPublished": true,
   "unconstrainedPackageResolution": false,
