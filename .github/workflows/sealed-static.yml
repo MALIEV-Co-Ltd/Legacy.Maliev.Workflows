@@ -22,6 +22,10 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       PYTHONDONTWRITEBYTECODE: '1'
+      # Preserve reviewed Git blob bytes during Windows checkout.
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: 'false'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -59,6 +63,8 @@ jobs:
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/journal.jsonl
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/format.log
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/audit.log
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-source.json
+            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-source.bin
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-identity.json
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-record.json
             D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap.log

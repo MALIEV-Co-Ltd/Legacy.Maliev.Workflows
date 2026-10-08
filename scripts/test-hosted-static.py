@@ -305,4 +305,31 @@ class SdkCleanupIdentityControls(unittest.TestCase):
         self.owner['persistentData']=True
         with self.assertRaises(ValueError):mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit)
 
+
+class CheckoutByteIdentityControls(unittest.TestCase):
+    def setUp(self):
+        self.raw=b'fixed\npublic\n'
+        self.pin=mod.digest(self.raw)
+        self.baseline=mod.bootstrap_source_identity(self.raw,self.pin,len(self.raw))
+        self.assertTrue(self.baseline['exactReviewedBytes'])
+    def test_exact_source_observed_without_promoting_hash(self):
+        self.assertEqual(self.pin,self.baseline['observedSha256'])
+        self.assertFalse(self.baseline['observedHashesAreAuthority'])
+    def test_crlf_conversion_rejected_with_physical_diagnostics(self):
+        raw=self.raw.replace(b'\n',b'\r\n')
+        row=mod.bootstrap_source_identity(raw,self.pin,len(self.raw))
+        self.assertFalse(row['exactReviewedBytes']);self.assertEqual(2,row['crlfCount'])
+        self.assertEqual(len(raw),row['observedBytes']);self.assertNotEqual(self.pin,row['observedSha256'])
+    def test_same_length_content_drift_rejected(self):
+        self.assertFalse(mod.bootstrap_source_identity(b'drift\npublic\n',self.pin,len(self.raw))['exactReviewedBytes'])
+    def test_exact_hash_wrong_expected_length_rejected(self):
+        self.assertFalse(mod.bootstrap_source_identity(self.raw,self.pin,len(self.raw)+1)['exactReviewedBytes'])
+    def test_checkout_config_and_diagnostics_are_workflow_scoped(self):
+        path=ROOT/'workflow.yml'
+        if not path.exists():path=ROOT.parent/'.github/workflows/sealed-static.yml'
+        workflow=path.read_text()
+        for value in ("      GIT_CONFIG_COUNT: '1'",'      GIT_CONFIG_KEY_0: core.autocrlf',"      GIT_CONFIG_VALUE_0: 'false'",'outputs/sdk-bootstrap-source.json','outputs/sdk-bootstrap-source.bin'):
+            self.assertIn(value,workflow)
+        self.assertNotIn('git config --global core.autocrlf',workflow)
+
 if __name__=='__main__':unittest.main()

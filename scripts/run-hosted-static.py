@@ -167,6 +167,13 @@ def sdk_identity(expected, reader=read_sdk_file, *, shared_image=False):
         rows.append({'index':index,'expectedSha256':pin,'expectedBytes':SDK_LENGTHS[index],'observedSha256':actual['sha256'],'observedBytes':actual['bytes'],'outcome':outcome})
     return {'schemaVersion':1,'source':'shared-image' if shared_image else 'isolated-task-sdk','files':rows,'allFiveMatch':all(row['outcome']=='matched' for row in rows),'observedHashesAreAuthority':False}
 
+def bootstrap_source_identity(raw, expected_sha256, expected_bytes):
+    return {'schemaVersion':1,'expectedSha256':expected_sha256,'expectedBytes':expected_bytes,
+            'observedSha256':digest(raw),'observedBytes':len(raw),
+            'lfCount':raw.count(b'\n'),'crlfCount':raw.count(b'\r\n'),
+            'exactReviewedBytes':len(raw)==expected_bytes and digest(raw)==expected_sha256,
+            'observedHashesAreAuthority':False}
+
 def validate_sdk_cleanup(root,owner,validated_permit):
     root=Path(root)
     if root.resolve()!=root.absolute() or root.resolve()!=Path(SDK_ROOT) or root.is_symlink() or owner!={'owner':OWNER,'leaseId':validated_permit['leaseId'],'expiresUtc':validated_permit['expiresUtc'],'persistentData':False}:
@@ -213,7 +220,15 @@ def main():
         remaining=(datetime.fromisoformat(validate_permit(permit_raw,policy)['expiresUtc'])-datetime.now(timezone.utc)).total_seconds()-25
         if remaining<=0: raise RuntimeError('Insufficient current bootstrap lease')
         bootstrap=trusted/'hosted-sdk-bootstrap.py'
-        if digest(bootstrap.read_bytes())!=policy['sdkBootstrapSha256']: raise ValueError('Reviewed SDK bootstrap pin')
+        # Retain the fixed public control file's physical checkout bytes before
+        # checking identity. This observation never changes the reviewed pin.
+        with bootstrap.open('rb') as stream: bootstrap_raw=stream.read(64*1024+1)
+        source_identity=bootstrap_source_identity(bootstrap_raw,policy['sdkBootstrapSha256'],6249)
+        source_identity['captureComplete']=len(bootstrap_raw)<=64*1024
+        (outputs/'sdk-bootstrap-source.json').write_text(json.dumps(source_identity,indent=2))
+        (outputs/'sdk-bootstrap-source.bin').write_bytes(bootstrap_raw)
+        print(json.dumps({'sdkBootstrapSource':source_identity}),flush=True)
+        if not source_identity['captureComplete'] or not source_identity['exactReviewedBytes']: raise ValueError('Reviewed SDK bootstrap pin')
         command('sdk-bootstrap',[sys.executable,'-B',str(bootstrap)],trusted.parent,timeout=min(300,remaining))
         identity['isolated']=sdk_identity(module.SDK_FILES)
         (outputs/'sdk-identity.json').write_text(json.dumps(identity,indent=2))
