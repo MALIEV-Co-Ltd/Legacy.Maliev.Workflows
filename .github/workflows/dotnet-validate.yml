@@ -116,6 +116,8 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Install Gitleaks
+        env:
+          GOTOOLCHAIN: go1.26.8
         run: |
           go install github.com/zricethezav/gitleaks/v8@6eaad039603a4de39fddd1cf5f727391efe9974e # v8.30.0
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
