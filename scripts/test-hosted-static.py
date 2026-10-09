@@ -1117,6 +1117,48 @@ class LinuxNativeResultEncodingControls(unittest.TestCase):
         self.assertIn(b'memory_limit=3 * 1024**3',source);self.assertIn(b'cpu_rate=5000',source);self.assertIn(b'output_limit=4 * 1024 * 1024',source)
 
 
+class LinuxCandidateHelperPinControls(unittest.TestCase):
+    def evidence(self):
+        import ast
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+        entries=mod.verified_entries(real_kit(),policy)
+        tree=ast.parse(entries['outputs/hosted_static_core.py'])
+        constants={n.targets[0].id:ast.literal_eval(n.value) for n in tree.body if isinstance(n,ast.Assign) and isinstance(n.targets[0],ast.Name) and n.targets[0].id in ('ADMISSION_HASH','VALIDATOR_HASH')}
+        function=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='candidate_check')
+        loop=function.body[0]
+        mapping=loop.iter.func.value
+        expected={ast.literal_eval(k):constants[v.id] if isinstance(v,ast.Name) else ast.literal_eval(v) for k,v in zip(mapping.keys,mapping.values)}
+        code=compile(ast.fix_missing_locations(ast.Module(body=[loop],type_ignores=[])),'<actual-sealed-helper-integrity-guard>','exec')
+        state=dict(constants,OUT=Path('outputs'),sha=lambda p:hashlib.sha256(entries[p.as_posix()]).hexdigest())
+        return entries,expected,code,state
+    def test_actual_candidate_guard_matches_all_closed_kit_helper_bytes(self):
+        entries,expected,code,state=self.evidence()
+        self.assertEqual(14,len(expected))
+        self.assertEqual(174,len(entries))
+        for name,digest in expected.items():
+            with self.subTest(helper=name):self.assertEqual(digest,hashlib.sha256(entries['outputs/'+name]).hexdigest())
+        exec(code,state)
+    def test_actual_candidate_guard_rejects_each_mutated_helper(self):
+        entries,expected,code,state=self.evidence()
+        for name in expected:
+            path='outputs/'+name;original=entries[path]
+            try:
+                entries[path]=original+b'\n'
+                with self.subTest(helper=name),self.assertRaisesRegex(RuntimeError,'^Reviewed resource/result helper changed$'):exec(code,state)
+            finally:entries[path]=original
+    def test_v17_stale_association_pin_reproduces_exact_failure(self):
+        import ast
+        entries,expected,code,state=self.evidence()
+        source=entries['outputs/hosted_static_core.py'].decode()
+        current=expected['workflows_gitleaks_compiled_result_association_v1.py']
+        self.assertEqual('4bd34e992f50868629c517fb7dcc4dad5481b633dece746769d2f7b63ef76a92',current)
+        self.assertEqual(1,source.count(current))
+        source=source.replace(current,'0bd0d3bc0b5f049b6d503cf593b53836b428478c1ee895a1218d9c14a87faa72')
+        function=next(n for n in ast.parse(source).body if isinstance(n,ast.FunctionDef) and n.name=='candidate_check')
+        code=compile(ast.fix_missing_locations(ast.Module(body=[function.body[0]],type_ignores=[])),'<exact-v17-stale-pin>','exec')
+        with self.assertRaisesRegex(RuntimeError,'^Reviewed resource/result helper changed$'):exec(code,state)
+
+
 class LinuxProviderControls(unittest.TestCase):
     def modules(self):
         import tempfile, types, sys
