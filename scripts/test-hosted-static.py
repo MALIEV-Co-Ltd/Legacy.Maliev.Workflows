@@ -430,7 +430,7 @@ class FreshQualificationPhaseControls(unittest.TestCase):
                 if mutation=='duplicate':actual[-1]=actual[-2]
                 text='The following Tests are available:\n'+''.join('    '+n+'\n' for n in actual)
                 if mutation=='old-go':text=text.replace('go1.26.9+auto','go1.26.8+auto')
-                state=dict(result=SimpleNamespace(stdout=text.encode(),stderr=b''),REPO=Path(temporary),runroot=Path(temporary),CANDIDATE='a'*64,BASE='b'*40,association=association,json=json,current_phase='discovery',phase_receipts={},sha=lambda p:'e2278ee608bf879e73ba5f49955143d1a7613c959552be5c47b7e9abef08c74d' if mutation=='historical-assembly' else 'c'*64)
+                state=dict(result=SimpleNamespace(stdout=text.encode(),stderr=b''),REPO=Path(temporary),runroot=Path(temporary),CANDIDATE='a'*64,BASE='b'*40,association=association,json=json,current_phase='discovery',phase_receipts={},datetime=__import__('datetime').datetime,timezone=__import__('datetime').timezone,sha=lambda p:'e2278ee608bf879e73ba5f49955143d1a7613c959552be5c47b7e9abef08c74d' if mutation=='historical-assembly' else 'c'*64)
                 if mutation=='baseline':exec(code,state);self.assertEqual(497,len(state['FRESH_INVENTORY']['names']))
                 else:
                     with self.assertRaises((ValueError,RuntimeError)):exec(code,state)
@@ -472,6 +472,116 @@ class PhasePolicyMetadataControls(unittest.TestCase):
         self.assertIn("'historicalBuildOrTestsReplayed':False",wrapper)
         self.assertNotIn('no builds or tests',wrapper)
 
+
+
+
+
+
+class LinuxDiscoveryObservationControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls): cls.runtime=LinuxProviderControls().modules()['workflows_linux_runtime']
+    def test_scalar_and_unlimited_limits(self):
+        for name in self.runtime.COUNTER_FILES:
+            if 'events' not in name: self.assertEqual(64,self.runtime.parse_discovery_counter(name,b'64\n'))
+        for name in ('pids.max','memory.max'): self.assertEqual('max',self.runtime.parse_discovery_counter(name,b'max\n'))
+    def test_closed_event_shape(self):
+        self.assertEqual({'max':3},self.runtime.parse_discovery_counter('pids.events',b'max 3\n'))
+        value=self.runtime.parse_discovery_counter('memory.events',b'low 0\nhigh 0\nmax 1\noom 1\noom_kill 0\noom_group_kill 0\n')
+        self.assertEqual(1,value['oom'])
+    def test_missing_counter_bytes_are_rejected(self):
+        for raw in (None,b'',b'\n'):
+            with self.subTest(raw=raw),self.assertRaises((RuntimeError,ValueError)): self.runtime.parse_discovery_counter('pids.current',raw)
+    def test_malformed_counter_is_not_zero(self):
+        for raw in (b'-1',b'01',b' 1',b'1 2',b'1\n\n',b'1.0',b'x',b'\xff',b'1'*4097):
+            with self.subTest(raw=raw),self.assertRaises((RuntimeError,ValueError)): self.runtime.parse_discovery_counter('memory.current',raw)
+    def test_max_only_allowed_for_limits(self):
+        for name in ('pids.current','pids.peak','memory.current','memory.peak'):
+            with self.subTest(name=name),self.assertRaises(RuntimeError): self.runtime.parse_discovery_counter(name,b'max')
+    def test_foreign_counter_name_rejected(self):
+        with self.assertRaises(RuntimeError): self.runtime.parse_discovery_counter('memory.swap.max',b'0')
+    def test_duplicate_or_unknown_events_rejected(self):
+        for raw in (b'max 0\nmax 1\n',b'max 0\nforeign 1\n',b'max  0\n',b'max -1\n'):
+            with self.subTest(raw=raw),self.assertRaises(RuntimeError): self.runtime.parse_discovery_counter('pids.events',raw)
+    def test_missing_memory_event_key_rejected(self):
+        with self.assertRaises(RuntimeError): self.runtime.parse_discovery_counter('memory.events.local',b'low 0\nhigh 0\nmax 0\noom 0\n')
+    def snapshot(self, *, malformed=False, missing=False, foreign=False, expired=False):
+        import tempfile,types,time,json
+        from unittest.mock import patch
+        runtime=self.runtime
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path('/sys/fs/cgroup/owned-fixture')
+            def verify(group):
+                if foreign: raise RuntimeError('foreign group')
+            scope=types.SimpleNamespace(root=root,deadline=time.monotonic()+(-1 if expired else 10),verify=verify)
+            def read(path,bound=4096):
+                if path.name=='cgroup.procs':return b''
+                if missing and path.name=='pids.peak':raise FileNotFoundError()
+                if malformed and path.name=='pids.current':return b'corrupt'
+                if path.name.startswith('memory.events'):return b'low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\n'
+                if path.name=='pids.events':return b'max 0\n'
+                return b'64\n'
+            row={}
+            with patch.object(runtime,'SCOPE',scope),patch.object(runtime,'observation_read',read):
+                runtime.retain_discovery_observation(Path(directory)/'discovery.log','terminal',row)
+            raw=(Path(directory)/'discovery-observation-terminal.json').read_bytes()
+            self.assertLessEqual(len(raw),65536)
+            self.assertEqual(len(raw),row['discoveryObservations']['terminal']['bytes'])
+            self.assertFalse(json.loads(raw)['qualified'])
+            return json.loads(raw)
+    def test_missing_peak_is_explicitly_unavailable(self):
+        self.assertEqual({'status':'unavailable','value':None,'reason':'FileNotFoundError'},self.snapshot(missing=True)['groups']['sdk']['pids.peak'])
+    def test_malformed_observation_remains_unknown(self):
+        self.assertIsNone(self.snapshot(malformed=True)['groups']['root']['pids.current']['value'])
+    def test_foreign_group_never_enumerated(self):
+        body=self.snapshot(foreign=True);self.assertEqual('incomplete',body['status']);self.assertEqual({},body['groups']);self.assertEqual([],body['processes'])
+    def test_expired_budget_never_renewed(self):
+        self.assertEqual('incomplete',self.snapshot(expired=True)['status'])
+    def process(self, *, foreign=False, reused=False):
+        import sys,types,stat
+        from unittest.mock import patch
+        runtime=self.runtime;expected='/owned/sdk'
+        helper=types.SimpleNamespace(group_of=lambda pid:'/foreign' if foreign else expected)
+        def read(path,bound=4096):
+            if path.name=='status':return b'Name:\tdotnet\nThreads:\t3\n'
+            if path.name=='0':return b'pos:\t0\nflags:\t0100000\n'
+            if path.name=='limits':return b'Max processes             64                   64                   processes\nMax open files            1024                 4096                 files\nMax stack size            8388608              unlimited            bytes\nMax address space         unlimited            unlimited            bytes\n'
+            raise AssertionError('Unexpected readonly process input')
+        with patch.dict(sys.modules,{'workflows_linux_owned_scope_v1':helper}),patch.object(runtime,'start_ticks',side_effect=[17,18 if reused else 17]),patch.object(runtime,'observation_read',side_effect=read) as reads,patch.object(Path,'stat',return_value=types.SimpleNamespace(st_mode=stat.S_IFIFO)):
+            if foreign:
+                with self.assertRaises(RuntimeError):runtime.discovery_process(123,expected)
+                reads.assert_not_called();return
+            return runtime.discovery_process(123,expected)
+    def test_exact_process_birth_thread_stdin_and_limits(self):
+        body=self.process();self.assertEqual(17,body['startTicks']);self.assertEqual(3,body['threads'])
+        self.assertEqual({'type':'pipe','flagsOctal':'0100000'},body['stdin'])
+        self.assertEqual('64',body['limits']['Max processes']['hard'])
+    def test_foreign_process_rejected_before_reading_descriptors(self):
+        self.process(foreign=True)
+    def test_process_birth_change_rejected(self):
+        with self.assertRaises(RuntimeError):self.process(reused=True)
+    def test_actual_crash_diagnostic_remains_rejected(self):
+        from types import SimpleNamespace
+        from tempfile import TemporaryDirectory
+        from datetime import datetime,timezone
+        code,association=FreshQualificationPhaseControls().branch('discovery')
+        with TemporaryDirectory() as directory:
+            # Modeled stderr oracle from the retained COMBINED crash text;
+            # the failed run's separate stream bytes are unavailable.
+            state=dict(result=SimpleNamespace(stdout=b'The following Tests are available:\n',
+                stderr=b'Win32Exception (11): Resource temporarily unavailable\nOut of memory.\n'),
+                REPO=Path(directory),runroot=Path(directory),CANDIDATE='a'*64,BASE='b'*40,
+                association=association,json=json,datetime=datetime,timezone=timezone,sha=lambda p:'c'*64)
+            with self.assertRaisesRegex(RuntimeError,'Compiled discovery stderr differs'):exec(code,state)
+            self.assertNotIn('ASSEMBLY_HASH',state)
+            self.assertFalse(json.loads((Path(directory)/'discovery-assembly-observation.json').read_bytes())['qualified'])
+    def test_telemetry_precedes_teardown_and_crash_guard_is_retained(self):
+        import inspect
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());entries=mod.verified_entries(real_kit(),policy)
+        runtime=entries['outputs/workflows_linux_runtime.py'].decode();core=entries['outputs/hosted_static_core.py'].decode()
+        self.assertLess(runtime.index('retain_discovery_observation(log_path,"terminal",row)'),runtime.index("SCOPE.stop_group('sdk',effective)"))
+        self.assertIn('if result.stderr.strip(): raise RuntimeError(\'Compiled discovery stderr differs\')',core)
+        self.assertLess(core.index("'discovery-assembly-observation.json'"),core.index("Compiled discovery stderr differs"))
+        self.assertLess(core.index('Compiled discovery stderr differs'),core.index('ASSEMBLY_HASH = sha(assembly)'))
 
 class LinuxProviderControls(unittest.TestCase):
     def modules(self):
