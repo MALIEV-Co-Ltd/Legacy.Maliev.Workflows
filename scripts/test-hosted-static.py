@@ -583,6 +583,62 @@ class LinuxDiscoveryObservationControls(unittest.TestCase):
         self.assertLess(core.index("'discovery-assembly-observation.json'"),core.index("Compiled discovery stderr differs"))
         self.assertLess(core.index('Compiled discovery stderr differs'),core.index('ASSEMBLY_HASH = sha(assembly)'))
 
+
+class LinuxSdkThreadPressureControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls): cls.runtime=LinuxProviderControls().modules()['workflows_linux_runtime']
+    def test_fixed_child_controls_override_inherited_runtime_settings(self):
+        result=self.runtime.sdk_child_environment({'DOTNET_EnableDiagnostics':'1','DOTNET_PROCESSOR_COUNT':'4096','MSBUILDDISABLENODEREUSE':'0','DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER':'0'},'/owned/docker.sock')
+        self.assertEqual('0',result['DOTNET_EnableDiagnostics'])
+        for key in ('DOTNET_PROCESSOR_COUNT','MSBUILDDISABLENODEREUSE','DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER'):self.assertEqual('1',result[key])
+        self.assertEqual('unix:///owned/docker.sock',result['DOCKER_HOST'])
+    def test_parent_environment_not_mutated(self):
+        parent={'DOTNET_EnableDiagnostics':'1','CUSTOM':'retained'};original=parent.copy()
+        child=self.runtime.sdk_child_environment(parent,'/owned/socket')
+        self.assertEqual(original,parent);self.assertEqual('retained',child['CUSTOM']);self.assertIsNot(parent,child)
+    def test_non_dictionary_or_non_string_environment_refused(self):
+        for value in (None,[],{'DOTNET_EnableDiagnostics':True},{1:'bad'},{'BAD':0}):
+            with self.subTest(value=value),self.assertRaises(RuntimeError):self.runtime.sdk_child_environment(value,'/owned/socket')
+    def test_invalid_socket_shape_refused(self):
+        for value in (None,'',[],False):
+            with self.subTest(value=value),self.assertRaises(RuntimeError):self.runtime.sdk_child_environment({},value)
+    def actual_path(self, cleanup_failure=False):
+        import tempfile,types,time,stat,contextlib
+        from unittest.mock import patch,Mock
+        runtime=self.runtime
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve();group=root/'sdk';group.mkdir();home=root/'home';home.mkdir();owner=home.stat()
+            spawn=Mock(side_effect=RuntimeError('controlled spawn failure after environment capture'))
+            stop=Mock(side_effect=RuntimeError('controlled cleanup failure') if cleanup_failure else None)
+            scope=types.SimpleNamespace(root=root,closed=False,daemon_failure=None,deadline=time.monotonic()+10,
+                handles={group:70},uid=owner.st_uid,gid=owner.st_gid,cli_home=home,front_parent=root,verify=lambda path:None,spawn=spawn,stop_group=stop)
+            real_stat=Path.stat
+            def metadata(path,*args,**kwargs):
+                row=real_stat(path,*args,**kwargs)
+                return types.SimpleNamespace(st_uid=row.st_uid,st_gid=row.st_gid,st_mode=stat.S_IFDIR|0o700) if path==home else row
+            parent={'DOTNET_EnableDiagnostics':'1','GH_TOKEN':'fixture-removed','ROOT_STATIC_PERMIT':'fixture-removed'}
+            with patch('shutil.which',return_value='/owned/dotnet'),patch.object(runtime,'SCOPE',scope),patch.object(runtime,'check_cli_home'),patch.object(Path,'stat',metadata),patch.object(runtime,'registration_window',contextlib.nullcontext),patch.object(runtime,'bind_executable',return_value={'fd':71,'resolved':'/owned/dotnet','sha256':'a'*64}),patch.object(runtime,'recheck_executable'),patch.object(runtime.os,'dup',return_value=72),patch.object(runtime.os,'set_inheritable'),patch.object(runtime.os,'fstat',return_value=types.SimpleNamespace(st_dev=1,st_ino=2)),patch.object(runtime.os,'pipe',side_effect=[(73,74),(75,76)]),patch.object(runtime.os,'close') as close:
+                with self.assertRaisesRegex(RuntimeError,'controlled spawn failure') as raised:
+                    runtime.run_owned(['/owned/dotnet','test','fixed.csproj','--list-tests'],env=parent,timeout=2)
+                row=raised.exception.resource_row
+                env=spawn.call_args.args[5]
+                self.assertEqual('0',env['DOTNET_EnableDiagnostics']);self.assertEqual('1',parent['DOTNET_EnableDiagnostics'])
+                self.assertNotIn('GH_TOKEN',env);self.assertNotIn('ROOT_STATIC_PERMIT',env)
+                self.assertEqual(['test','fixed.csproj','--list-tests'],spawn.call_args.args[0][-3:])
+                self.assertEqual('sdk',spawn.call_args.args[1]);self.assertEqual(owner.st_uid,spawn.call_args.args[2])
+                stop.assert_called_once();self.assertEqual('sdk',stop.call_args.args[0])
+                if cleanup_failure:
+                    self.assertIn(row['job_lease'],runtime._quarantined)
+                    stop.side_effect=None;runtime.recover_quarantined(row['job_lease'])
+                    self.assertNotIn(row['job_lease'],runtime._quarantined)
+                self.assertEqual(0,row['remaining_job_processes'])
+                for key in ('terminal_state_verified','cleanup_verified','process_handle_closed','thread_handle_closed','job_handle_closed','pipe_handles_closed','readers_settled','attribute_list_disposed'):self.assertIs(True,row[key])
+                self.assertGreaterEqual(close.call_count,7)
+    def test_actual_owned_command_passes_controlled_child_environment_and_cleans(self):
+        self.actual_path()
+    def test_actual_cleanup_failure_preserves_primary_and_recovers_exact_lease(self):
+        self.actual_path(cleanup_failure=True)
+
 class LinuxProviderControls(unittest.TestCase):
     def modules(self):
         import tempfile, types, sys
