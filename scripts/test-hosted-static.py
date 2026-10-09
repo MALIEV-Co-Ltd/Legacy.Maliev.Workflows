@@ -1,4 +1,5 @@
 import base64
+import copy
 from datetime import datetime,timedelta,timezone
 import hashlib
 import importlib.util
@@ -100,7 +101,7 @@ class SealedStaticControls(unittest.TestCase):
     def test_real_sealed_candidate(self):
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=real_kit()
         files=mod.verified_entries(data,policy)
-        self.assertEqual(174,len(files));self.assertEqual(policy['kitSha256'],mod.digest(data))
+        self.assertEqual(179,len(files));self.assertEqual(policy['kitSha256'],mod.digest(data))
         core=files['outputs/hosted_static_core.py'];self.assertEqual(policy['coreSha256'],mod.digest(core))
         self.assertEqual(5120,policy['initialMemoryFloorMiB']);self.assertEqual(4096,policy['runtimeMemoryFloorMiB'])
     def test_native_fixed_commands(self):
@@ -383,7 +384,7 @@ class CandidateGitNormalizationControls(unittest.TestCase):
         self.assertEqual(1,len(calls))
         self.assertEqual(['git','-c','core.autocrlf=true','status','--porcelain=v1','--untracked-files=all'],ast.literal_eval(calls[0].args[0]))
         frozen=entries['outputs/workflows-gitleaks-toolchain-build-request-20261008-v3/scope-frozen.txt']
-        self.assertEqual('abf0aac549840d3ae1cc2ff30c66c7a69b05a9295cf7a90872beb769fef5476d',mod.digest(frozen))
+        self.assertEqual('9df6aeb210daff54606e25b0f52712b79bb629c737f838bc8a43e649c19180a2',mod.digest(frozen))
         self.assertEqual(6,len(frozen.splitlines()))
         self.assertIn(b'scope.stdout != expected_scope.read_bytes()',raw)
         self.assertIn(b"raise RuntimeError('Workflows owned or preserved source bytes changed')",raw)
@@ -404,6 +405,14 @@ class FreshQualificationPhaseControls(unittest.TestCase):
         finally:
             if previous is None:sys.modules.pop(strict.__name__,None)
             else:sys.modules[strict.__name__]=previous
+        previous_association=sys.modules.get('workflows_gitleaks_compiled_result_association_v1')
+        sys.modules['workflows_gitleaks_compiled_result_association_v1']=association
+        profile=types.ModuleType('inventory_cli_profile')
+        try:exec(compile(entries['outputs/workflows_inventory_cli_association_v1.py'],'<sealed-inventory-profile>','exec'),profile.__dict__)
+        finally:
+            if previous_association is None:sys.modules.pop('workflows_gitleaks_compiled_result_association_v1',None)
+            else:sys.modules['workflows_gitleaks_compiled_result_association_v1']=previous_association
+        association.inventory_profile=profile
         return ast,entries,tree,association
     def branch(self,phase):
         ast,entries,tree,association=self.evidence()
@@ -427,6 +436,10 @@ class FreshQualificationPhaseControls(unittest.TestCase):
         code,association=self.branch('discovery')
         focus=association.focused_names([dict(method=m,arguments=None,executed=False) for m in association.METHODS])
         pairs=list(association._V19_SUITE_PAIRS)+[(name,hashlib.sha256(('new'+str(i)).encode()).hexdigest()) for i,name in enumerate(association.PACKAGE_DIAGNOSTIC_NAMES)]
+        for method,count in association.inventory_profile.METHOD_COUNTS.items():
+            for index in range(count):
+                name=association.inventory_profile.PREFIX+method+('(MODELED source case: '+str(index)+')' if count>1 else '')
+                pairs.append((name,hashlib.sha256(('MODELED-NON-NATIVE:'+name).encode()).hexdigest()))
         names=[name for name,case_id in pairs]
         for mutation in ['baseline','missing','duplicate','old-go','historical-assembly']:
             with self.subTest(mutation=mutation),TemporaryDirectory() as temporary:
@@ -440,8 +453,8 @@ class FreshQualificationPhaseControls(unittest.TestCase):
                     data.append(dict(Assembly=assembly,DisplayName=name,ID=pairs[i][1],Class=class_name,Method=method))
                 text=json.dumps(data)
                 if mutation=='old-go':text=text.replace('go1.26.9+auto','go1.26.8+auto')
-                state=dict(result=SimpleNamespace(stdout=text.encode(),stderr=b''),REPO=Path(temporary),runroot=Path(temporary),CANDIDATE='a'*64,BASE='b'*40,association=association,json=json,current_phase='discovery',phase_receipts={},datetime=__import__('datetime').datetime,timezone=__import__('datetime').timezone,sha=lambda p:'e2278ee608bf879e73ba5f49955143d1a7613c959552be5c47b7e9abef08c74d' if mutation=='historical-assembly' else 'c'*64)
-                if mutation=='baseline':exec(code,state);self.assertEqual(513,len(state['FRESH_INVENTORY']['names']))
+                state=dict(result=SimpleNamespace(stdout=text.encode(),stderr=b''),REPO=Path(temporary),runroot=Path(temporary),CANDIDATE='a'*64,BASE='b'*40,association=association,inventory_association=association.inventory_profile,json=json,current_phase='discovery',phase_receipts={},datetime=__import__('datetime').datetime,timezone=__import__('datetime').timezone,sha=lambda p:'e2278ee608bf879e73ba5f49955143d1a7613c959552be5c47b7e9abef08c74d' if mutation=='historical-assembly' else 'c'*64)
+                if mutation=='baseline':exec(code,state);self.assertEqual(532,len(state['FRESH_INVENTORY']['names']));self.assertEqual(19,len(state['FRESH_INVENTORY']['focusedNames']))
                 else:
                     with self.assertRaises((ValueError,RuntimeError)):exec(code,state)
     def test_tampered_assembly_after_discovery_uses_actual_guard(self):
@@ -736,7 +749,7 @@ class LinuxBuiltDllControls(unittest.TestCase):
         node=self.commands();state={'OUT':Path('/sealed')};commands=eval(compile(ast.Expression(body=node),'<actual-phase-argv>','eval'),state)
         sdk='/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet';dll='tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0/Legacy.Maliev.Workflows.Tests.dll'
         self.assertEqual([sdk,'exec',dll,'-preEnumerateTheories','-noColor','-list','full/json'],commands['discovery'])
-        self.assertEqual([sdk,'exec',dll,'-preEnumerateTheories','-method','Legacy.Maliev.Workflows.Tests.RepositoryContractTests.GitleaksInstallation_When*'],commands['focused'])
+        self.assertEqual([sdk,'exec',dll,'-preEnumerateTheories','-class','Legacy.Maliev.Workflows.Tests.PrivateCorpusInventoryCliTests'],commands['focused'])
         self.assertEqual([sdk,'exec',dll,'-preEnumerateTheories'],commands['suite'])
         self.assertEqual(['restore','build','discovery','focused','suite','format','audit'],list(commands))
     def evaluated_commands(self):
@@ -746,7 +759,7 @@ class LinuxBuiltDllControls(unittest.TestCase):
         # host path separators and ast.dump empty-field defaults.
         return eval(compile(ast.Expression(body=self.commands()),'<actual-command-contract>','eval'),{'OUT':PurePosixPath('/sealed')})
     def assert_non_test_command_contract(self,commands):
-        expected={'restore': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'restore', 'Legacy.Maliev.Workflows.slnx', '--disable-parallel', '--configfile', '/sealed/hosted-nuget.config', '-m:1', '/nr:false'], 'build': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'build', 'Legacy.Maliev.Workflows.slnx', '-c', 'Release', '--no-restore', '--no-incremental', '--disable-build-servers', '-m:1', '/p:UseSharedCompilation=false', '/nr:false', '-warnaserror'], 'format': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'format', 'Legacy.Maliev.Workflows.slnx', '--verify-no-changes', '--no-restore', '--include', 'tests/Legacy.Maliev.Workflows.Tests/RepositoryContractTests.cs'], 'audit': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'package', 'list', '--project', 'Legacy.Maliev.Workflows.slnx', '--vulnerable', '--include-transitive', '--no-restore', '--format', 'json', '--output-version', '1', '--source', 'https://api.nuget.org/v3/index.json']}
+        expected={'restore': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'restore', 'Legacy.Maliev.Workflows.slnx', '--disable-parallel', '--configfile', '/sealed/hosted-nuget.config', '-m:1', '/nr:false'], 'build': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'build', 'Legacy.Maliev.Workflows.slnx', '-c', 'Release', '--no-restore', '--no-incremental', '--disable-build-servers', '-m:1', '/p:UseSharedCompilation=false', '/nr:false', '-warnaserror'], 'format': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'format', 'Legacy.Maliev.Workflows.slnx', '--verify-no-changes', '--no-restore', '--include', 'tools/additive-benchmark/AdditiveBenchmarkCli.cs', 'tests/Legacy.Maliev.Workflows.Tests/PrivateCorpusInventoryCliTests.cs'], 'audit': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'package', 'list', '--project', 'Legacy.Maliev.Workflows.slnx', '--vulnerable', '--include-transitive', '--no-restore', '--format', 'json', '--output-version', '1', '--source', 'https://api.nuget.org/v3/index.json']}
         actual={k:v for k,v in commands.items() if k not in ('discovery','focused','suite')}
         self.assertEqual(expected,actual)
     def test_non_test_commands_exact_argv_contract_unchanged(self):
@@ -824,7 +837,7 @@ class LinuxBuiltDllControls(unittest.TestCase):
         self.fixture(operation)
     def test_result_filter_inventory_and_resource_acceptance_guards_preserved(self):
         text,tree=self.source()
-        for token in ("len(FRESH_INVENTORY['names']) != 513","association.verify_successor_native(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
+        for token in ("len(FRESH_INVENTORY['names']) != 532","inventory_association.verify(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
 
 
 class LinuxDirectXunitControls(unittest.TestCase):
@@ -978,7 +991,7 @@ class LinuxDirectXunitControls(unittest.TestCase):
         loop=text[text.index('for current_phase, arguments in commands.items():'):]
         self.assertLess(loop.index('verify_built_runtime(BUILT_RUNTIME_HASHES)'),loop.index('result, row = owned.run_owned(arguments'))
         self.assertIn('builtRuntimeFilesSha256=BUILT_RUNTIME_HASHES',text)
-        self.assertIn('association.native_successor_discovery(result.stdout',text)
+        self.assertIn('inventory_association.discovery(result.stdout',text)
     def test_actual_phase_failure_or_stop_never_accepts_discovery_or_trx(self):
         import ast,time
         from types import SimpleNamespace
@@ -1112,8 +1125,8 @@ class LinuxNativeResultEncodingControls(unittest.TestCase):
             with self.subTest(mode=mode),self.assertRaises(ValueError):self.verify(ET.tostring(root),inventory,'suite')
     def test_core_routes_only_native_trx_join_and_keeps_owned_trx_and_caps(self):
         source=sealed_source('hosted_static_core.py')
-        self.assertEqual(1,source.count(b'association.verify_successor_native(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)'))
-        self.assertNotIn(b'association.verify(trx.read_bytes()',source)
+        self.assertEqual(1,source.count(b'inventory_association.verify(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)'))
+        self.assertNotIn(b' = association.verify(trx.read_bytes()',source)
         self.assertIn(b"arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]",source)
         self.assertIn(b'memory_limit=3 * 1024**3',source);self.assertIn(b'cpu_rate=5000',source);self.assertIn(b'output_limit=4 * 1024 * 1024',source)
 
@@ -1134,8 +1147,8 @@ class LinuxCandidateHelperPinControls(unittest.TestCase):
         return entries,expected,code,state
     def test_actual_candidate_guard_matches_all_closed_kit_helper_bytes(self):
         entries,expected,code,state=self.evidence()
-        self.assertEqual(14,len(expected))
-        self.assertEqual(174,len(entries))
+        self.assertEqual(15,len(expected))
+        self.assertEqual(179,len(entries))
         for name,digest in expected.items():
             with self.subTest(helper=name):self.assertEqual(digest,hashlib.sha256(entries['outputs/'+name]).hexdigest())
         exec(code,state)
@@ -1171,11 +1184,11 @@ class LinuxSuiteFixtureControls(unittest.TestCase):
         originals={name:zlib.decompress(base64.b64decode(encoded)) for name,encoded in ORIGINAL_FIXTURE_PAYLOADS.items()}
         for name,digest in ORIGINAL_FIXTURE_HASHES.items():self.assertEqual(digest,hashlib.sha256(originals[name]).hexdigest())
         return policy,entries,originals
-    def test_six_candidate_files_and124_preserved_files_form_exact130(self):
+    def test_six_candidate_files_and128_preserved_files_form_exact134(self):
         policy,entries,originals=self.evidence()
         candidate=json.loads(entries['outputs/workflows-go1269-hosted-candidate/candidate-manifest.json'])
         preserved=json.loads(entries['outputs/workflows-go1269-hosted-candidate/preserved-existing-hashes.json'])
-        self.assertEqual(6,len(candidate['files']));self.assertEqual(124,len(preserved));self.assertEqual(124,candidate['preservedSourceFiles'])
+        self.assertEqual(6,len(candidate['files']));self.assertEqual(128,len(preserved));self.assertEqual(128,candidate['preservedSourceFiles'])
         self.assertEqual(policy['candidateSha'],hashlib.sha256(entries['outputs/workflows-go1269-hosted-candidate/candidate-manifest.json']).hexdigest())
         expected={r['path']:r['sha256'] for r in candidate['files']};self.assertEqual(6,len(expected));self.assertFalse(set(expected)&set(preserved));expected.update(preserved)
         self.assertEqual(set(expected),{n.removeprefix('worktree/') for n in entries if n.startswith('worktree/')})
@@ -1258,7 +1271,7 @@ class LinuxSuccessorCensusControls(unittest.TestCase):
         a=LinuxNativeResultEncodingControls().evidence();old=LinuxNativeResultEncodingControls().inventory()
         with self.assertRaises(ValueError):a.verify_successor_native(LinuxNativeResultEncodingControls().trx(),old,'focused','58886646bc8a00fe979653b60881ee3b32990614a10eaa018835d27ba1eaf894','1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3','53892c362a30130f582c40da7525e44f11474e8e')
         source=sealed_source('hosted_static_core.py')
-        self.assertIn(b'association.native_successor_discovery(result.stdout',source);self.assertIn(b'association.verify_successor_native(trx.read_bytes()',source);self.assertIn(b"len(FRESH_INVENTORY['names']) != 513",source)
+        self.assertIn(b'inventory_association.discovery(result.stdout',source);self.assertIn(b'inventory_association.verify(trx.read_bytes()',source);self.assertIn(b"len(FRESH_INVENTORY['names']) != 532",source)
 
 
 ORIGINAL_PACKAGED_PAYLOAD='eNqlVV1v2jAUfUfiP1h5ClIXddqe2nUVo7ChdgUBE5uqChn7AhbGzmyngKb+913b4auIfah5iZMc33vuvec4hRVqSvpr62CR3Qg6Vdo6wexltVKET98LJRw+VSuKLsDmlAG5gyll6+wrlQKesqE284nUS5sNwDobsA8NLSUwJ7RKky5lczoFTsQCb4QyBrmjikFSe6xW8mIsBSMWqEQIk9RastkxhHHb7wmBq5Vf1QrB66FFmXuM63I3tWvFyIDaOakzV1DZ9e/tDMxn6mDUVjZHNrazVMD7zFDHZiGwHQo304XrO2ocllvPcwxHPW+b1mKKMqu/rDO+J0ZrR65ID3JthdNm3dDKGSQVeGYtofjuWw/Bae1yF6RrNANrQ8q2mmiMiiuMp2CZdnJAdpikHEkbGSqOzU1r5Jok+RrpqoRcbJbvktou8h5Tf/nBYKQbYbB2ZIIpPPOzQ9Q3C/0ZSNlcASscIGhCpYUXqIYBbOS9jmwQ5EzxEtMDHlJhZYpTwzuFywv3b9imMdocQ58v95uPbcqa6kkYrRag3EPS/TH40rlPHnFj/NoSEu5Rp0fb6mZa+D13wuID52ny5lNS+zusS90sa+jFWChIQ/dI4vyUk3IxykutjpYwHgWFZ/k6qe3Hjk4q507y8n61eZMFKaSBAU75mriZwR6jHEhbPaHJeKkKrZor753gKvRGaSjm1aelJVxwolCasZaD8rw1PkT5fiR6M5h8R2BvYlkPKB/opuJ1b6vUq9orHFYuaxTGYH+yhvevlIHUQM9BnUwG5WRf5goTf3Wq2NojSF8XBg+qccGn4As9AciirO+EmgPfe///PGKmElOfODDpQCygn1OVtYxefBUKzWXT9wfCcGZ90r10SYXbdm2IDy1tmivhYqfKhEdEnndL5o85km7FE8kB34ro9NGxSXsrpEyxePRqKdaBAbgINt3PGorxqj1kcnRy8t0fBqcSSwwC2dtXtxa80X/iMZ6en225+Nobmh/kLbF+VFTgkZ30qCJvz8nGonv5zkg/cEAz59QIq1XWMVwoKv8YsHP7ijCxhgQjxFKj8TZAbNBztfIbWPZh9Q=='
@@ -1369,8 +1382,8 @@ class LinuxProviderControls(unittest.TestCase):
     def test_linux_route_retains_all497_and_exact_six_business_files(self):
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());entries=mod.verified_entries(real_kit(),policy)
         candidate=json.loads(entries['outputs/workflows-go1269-hosted-candidate/candidate-manifest.json'])
-        self.assertEqual(6,len(candidate['files']));self.assertEqual(130,len([n for n in entries if n.startswith('worktree/')]))
-        self.assertIn(b"len(FRESH_INVENTORY['names']) != 513",entries['outputs/hosted_static_core.py'])
+        self.assertEqual(6,len(candidate['files']));self.assertEqual(134,len([n for n in entries if n.startswith('worktree/')]))
+        self.assertIn(b"len(FRESH_INVENTORY['names']) != 532",entries['outputs/hosted_static_core.py'])
         self.assertIn(b"group ==",entries['outputs/workflows_private_docker_proxy_v1.py'].replace(b'group==',b'group =='))
         for phase in ['restore','build','discovery','focused','suite','format','audit']:self.assertIn(phase,policy['nativePhases'])
     def test_private_daemon_windows_os_refused(self):
@@ -1698,7 +1711,7 @@ class LinuxFiniteCleanupControls(unittest.TestCase):
         admission=types.ModuleType('workflows_native_admission_v3');admission.read_json=lambda path:({},b'fixture');admission.validate=lambda *args:datetime.now(timezone.utc)+timedelta(hours=1);admission.owner_identity=lambda:{'owner':'source-fixture'};admission.preflight=lambda *args:{};admission.Lease=lambda *args:slot
         owned=types.ModuleType('workflows_linux_runtime');owned._quarantined={'stuck':(None,{'job_lease':'stuck','cleanup_verified':False})};owned.prepare_result_directories=lambda path:{};owned.result_permission_arguments=lambda *args:['permission-probe'];owned.SCOPE=types.SimpleNamespace(uid=1001,gid=100);owned.cleanup_boundary=lambda:.25;owned.supervision_boundary=lambda:.25;owned.recover_quarantined=Mock(side_effect=RuntimeError('permanent resource refusal'))
         injected={'workflows_linux_runtime':owned,'workflows_native_admission_v3':admission,'workflows_cleanup_supervisor_v1':supervisor}
-        for name in ['artifact_pin_native_result_validation_v3','workflows_gitleaks_compiled_result_association_v1','hosted_package_graph']:injected[name]=types.ModuleType(name)
+        for name in ['artifact_pin_native_result_validation_v3','workflows_gitleaks_compiled_result_association_v1','workflows_inventory_cli_association_v1','hosted_package_graph']:injected[name]=types.ModuleType(name)
         with tempfile.TemporaryDirectory() as directory,patch.dict(sys.modules,injected):
             core_path=Path(directory)/'source-core.py';core_path.write_bytes(sealed_source('hosted_static_core.py'));core=types.ModuleType('source_core');core.__file__=str(core_path);exec(compile(core_path.read_bytes(),core.__file__,'exec'),core.__dict__)
             core.OUT=Path(directory).resolve();core.candidate_check=lambda:None
@@ -1932,5 +1945,62 @@ class LinuxRelayRetentionControls(unittest.TestCase):
             self.assertTrue(all(row['threadsJoined'] and (row.get('allFourSocketsClosed') or row.get('allSocketEndsClosed')) for row in proof['resources']))
             print('Actual sealed relay source controls (no SDK/Linux qualification): '+json.dumps(proof))
             print(result.stderr.decode())
+
+
+class InventoryCliProfileSourceControls(unittest.TestCase):
+    def adapter(self):
+        return FreshQualificationPhaseControls().evidence()[3].inventory_profile
+    def assembly(self):
+        return '/tmp/maliev-workflows-qualification/worktree/tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0/Legacy.Maliev.Workflows.Tests.dll'
+    def baseline(self):
+        a=FreshQualificationPhaseControls().evidence()[3]
+        pairs=list(a._V19_SUITE_PAIRS)+[(name,hashlib.sha256(('new'+str(index)).encode()).hexdigest()) for index,name in enumerate(a.PACKAGE_DIAGNOSTIC_NAMES)]
+        result=[]
+        for name,case_id in pairs:
+            class_name,method=name.split('(',1)[0].rsplit('.',1)
+            result.append(dict(Assembly=self.assembly(),Class=class_name,Method=method,DisplayName=name,ID=case_id))
+        return result
+    def rows(self):
+        import copy
+        model=self.baseline();adapter=self.adapter()
+        for method,count in adapter.METHOD_COUNTS.items():
+            for index in range(count):
+                name=adapter.PREFIX+method+('(MODELED source case: '+str(index)+')' if count>1 else '')
+                model.append(dict(Assembly=self.assembly(),Class=adapter.PREFIX[:-1],Method=method,DisplayName=name,ID=hashlib.sha256(('MODELED-NON-NATIVE:'+name).encode()).hexdigest()))
+        return model
+    def discover(self,model):
+        return self.adapter().discovery(json.dumps(model).encode(),'1'*64,'2'*64,'3'*40,self.assembly())
+    def test_modeled_discovery_retains_actual_historical513_and_models19_without_results(self):
+        value=self.discover(self.rows())
+        self.assertEqual(532,len(value['names']))
+        self.assertEqual(19,len(value['focusedNames']))
+        self.assertEqual([r['ID'] for r in self.baseline()],value['nativeCaseIds'][:513])
+        self.assertNotIn('outcome',value)
+    def test_missing_extra_changed_source_class_case_and_id_refusers(self):
+        for mutation in ('old513','missing-new','duplicate-new','reused-id','old-id-change','unknown-method','unknown-class','wrong-assembly','skip-field','bad-rows','duplicate-arg-display','bad-trait'):
+            with self.subTest(mutation=mutation):
+                model=self.rows()
+                if mutation=='old513':model=self.baseline()
+                elif mutation=='missing-new':model.pop()
+                elif mutation=='duplicate-new':model.append(copy.deepcopy(model[-1]))
+                elif mutation=='reused-id':model[-1]['ID']=model[0]['ID']
+                elif mutation=='old-id-change':model[0]['ID']='f'*64
+                elif mutation=='unknown-method':model[-1]['Method']='Unapproved';model[-1]['DisplayName']=self.adapter().PREFIX+'Unapproved'
+                elif mutation=='unknown-class':model[-1]['Class']='Legacy.Maliev.Workflows.Tests.Unapproved';model[-1]['DisplayName']=model[-1]['Class']+'.'+model[-1]['Method']
+                elif mutation=='wrong-assembly':model[-1]['Assembly']='wrong.dll'
+                elif mutation=='skip-field':model[-1]['Skip']='unreviewed'
+                elif mutation=='bad-rows':model={}
+                elif mutation=='duplicate-arg-display':model[-3]['DisplayName']=model[-2]['DisplayName']
+                elif mutation=='bad-trait':model[-1]['Traits']={'x':[None]}
+                with self.assertRaises((ValueError,TypeError,KeyError)):self.discover(model)
+    def test_duplicate_json_key_and_nonfinite_refuse(self):
+        for value in (b'[{"Assembly":"x","Assembly":"y"}]',b'[NaN]'):
+            with self.assertRaises((ValueError,TypeError)):self.adapter().discovery(value,'1'*64,'2'*64,'3'*40,self.assembly())
+    def test_stale_source_assembly_base_and_focus_inventory_refuse_before_trx(self):
+        for field,value in (('candidateSha256','4'*64),('assemblySha256','4'*64),('baseSha','4'*40),('focusedNames',[]),('dynamicExpansionAllowed',True),('nativeCaseIds',[])):
+            with self.subTest(field=field):
+                inventory=self.discover(self.rows());inventory[field]=value
+                with self.assertRaises((ValueError,TypeError,KeyError)):
+                    self.adapter().verify(b'NOT-TRX',inventory,'focused','1'*64,'2'*64,'3'*40)
 
 if __name__=='__main__':unittest.main()
