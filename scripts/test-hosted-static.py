@@ -415,11 +415,11 @@ class FreshQualificationPhaseControls(unittest.TestCase):
         baseline=b'Build succeeded.\n0 Warning(s)\n0 Error(s)\n'
         from unittest.mock import Mock
         capture=Mock(return_value='a'*64)
-        state={'result':SimpleNamespace(stdout=baseline),'phase_receipts':{},'current_phase':'build','verify_built_assembly':capture}
+        state={'result':SimpleNamespace(stdout=baseline),'phase_receipts':{},'current_phase':'build','verify_built_assembly':capture,'verify_built_runtime':Mock(return_value={'deps':'d'*64,'runtimeconfig':'e'*64})}
         exec(code,state);self.assertEqual(0,state['phase_receipts']['build']['warnings']);self.assertEqual('a'*64,state['phase_receipts']['build']['builtAssemblySha256']);capture.assert_called_once_with()
         for raw in [baseline.replace(b'0 Warning',b'1 Warning'),baseline.replace(b'Build succeeded.',b'Build failed.'),b'Build succeeded.\n']:
             capture=Mock(side_effect=AssertionError('Failed build must not capture assembly'))
-            with self.subTest(raw=raw),self.assertRaises(RuntimeError):exec(code,{'result':SimpleNamespace(stdout=raw),'phase_receipts':{},'current_phase':'build','verify_built_assembly':capture})
+            with self.subTest(raw=raw),self.assertRaises(RuntimeError):exec(code,{'result':SimpleNamespace(stdout=raw),'phase_receipts':{},'current_phase':'build','verify_built_assembly':capture,'verify_built_runtime':Mock(return_value={'deps':'d'*64,'runtimeconfig':'e'*64})})
             capture.assert_not_called()
     def test_fresh_discovery_refuses_missing_duplicate_or_old_go_identity(self):
         from types import SimpleNamespace
@@ -432,7 +432,12 @@ class FreshQualificationPhaseControls(unittest.TestCase):
                 actual=names.copy()
                 if mutation=='missing':actual.pop()
                 if mutation=='duplicate':actual[-1]=actual[-2]
-                text='The following Tests are available:\n'+''.join('    '+n+'\n' for n in actual)
+                assembly=str(Path(temporary)/'tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0/Legacy.Maliev.Workflows.Tests.dll')
+                data=[]
+                for i,name in enumerate(actual):
+                    class_name,method=name.split('(',1)[0].rsplit('.',1)
+                    data.append(dict(Assembly=assembly,DisplayName=name,ID=hashlib.sha256(str(i).encode()).hexdigest(),Class=class_name,Method=method))
+                text=json.dumps(data)
                 if mutation=='old-go':text=text.replace('go1.26.9+auto','go1.26.8+auto')
                 state=dict(result=SimpleNamespace(stdout=text.encode(),stderr=b''),REPO=Path(temporary),runroot=Path(temporary),CANDIDATE='a'*64,BASE='b'*40,association=association,json=json,current_phase='discovery',phase_receipts={},datetime=__import__('datetime').datetime,timezone=__import__('datetime').timezone,sha=lambda p:'e2278ee608bf879e73ba5f49955143d1a7613c959552be5c47b7e9abef08c74d' if mutation=='historical-assembly' else 'c'*64)
                 if mutation=='baseline':exec(code,state);self.assertEqual(497,len(state['FRESH_INVENTORY']['names']))
@@ -729,9 +734,9 @@ class LinuxBuiltDllControls(unittest.TestCase):
         import ast
         node=self.commands();state={'OUT':Path('/sealed')};commands=eval(compile(ast.Expression(body=node),'<actual-phase-argv>','eval'),state)
         sdk='/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet';dll='tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0/Legacy.Maliev.Workflows.Tests.dll'
-        self.assertEqual([sdk,'test',dll,'--list-tests'],commands['discovery'])
-        self.assertEqual([sdk,'test',dll,'--filter','FullyQualifiedName~RepositoryContractTests.GitleaksInstallation_When'],commands['focused'])
-        self.assertEqual([sdk,'test',dll],commands['suite'])
+        self.assertEqual([sdk,'exec',dll,'-preEnumerateTheories','-list','full/json'],commands['discovery'])
+        self.assertEqual([sdk,'exec',dll,'-preEnumerateTheories','-method','Legacy.Maliev.Workflows.Tests.RepositoryContractTests.GitleaksInstallation_When*'],commands['focused'])
+        self.assertEqual([sdk,'exec',dll,'-preEnumerateTheories'],commands['suite'])
         self.assertEqual(['restore','build','discovery','focused','suite','format','audit'],list(commands))
     def evaluated_commands(self):
         import ast
@@ -763,7 +768,7 @@ class LinuxBuiltDllControls(unittest.TestCase):
         self.assertLess(text.index("if 'Build succeeded.' not in text"),text.index('BUILT_ASSEMBLY_HASH = verify_built_assembly()'))
         start=text.index('for current_phase, arguments in commands.items():');loop=text[start:]
         self.assertLess(loop.index('verify_built_assembly(BUILT_ASSEMBLY_HASH)'),loop.index('result, row = owned.run_owned(arguments'))
-        self.assertIn("if BUILT_ASSEMBLY_HASH is None:",loop)
+        self.assertIn("if BUILT_ASSEMBLY_HASH is None or BUILT_RUNTIME_HASHES is None:",loop)
         self.assertIn("builtAssemblySha256=BUILT_ASSEMBLY_HASH",text)
     def test_regular_fresh_assembly_capture_and_recheck(self):
         def operation(s,a,r):
@@ -818,7 +823,186 @@ class LinuxBuiltDllControls(unittest.TestCase):
         self.fixture(operation)
     def test_result_filter_inventory_and_resource_acceptance_guards_preserved(self):
         text,tree=self.source()
-        for token in ("len(FRESH_INVENTORY['names']) != 497","association.verify(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['--logger', 'trx;LogFileName=' + current_phase + '.trx', '--results-directory', str(runroot / 'test-results' / current_phase)]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
+        for token in ("len(FRESH_INVENTORY['names']) != 497","association.verify(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
+
+
+class LinuxDirectXunitControls(unittest.TestCase):
+    def evidence(self):
+        return FreshQualificationPhaseControls().evidence()
+    def rows(self):
+        ast,entries,tree,a=self.evidence()
+        forecast=[dict(method=m,arguments=None,executed=False) for m in a.METHODS]
+        names=a.focused_names(forecast)+[a.ASSEMBLY+'.RepositoryContractTests.NativeControl'+str(i) for i in range(489)]
+        assembly='/tmp/maliev-workflows-qualification/worktree/tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0/'+a.ASSEMBLY+'.dll'
+        rows=[]
+        for i,name in enumerate(names):
+            cls,method=name.split('(',1)[0].rsplit('.',1)
+            rows.append(dict(Assembly=assembly,DisplayName=name,ID=hashlib.sha256(str(i).encode()).hexdigest(),Class=cls,Method=method))
+        return a,forecast,assembly,rows
+    def parse(self,raw=None,mutate=None):
+        a,forecast,assembly,rows=self.rows()
+        if mutate:mutate(rows)
+        return a.native_discovery(json.dumps(rows).encode() if raw is None else raw,forecast,'a'*64,'b'*64,'c'*40,assembly)
+    def reject(self,mutate=None,raw=None):
+        with self.assertRaises(ValueError):self.parse(raw=raw,mutate=mutate)
+    def test_actual_native_full_json_retains497_ids_names_and_focused8(self):
+        value=self.parse();self.assertEqual(497,len(value['names']));self.assertEqual(497,len(set(value['nativeCaseIds'])));self.assertEqual(8,len(value['focusedNames']));self.assertFalse(value['dynamicExpansionAllowed']);self.assertEqual('xunit3.2.2/full-json',value['nativeFormat'])
+    def test_exact_native_traits_shape_supported_without_losing_names(self):
+        before=self.parse();after=self.parse(mutate=lambda r:r[0].update(Traits={'Category':['Unit']}));self.assertEqual(before['names'],after['names'])
+    def test_legacy_vstest_text_is_not_native_discovery(self):
+        self.reject(raw=b'The following Tests are available:\n    Legacy.Maliev.Workflows.Tests.Old.Test\n')
+    def test_duplicate_top_level_and_nested_json_keys_refused(self):
+        a,f,assembly,rows=self.rows();raw=json.dumps(rows).replace('"Assembly":','"Assembly":"private-foreign", "Assembly":',1).encode();self.reject(raw=raw)
+        self.reject(raw=json.dumps(rows).replace('"ID":','"Traits":{"private":["value"],"private":["value"]},"ID":',1).encode())
+    def test_missing_extra_and_unexpanded_rows_refused(self):
+        for mode in ('missing','extra','unexpanded'):
+            def change(r):
+                if mode=='missing':r.pop()
+                elif mode=='extra':r.append(dict(r[-1],ID='f'*64))
+                else:r[0]['DisplayName']=r[0]['Class']+'.'+r[0]['Method']
+            with self.subTest(mode=mode):self.reject(change)
+    def test_duplicate_case_ids_and_unapproved_duplicate_displays_refused(self):
+        self.reject(lambda r:r[-1].update(ID=r[-2]['ID']))
+        self.reject(lambda r:r[-1].update(DisplayName=r[-2]['DisplayName'],Class=r[-2]['Class'],Method=r[-2]['Method']))
+    def test_foreign_assembly_class_method_or_display_refused(self):
+        for field,value in [('Assembly','/foreign.dll'),('Class','Foreign.Tests'),('Method','foreign-method'),('DisplayName','Foreign.Display')]:
+            with self.subTest(field=field):self.reject(lambda r:r[0].update({field:value}))
+    def test_missing_unknown_wrong_case_or_skipped_row_field_refused(self):
+        for mode in ('missing','unknown','case','skip'):
+            def change(r):
+                if mode=='missing':r[0].pop('ID')
+                elif mode=='unknown':r[0]['Unexpected']='private'
+                elif mode=='case':r[0]['id']=r[0].pop('ID')
+                else:r[0]['Skip']='private skip'
+            with self.subTest(mode=mode):self.reject(change)
+    def test_malformed_ids_fields_traits_and_unicode_refused(self):
+        for field,value in [('ID','G'*64),('ID','a'*63),('Class',None),('Method',True),('DisplayName','\ud800'),('DisplayName','x'*16385),('Traits',{}),('Traits',{'k':'value'}),('Traits',{'k':[True]}),('Traits',{'k':['x']*65})]:
+            with self.subTest(field=field,value=repr(value)[:40]):self.reject(lambda r:r[0].update({field:value}))
+    def test_json_shape_encoding_nonfinite_depth_and_byte_bounds_refused(self):
+        for raw in (b'',b'\xff',b'{}',b'null',b'NaN',b'['*2000+b']'*2000,b' '* (4*1024*1024+1)):
+            with self.subTest(length=len(raw)):self.reject(raw=raw)
+    def test_changed_go_focused_identity_and_additional_focus_refused(self):
+        def changed(r):
+            row=next(row for row in r if 'go1.26.9' in row['DisplayName'])
+            row['DisplayName']=row['DisplayName'].replace('go1.26.9','go1.26.8')
+        self.reject(changed)
+        def extra(r):
+            r[-1].update(DisplayName=r[0]['DisplayName']+'foreign',Class=r[0]['Class'],Method=r[0]['Method'])
+        self.reject(extra)
+    def native_trx(self,inventory,phase):
+        import xml.etree.ElementTree as ET
+        a=self.evidence()[3];strict=a.strict;ns=strict.NS
+        names=inventory['focusedNames'] if phase=='focused' else inventory['names']
+        root=ET.Element(ns+'TestRun');results=ET.SubElement(root,ns+'Results');definitions=ET.SubElement(root,ns+'TestDefinitions')
+        summary=ET.SubElement(root,ns+'ResultSummary',outcome='Completed');counts={key:'0' for key in strict.COUNTERS}
+        for key in ('total','executed','passed'):counts[key]=str(len(names))
+        ET.SubElement(summary,ns+'Counters',counts)
+        for name in names:
+            uid=str(uuid.uuid4());cls,method=name.split('(',1)[0].rsplit('.',1)
+            definition=ET.SubElement(definitions,ns+'UnitTest',id=uid,name=name);ET.SubElement(definition,ns+'Execution',id=uid)
+            ET.SubElement(definition,ns+'TestMethod',codeBase='/fresh/Legacy.Maliev.Workflows.Tests.dll',className=cls,name=method,adapterTypeName='executor://source-control/xunit.v3/3.2.2')
+            ET.SubElement(results,ns+'UnitTestResult',testId=uid,executionId=uid,testName=name,outcome='Passed')
+        return a,root
+    def test_native_discovery_retains_unchanged_strict8_and497_trx_association(self):
+        import xml.etree.ElementTree as ET
+        inventory=self.parse()
+        for phase,total in (('focused',8),('suite',497)):
+            with self.subTest(phase=phase):
+                a,root=self.native_trx(inventory,phase);result=a.verify(ET.tostring(root),inventory,phase,'a'*64,'b'*64,'c'*40)
+                self.assertEqual(total,result['total']);self.assertTrue(result['allExecutionAssociationsVerified'])
+    def test_native_trx_missing_definition_foreign_dll_duplicate_id_and_fail_refused(self):
+        import xml.etree.ElementTree as ET
+        inventory=self.parse()
+        for mode in ('missing','foreign-dll','duplicate','failed'):
+            with self.subTest(mode=mode):
+                a,root=self.native_trx(inventory,'focused');ns=a.strict.NS
+                if mode=='missing':root.find(ns+'TestDefinitions').remove(root.find(ns+'TestDefinitions')[0])
+                elif mode=='foreign-dll':root.find(ns+'TestDefinitions')[0].find(ns+'TestMethod').set('codeBase','Foreign.dll')
+                elif mode=='duplicate':root.find(ns+'Results')[1].set('executionId',root.find(ns+'Results')[0].get('executionId'))
+                else:root.find(ns+'Results')[0].set('outcome','Failed')
+                with self.assertRaises(ValueError):a.verify(ET.tostring(root),inventory,'focused','a'*64,'b'*64,'c'*40)
+    def runtime_guard(self,root):
+        import ast,stat
+        text=sealed_source('hosted_static_core.py');tree=ast.parse(text)
+        names={'verify_built_runtime','sha','TEST_ASSEMBLY_RELATIVE','TEST_RUNTIME_RELATIVES'}
+        nodes=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in names or isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id in names for t in n.targets)]
+        state=dict(Path=Path,REPO=root,stat=stat,hashlib=hashlib)
+        exec(compile(ast.Module(body=nodes,type_ignores=[]),'<actual-runtime-file-guard>','exec'),state)
+        return state
+    def runtime_fixture(self,operation):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as directory:
+            root=Path(directory).resolve();state=self.runtime_guard(root);paths={k:root/v for k,v in state['TEST_RUNTIME_RELATIVES'].items()}
+            for path in paths.values():path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'{"source":"fresh build runtime control"}')
+            operation(state,paths,root)
+    def test_real_original_runtime_paths_capture_and_recheck(self):
+        def op(s,p,r):
+            hashes=s['verify_built_runtime']();self.assertEqual({k:hashlib.sha256(v.read_bytes()).hexdigest() for k,v in p.items()},hashes);self.assertEqual(hashes,s['verify_built_runtime'](hashes))
+            self.assertTrue(all('tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0' in v.as_posix() for v in p.values()))
+        self.runtime_fixture(op)
+    def test_changed_missing_empty_nonregular_and_oversized_runtime_refused(self):
+        for name in ('deps','runtimeconfig'):
+            for mode in ('changed','missing','empty','directory','oversized'):
+                def op(s,p,r):
+                    hashes=s['verify_built_runtime']();path=p[name]
+                    if mode=='changed':path.write_bytes(b'changed runtime')
+                    elif mode=='missing':path.unlink()
+                    elif mode=='empty':path.write_bytes(b'')
+                    elif mode=='directory':path.unlink();path.mkdir()
+                    else:path.write_bytes(b'x'*(4*1024*1024+1))
+                    with self.assertRaises((RuntimeError,OSError)):s['verify_built_runtime'](hashes)
+                with self.subTest(name=name,mode=mode):self.runtime_fixture(op)
+    def test_runtime_symlink_parent_symlink_and_hash_race_refused(self):
+        for mode in ('file','parent','race'):
+            def op(s,p,r):
+                path=p['deps']
+                if mode=='file':
+                    foreign=r/'foreign.json';foreign.write_bytes(path.read_bytes());path.unlink();path.symlink_to(foreign)
+                elif mode=='parent':
+                    parent=path.parent;moved=parent.with_name('moved');parent.rename(moved);parent.symlink_to(moved,target_is_directory=True)
+                else:
+                    original=s['sha']
+                    def raced(current):value=original(current);current.write_bytes(b'raced runtime');return value
+                    s['sha']=raced
+                with self.assertRaises(RuntimeError):s['verify_built_runtime']()
+            with self.subTest(mode=mode):self.runtime_fixture(op)
+    def test_malformed_runtime_hash_map_refused(self):
+        def op(s,p,r):
+            for binding in ({},{'deps':'a'*64},{'deps':'a'*64,'runtimeconfig':True},{'deps':'A'*64,'runtimeconfig':'b'*64},{'deps':'a'*64,'runtimeconfig':'b'*64,'foreign':'c'*64},True):
+                with self.subTest(binding=binding),self.assertRaises(RuntimeError):s['verify_built_runtime'](binding)
+        self.runtime_fixture(op)
+    def test_build_runtime_capture_and_rechecks_precede_direct_spawn(self):
+        text=sealed_source('hosted_static_core.py').decode()
+        self.assertLess(text.index("if 'Build succeeded.' not in text"),text.index('BUILT_RUNTIME_HASHES = verify_built_runtime()'))
+        loop=text[text.index('for current_phase, arguments in commands.items():'):]
+        self.assertLess(loop.index('verify_built_runtime(BUILT_RUNTIME_HASHES)'),loop.index('result, row = owned.run_owned(arguments'))
+        self.assertIn('builtRuntimeFilesSha256=BUILT_RUNTIME_HASHES',text)
+        self.assertIn('association.native_discovery(result.stdout',text)
+    def test_actual_phase_failure_or_stop_never_accepts_discovery_or_trx(self):
+        import ast,time
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from tempfile import TemporaryDirectory
+        ast,entries,tree,a=self.evidence();main=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='main')
+        loop=next(n for n in ast.walk(main) if isinstance(n,ast.For) and isinstance(n.target,ast.Tuple) and any(isinstance(t,ast.Name) and t.id=='current_phase' for t in n.target.elts))
+        code=compile(ast.Module(body=[loop],type_ignores=[]),'<actual-phase-loop>','exec')
+        for phase in ('restore','build','discovery','focused','suite','format','audit'):
+            for mode in ('exit','stop'):
+                with self.subTest(phase=phase,mode=mode),TemporaryDirectory() as directory:
+                    owned=SimpleNamespace(verify_result_directory=Mock(),run_owned=Mock(return_value=(SimpleNamespace(returncode=1 if mode=='exit' else 0),{'stop_reason':None if mode=='exit' else 'timeout'})))
+                    receipts={};verify_dll=Mock();verify_runtime=Mock()
+                    state=dict(commands={phase:['exact-phase-control']},BUILT_ASSEMBLY_HASH='a'*64,BUILT_RUNTIME_HASHES={'deps':'b'*64,'runtimeconfig':'c'*64},verify_built_assembly=verify_dll,verify_built_runtime=verify_runtime,owned=owned,runroot=Path(directory),result_directories={'focused':{},'suite':{}},recheck=Mock(),time=time,phase_deadline=time.monotonic()+600,expiry=datetime.now(timezone.utc)+timedelta(minutes=15),datetime=datetime,timezone=timezone,REPO=Path(directory),phase_receipts=receipts,event=Mock(),phase_env={})
+                    with self.assertRaisesRegex(RuntimeError,'Native '+phase+' failed or exceeded its bound'):exec(code,state)
+                    self.assertEqual({},receipts);owned.run_owned.assert_called_once()
+                    expected=['exact-phase-control']+(['-trx',str(Path(directory)/'test-results'/phase/(phase+'.trx'))] if phase in ('focused','suite') else [])
+                    self.assertEqual(expected,owned.run_owned.call_args.args[0])
+    def test_missing_runtime_binding_blocks_actual_loop_before_spawn(self):
+        import ast
+        from unittest.mock import Mock
+        ast,entries,tree,a=self.evidence();loop=next(n for n in ast.walk(tree) if isinstance(n,ast.For) and isinstance(n.target,ast.Tuple) and any(isinstance(t,ast.Name) and t.id=='current_phase' for t in n.target.elts))
+        code=compile(ast.Module(body=[loop],type_ignores=[]),'<actual-phase-loop>','exec')
+        for phase in ('discovery','focused','suite'):
+            with self.subTest(phase=phase),self.assertRaisesRegex(RuntimeError,'Successful fresh Release build required'):exec(code,dict(commands={phase:[]},BUILT_ASSEMBLY_HASH='a'*64,BUILT_RUNTIME_HASHES=None))
 
 
 class LinuxProviderControls(unittest.TestCase):
