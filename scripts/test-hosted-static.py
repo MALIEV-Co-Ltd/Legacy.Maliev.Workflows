@@ -733,12 +733,31 @@ class LinuxBuiltDllControls(unittest.TestCase):
         self.assertEqual([sdk,'test',dll,'--filter','FullyQualifiedName~RepositoryContractTests.GitleaksInstallation_When'],commands['focused'])
         self.assertEqual([sdk,'test',dll],commands['suite'])
         self.assertEqual(['restore','build','discovery','focused','suite','format','audit'],list(commands))
-    def test_non_test_commands_ast_byte_contract_unchanged(self):
-        import ast,hashlib
-        expected={'restore':'25b366116b2fb986c5fcb99d8b6c1d54639aaac289d515133bdfe94c2adb672a','build':'91e399a7e27e95b0ef6cd9a117ce074b9760bca551c60fcb5235eb5d50bb0fb0','format':'7b065a54c29f49cfd24021d284ad652a13ac146fa6be254a080b876394ec9b2c','audit':'888340692fb7ec4e3bbc3f4d488b2382488453458af46798deabfdcf5daa824f'}
-        node=self.commands()
-        actual={k.value:hashlib.sha256(ast.dump(v,include_attributes=False).encode()).hexdigest() for k,v in zip(node.keys,node.values) if k.value in expected}
+    def evaluated_commands(self):
+        import ast
+        from pathlib import PurePosixPath
+        # A fixed POSIX source directory makes str(OUT / config) independent of
+        # host path separators and ast.dump empty-field defaults.
+        return eval(compile(ast.Expression(body=self.commands()),'<actual-command-contract>','eval'),{'OUT':PurePosixPath('/sealed')})
+    def assert_non_test_command_contract(self,commands):
+        expected={'restore': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'restore', 'Legacy.Maliev.Workflows.slnx', '--disable-parallel', '--configfile', '/sealed/hosted-nuget.config', '-m:1', '/nr:false'], 'build': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'build', 'Legacy.Maliev.Workflows.slnx', '-c', 'Release', '--no-restore', '--no-incremental', '--disable-build-servers', '-m:1', '/p:UseSharedCompilation=false', '/nr:false', '-warnaserror'], 'format': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'format', 'Legacy.Maliev.Workflows.slnx', '--verify-no-changes', '--no-restore', '--include', 'tests/Legacy.Maliev.Workflows.Tests/RepositoryContractTests.cs'], 'audit': ['/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet', 'package', 'list', '--project', 'Legacy.Maliev.Workflows.slnx', '--vulnerable', '--include-transitive', '--no-restore', '--format', 'json', '--output-version', '1', '--source', 'https://api.nuget.org/v3/index.json']}
+        actual={k:v for k,v in commands.items() if k not in ('discovery','focused','suite')}
         self.assertEqual(expected,actual)
+    def test_non_test_commands_exact_argv_contract_unchanged(self):
+        self.assert_non_test_command_contract(self.evaluated_commands())
+    def test_non_test_command_mutations_are_rejected(self):
+        for phase in ('restore','build','format','audit'):
+            with self.subTest(phase=phase):
+                commands=self.evaluated_commands();commands[phase][1]='foreign-command'
+                with self.assertRaises(AssertionError):self.assert_non_test_command_contract(commands)
+        for mutation in ('restore-config','restore-parallelism','extra-phase','missing-phase'):
+            with self.subTest(mutation=mutation):
+                commands=self.evaluated_commands()
+                if mutation=='restore-config':commands['restore'][commands['restore'].index('/sealed/hosted-nuget.config')]='/sealed/foreign.config'
+                elif mutation=='restore-parallelism':commands['restore'][commands['restore'].index('-m:1')]='-m:2'
+                elif mutation=='extra-phase':commands['foreign']=['foreign']
+                else:commands.pop('audit')
+                with self.assertRaises(AssertionError):self.assert_non_test_command_contract(commands)
     def test_build_captures_before_discovery_and_rechecks_before_owned_spawn(self):
         text,tree=self.source()
         self.assertLess(text.index("if 'Build succeeded.' not in text"),text.index('BUILT_ASSEMBLY_HASH = verify_built_assembly()'))
