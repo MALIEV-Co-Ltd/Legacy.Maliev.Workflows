@@ -5,9 +5,9 @@
   "candidateSha": "9e38b30a23ab53db13d0c89aaaccabdc2db1ec4503549b217d83ecf2137c36c0",
   "worktree": "/tmp/maliev-workflows-qualification/worktree",
   "outputsRoot": "/tmp/maliev-workflows-qualification/outputs",
-  "kitGitBlob": "99771da117bdedd73ae6a5147db47eedc3f3601e",
-  "kitSha256": "7e020568ba63880a62efc9dabfefc593d2e67d59c24cb1bd7d5c3009e60b2c8c",
-  "kitBytes": 32727341,
+  "kitGitBlob": "38d634aa3f35e8883e7f27731c304c351a71ec9e",
+  "kitSha256": "5bc0c2df521f1495aa19b2b7964a51d00ce7544d2a38855a4fb30a144b288fcd",
+  "kitBytes": 32727388,
   "entries": {
     "outputs/accepted-package-assets/tests/Legacy.Maliev.Workflows.Tests/obj/project.assets.json": {
       "bytes": 106333,
@@ -39,7 +39,7 @@
     },
     "outputs/hosted_static_core.py": {
       "bytes": 24481,
-      "sha256": "d951449689f78d8ceed5e77913d32d1b865c4d8154c638d573e5f287e85f4a7c"
+      "sha256": "7d31bbf6188a431706178fffe1645a3cf92b3c79d8a035551ce6d0133c99889a"
     },
     "outputs/offline-packages/microsoft.applicationinsights.2.23.0.nupkg": {
       "bytes": 1737910,
@@ -690,8 +690,8 @@
       "sha256": "f4a15c1fca820cceafe2e4d70e1a363f46b46e7708c7c868edbc6051abdea971"
     },
     "outputs/workflows_private_docker_proxy_v1.py": {
-      "bytes": 20832,
-      "sha256": "6fab392526ba735ad7a6133ada9175425e42e6e9ef653f15e38fdcff59bdc68e"
+      "bytes": 21302,
+      "sha256": "745a66883baa8e2a427ccc034102630a24c336f96840eca1f343a57487172300"
     },
     "outputs/hosted_linux_sdk_bootstrap.py": {
       "bytes": 4691,
@@ -719,7 +719,7 @@
     "format",
     "audit"
   ],
-  "coreSha256": "d951449689f78d8ceed5e77913d32d1b865c4d8154c638d573e5f287e85f4a7c",
+  "coreSha256": "7d31bbf6188a431706178fffe1645a3cf92b3c79d8a035551ce6d0133c99889a",
   "qualifiedProviderSha256": "b47ba092bca5955f5a47b4172268253fe097440beb22bbb43a5063e371a184d6",
   "protectedWorkflowNotPublished": true,
   "unconstrainedPackageResolution": false,
@@ -736,7 +736,7 @@
   "linuxHelpers": {
     "workflows_linux_runtime.py": "b47ba092bca5955f5a47b4172268253fe097440beb22bbb43a5063e371a184d6",
     "workflows_linux_owned_scope_v1.py": "f4a15c1fca820cceafe2e4d70e1a363f46b46e7708c7c868edbc6051abdea971",
-    "workflows_private_docker_proxy_v1.py": "6fab392526ba735ad7a6133ada9175425e42e6e9ef653f15e38fdcff59bdc68e",
+    "workflows_private_docker_proxy_v1.py": "745a66883baa8e2a427ccc034102630a24c336f96840eca1f343a57487172300",
     "hosted_linux_sdk_bootstrap.py": "b11cf3cbffd08175da89e9bd998505c4e714db3b9cdd630ec0f329b34450b228",
     "hosted_linux_entry.py": "1f2279520f03c3f94b3f93dcdcbff8095327ae41f67173a2992f56555729c4fd",
     "workflows_linux_trust.py": "a53ffd82dbd0d1e3300e0e123d05f0bfbc470bbce19ec98a30430f5903477e6d"
