@@ -14,15 +14,15 @@ concurrency:
 jobs:
   static:
     if: github.repository == 'MALIEV-Co-Ltd/Legacy.Maliev.Workflows' && github.ref == 'refs/heads/main'
-    runs-on: windows-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
-      DOTNET_INSTALL_DIR: D:/codex-temp/2026-10-09/workflows-hosted-sdk-10.0.401
-      DOTNET_ROOT: D:/codex-temp/2026-10-09/workflows-hosted-sdk-10.0.401
+      DOTNET_INSTALL_DIR: /tmp/maliev-workflows-qualification/private-sdk/sdk
+      DOTNET_ROOT: /tmp/maliev-workflows-qualification/private-sdk/sdk
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       PYTHONDONTWRITEBYTECODE: '1'
-      # Preserve reviewed Git blob bytes during Windows checkout.
+      # Preserve reviewed control bytes; candidate checkout has its own normalization override.
       GIT_CONFIG_COUNT: '1'
       GIT_CONFIG_KEY_0: core.autocrlf
       GIT_CONFIG_VALUE_0: 'false'
@@ -32,54 +32,55 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - name: Initial headroom before managed SDK bootstrap
-        shell: pwsh
+        shell: bash
         run: |
-          $ErrorActionPreference = 'Stop'
-          $names = @('dotnet.exe','msbuild.exe','testhost.exe','testhost.x86.exe','vstest.console.exe','vbcscompiler.exe','csc.exe','vbc.exe','fsc.exe','fsi.exe')
-          if (Test-Path -LiteralPath $env:DOTNET_INSTALL_DIR) { throw 'Fresh task-owned SDK install root required.' }
-          $free = [math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1024)
-          if ($free -lt 5120 -or @(Get-CimInstance Win32_Process | Where-Object Name -In $names).Count -ne 0) { throw 'Initial resource admission refused.' }
+          python3 -B -c "from pathlib import Path; m=dict(x.split(':',1) for x in Path('/proc/meminfo').read_text().splitlines()); assert int(m['MemAvailable'].split()[0]) >= 5120*1024; assert not Path('/tmp/maliev-workflows-qualification').exists()"
+          command -v bash docker dockerd
       - name: Pure sealed transport controls
-        shell: pwsh
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python -B scripts/test-hosted-static.py
+        run: python3 -B scripts/test-hosted-static.py
       - name: Pinned SDK archive bootstrap then bounded build-first qualification
-        shell: pwsh
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           ROOT_STATIC_PERMIT: ${{ inputs.root_permit }}
           TRUSTED_WORKFLOW_CONTEXT: >-
             {"repository":"${{ github.repository }}","ref":"${{ github.ref }}","eventName":"${{ github.event_name }}","sha":"${{ github.sha }}","job":${{ toJSON(job) }}}
-        run: python -B scripts/run-hosted-static.py
+        run: |
+          export MALIEV_WORKFLOWS_UID="$(id -u)" MALIEV_WORKFLOWS_GID="$(id -g)"
+          sudo --preserve-env=GH_TOKEN,ROOT_STATIC_PERMIT,TRUSTED_WORKFLOW_CONTEXT,MALIEV_WORKFLOWS_UID,MALIEV_WORKFLOWS_GID,GIT_CONFIG_COUNT,GIT_CONFIG_KEY_0,GIT_CONFIG_VALUE_0 python3 -B scripts/run-hosted-static.py
       - name: Retain strict raw evidence and cleanup receipts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: workflows-static-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/receipt.json
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/strict-*-result.json
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/journal.jsonl
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/format.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/build.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/focused.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/suite.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/compiled-discovery.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/compiled-inventory.json
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/test-results/**/*.trx
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/audit.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-source.json
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-source.bin
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-identity.json
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap-record.json
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/sdk-bootstrap.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/restore.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/head.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/workflows-gitleaks-hosted-static-validation-v1-*/scope.log
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/wrapper-receipt.json
-            D:/codex-temp/2026-10-03/legacy-code-workflows-20261003/outputs/wrapper-cleanup.json
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/receipt.json
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/strict-*-result.json
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/journal.jsonl
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/format.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/build.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/focused.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/suite.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/compiled-discovery.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/compiled-inventory.json
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/test-results/**/*.trx
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/audit.log
+            /tmp/maliev-workflows-qualification/outputs/sdk-bootstrap-source.json
+            /tmp/maliev-workflows-qualification/outputs/sdk-bootstrap-source.bin
+            /tmp/maliev-workflows-qualification/outputs/sdk-identity.json
+            /tmp/maliev-workflows-qualification/outputs/sdk-bootstrap-record.json
+            /tmp/maliev-workflows-qualification/outputs/sdk-bootstrap.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/restore.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/head.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/scope.log
+            /tmp/maliev-workflows-qualification/outputs/wrapper-receipt.json
+            /tmp/maliev-workflows-qualification/outputs/wrapper-cleanup.json
+            /tmp/maliev-workflows-qualification/outputs/linux-capability.json
+            /tmp/maliev-workflows-qualification/outputs/docker-daemon.log
           if-no-files-found: error
           retention-days: 7
           overwrite: false

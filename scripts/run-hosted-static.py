@@ -180,6 +180,16 @@ def validate_sdk_cleanup(root,owner,validated_permit):
         raise ValueError('Exact task-owned SDK cleanup identity required')
 
 def main():
+    if sys.platform == 'linux':
+        import types
+        trusted=Path(__file__).resolve().parent
+        policy=json.loads((trusted/'hosted-static-policy.json').read_bytes(),object_pairs_hook=unique)
+        if policy.get('providerPlatform') != 'linux': raise ValueError('Linux platform binding required')
+        validate_permit(os.environ['ROOT_STATIC_PERMIT'].encode(),policy)
+        entries=verified_entries(fetch(policy),policy)
+        entry=types.ModuleType('sealed_linux_entry'); entry.__file__=__file__
+        exec(compile(entries['outputs/hosted_linux_entry.py'],'<sealed-linux-entry>','exec'),entry.__dict__)
+        return entry.main(sys.modules[__name__], entries)
     if sys.platform!='win32': raise ValueError('Qualified Windows provider required')
     trusted=Path(__file__).resolve().parent
     policy=json.loads((trusted/'hosted-static-policy.json').read_bytes(),object_pairs_hook=unique)

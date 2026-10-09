@@ -13,6 +13,20 @@ ROOT=Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('guarded',ROOT/'run-hosted-static.py')
 mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
 
+from functools import lru_cache
+
+@lru_cache(maxsize=1)
+def real_kit():
+    policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+    path=ROOT/'sealed-static-kit.zip'
+    data=path.read_bytes() if path.is_file() else mod.fetch(policy)
+    mod.verified_entries(data,policy)
+    return data
+
+def sealed_source(name):
+    policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+    return mod.verified_entries(real_kit(),policy)['outputs/'+name]
+
 class SealedStaticControls(unittest.TestCase):
     def setUp(self):
         self.now=datetime(2026,10,9,tzinfo=timezone.utc)
@@ -84,13 +98,13 @@ class SealedStaticControls(unittest.TestCase):
     def test_duplicate_json(self):
         with self.assertRaises(ValueError):mod.validate_permit(b'{"owner":"one","owner":"two"}',self.policy,self.now)
     def test_real_sealed_candidate(self):
-        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=real_kit()
         files=mod.verified_entries(data,policy)
-        self.assertEqual(168,len(files));self.assertEqual(policy['kitSha256'],mod.digest(data))
+        self.assertEqual(174,len(files));self.assertEqual(policy['kitSha256'],mod.digest(data))
         core=files['outputs/hosted_static_core.py'];self.assertEqual(policy['coreSha256'],mod.digest(core))
         self.assertEqual(5120,policy['initialMemoryFloorMiB']);self.assertEqual(4096,policy['runtimeMemoryFloorMiB'])
     def test_native_fixed_commands(self):
-        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=real_kit()
         source=mod.verified_entries(data,policy)['outputs/hosted_static_core.py'].decode('utf-8')
         self.assertIn("'focused': [",source);self.assertIn("'suite': [",source)
         for token in ["'restore': [","'format': [","'audit': [","memory_limit=3 * 1024**3","cpu_rate=5000","output_limit=4 * 1024 * 1024","min(600", "--configfile"]:self.assertIn(token,source)
@@ -139,7 +153,7 @@ class PackageGraphControls(unittest.TestCase):
     def setUpClass(cls):
         from types import ModuleType
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
-        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        data=real_kit()
         source=mod.verified_entries(data,policy)['outputs/hosted_package_graph.py']
         cls.graph=ModuleType('sealed_package_graph')
         exec(compile(source,'sealed/hosted_package_graph.py','exec'),cls.graph.__dict__)
@@ -343,7 +357,7 @@ class CandidateGitNormalizationControls(unittest.TestCase):
     def test_candidate_scope_preserves_original_frozen_guard(self):
         import ast
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
-        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        data=real_kit()
         entries=mod.verified_entries(data,policy);raw=entries['outputs/hosted_static_core.py']
         tree=ast.parse(raw)
         calls=[node for node in ast.walk(tree) if isinstance(node,ast.Call) and isinstance(node.func,ast.Attribute) and node.func.attr=='run_owned' and node.args and isinstance(node.args[0],ast.List) and any(isinstance(value,ast.Constant) and value.value=='status' for value in node.args[0].elts)]
@@ -360,7 +374,7 @@ class FreshQualificationPhaseControls(unittest.TestCase):
     def evidence(self):
         import ast, types, sys
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
-        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        data=real_kit()
         entries=mod.verified_entries(data,policy)
         tree=ast.parse(entries['outputs/hosted_static_core.py'])
         strict=types.ModuleType('artifact_pin_native_result_validation_v3')
@@ -418,7 +432,7 @@ class FreshQualificationPhaseControls(unittest.TestCase):
     def test_fixed_shared_deadline_and_resource_supervision(self):
         ast,entries,tree,association=self.evidence()
         core=entries['outputs/hosted_static_core.py'].decode()
-        for text in ['timeout = min(600, remaining-25)','phase_deadline-time.monotonic()',"raise RuntimeError('Fixed remaining validation route deadline exceeded')",'supervisor.supervise(owned._quarantined, recover, slot, journal, checkpoint)','memory_limit=3 * 1024**3','cpu_rate=5000','output_limit=4 * 1024 * 1024']:
+        for text in ['timeout = min(600, remaining-25)','phase_deadline-time.monotonic()',"raise RuntimeError('Fixed remaining validation route deadline exceeded')",'supervisor.supervise(owned._quarantined, recover, slot, journal, checkpoint,','memory_limit=3 * 1024**3','cpu_rate=5000','output_limit=4 * 1024 * 1024']:
             self.assertIn(text,core)
 
 
@@ -427,7 +441,7 @@ class PhasePolicyMetadataControls(unittest.TestCase):
     def test_policy_phase_authority_matches_actual_core_and_historical_replay_semantics(self):
         import ast
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
-        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        data=real_kit()
         entries=mod.verified_entries(data,policy)
         main=next(n for n in ast.parse(entries['outputs/hosted_static_core.py']).body if isinstance(n,ast.FunctionDef) and n.name=='main')
         commands=next(n.value for n in main.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='commands' for t in n.targets))
@@ -438,5 +452,485 @@ class PhasePolicyMetadataControls(unittest.TestCase):
         wrapper=(ROOT/'run-hosted-static.py').read_text()
         self.assertIn("'historicalBuildOrTestsReplayed':False",wrapper)
         self.assertNotIn('no builds or tests',wrapper)
+
+
+class LinuxProviderControls(unittest.TestCase):
+    def modules(self):
+        import tempfile, types, sys
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+        entries=mod.verified_entries(real_kit(),policy)
+        names=['workflows_linux_trust','hosted_linux_entry','workflows_cleanup_supervisor_v1','workflows_linux_owned_scope_v1','workflows_private_docker_proxy_v1','workflows_linux_runtime','hosted_linux_sdk_bootstrap']
+        previous={n:sys.modules.get(n) for n in names};loaded={}
+        try:
+            for name in names:
+                module=types.ModuleType(name);module.__file__='<sealed-'+name+'>';sys.modules[name]=module
+                exec(compile(entries['outputs/'+name+'.py'],module.__file__,'exec'),module.__dict__);loaded[name]=module
+            return loaded
+        finally:
+            for name,value in previous.items():
+                if value is None:sys.modules.pop(name,None)
+                else:sys.modules[name]=value
+    def capability(self,platform='linux',memory=5120,tools=('bash','docker','dockerd'),controllers=('cpu','memory','pids'),competing=()):
+        return self.modules()['workflows_linux_runtime'].capabilities(platform,memory,tools,controllers,competing)
+    def test_linux_capability_requires_all_fixed_prerequisites(self):
+        self.assertTrue(self.capability()['linuxDockerAndBashRequired'])
+    def test_windows_platform_refused_before_sdk(self):
+        with self.assertRaises(RuntimeError):self.capability(platform='win32')
+    def test_below_initial_memory_floor_refused(self):
+        with self.assertRaises(RuntimeError):self.capability(memory=5119)
+    def test_missing_bash_refused(self):
+        with self.assertRaises(RuntimeError):self.capability(tools=('docker','dockerd'))
+    def test_missing_linux_daemon_refused(self):
+        with self.assertRaises(RuntimeError):self.capability(tools=('bash','docker'))
+    def test_missing_pids_controller_refused(self):
+        with self.assertRaises(RuntimeError):self.capability(controllers=('cpu','memory'))
+    def test_competing_sdk_refused(self):
+        with self.assertRaises(RuntimeError):self.capability(competing=(123,))
+    def test_cap_or_timeout_widening_refused(self):
+        import time
+        runtime=self.modules()['workflows_linux_runtime']
+        for timeout,memory,cpu,output in [(601,256*1024**2,5000,1024),(1,3*1024**3+1,5000,1024),(1,256*1024**2,5001,1024),(1,256*1024**2,5000,4*1024**2+1)]:
+            with self.subTest(timeout=timeout,memory=memory,cpu=cpu,output=output),self.assertRaises(RuntimeError):runtime.command_budget(timeout,memory,cpu,output,time.monotonic()+1)
+    def test_expired_remaining_deadline_refused(self):
+        import time
+        with self.assertRaises(RuntimeError):self.modules()['workflows_linux_runtime'].command_budget(1,256*1024**2,5000,1024,time.monotonic()-1)
+    def test_sdk_archive_traversal_link_and_writable_members_refused(self):
+        import tarfile
+        bootstrap=self.modules()['hosted_linux_sdk_bootstrap']
+        for name,kind,mode in [('../escape',tarfile.REGTYPE,0o755),('dotnet',tarfile.SYMTYPE,0o755),('dotnet',tarfile.REGTYPE,0o777)]:
+            member=tarfile.TarInfo(name);member.type=kind;member.mode=mode;member.size=1
+            with self.subTest(name=name,kind=kind,mode=mode),self.assertRaises(ValueError):bootstrap.archive_plan([member])
+    def test_sdk_archive_duplicate_and_file_directory_collision_refused(self):
+        import tarfile
+        bootstrap=self.modules()['hosted_linux_sdk_bootstrap'];host=tarfile.TarInfo('dotnet');host.mode=0o755;host.size=1
+        child=tarfile.TarInfo('dotnet/child');child.mode=0o755;child.size=1
+        for members in ([host,host],[host,child]):
+            with self.assertRaises(ValueError):bootstrap.archive_plan(members)
+    def test_linux_route_retains_all497_and_exact_three_business_files(self):
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());entries=mod.verified_entries(real_kit(),policy)
+        candidate=json.loads(entries['outputs/workflows-go1269-hosted-candidate/candidate-manifest.json'])
+        self.assertEqual(3,len(candidate['files']));self.assertEqual(130,len([n for n in entries if n.startswith('worktree/')]))
+        self.assertIn(b"len(FRESH_INVENTORY['names']) != 497",entries['outputs/hosted_static_core.py'])
+        self.assertIn(b"group ==",entries['outputs/workflows_private_docker_proxy_v1.py'].replace(b'group==',b'group =='))
+        for phase in ['restore','build','discovery','focused','suite','format','audit']:self.assertIn(phase,policy['nativePhases'])
+    def test_private_daemon_windows_os_refused(self):
+        import time
+        from unittest.mock import Mock,patch
+        runtime=self.modules()['workflows_linux_runtime'];client=Mock();client.recv.side_effect=[b'HTTP/1.0 200 OK\r\n\r\n{"Os":"windows"}',b'']
+        context=Mock();context.__enter__=Mock(return_value=client);context.__exit__=Mock(return_value=False)
+        with patch.object(runtime.socket,'socket',return_value=context),patch.object(runtime.socket,'AF_UNIX',1,create=True),self.assertRaises(RuntimeError):runtime.private_daemon_version(Path('/private/backend.sock'),time.monotonic()+1)
+
+class LinuxTrustCorrections(unittest.TestCase):
+    def modules(self):return LinuxProviderControls().modules()
+    def fixture(self, operation):
+        import tempfile,os
+        with tempfile.TemporaryDirectory(prefix='workflows-trust-control-') as directory:
+            root=Path(directory).resolve();target=root/'python3.12';target.write_bytes(b'fixed interpreter postimage');target.chmod(0o444)
+            try:operation(root,target)
+            finally:
+                for path in root.iterdir():
+                    if path.is_file() and not path.is_symlink():path.chmod(0o666)
+    def test_real_symlink_to_regular_target_retains_real_descriptor(self):
+        import os
+        trust=self.modules()['workflows_linux_trust']
+        def operation(root,target):
+            link=root/'python3';link.symlink_to(target)
+            self.assertTrue(link.is_symlink());binding=trust.bind_executable(link,[root],target.stat().st_uid)
+            try:
+                self.assertEqual(str(target),binding['resolved']);self.assertEqual(target.stat().st_ino,os.fstat(binding['fd']).st_ino)
+                self.assertTrue(trust.recheck_executable(binding));self.assertEqual(target.read_bytes(),os.read(binding['fd'],1024))
+            finally:os.close(binding['fd'])
+        self.fixture(operation)
+    def test_real_symlink_substitution_refused_with_original_descriptor_retained(self):
+        import os
+        trust=self.modules()['workflows_linux_trust']
+        def operation(root,target):
+            link=root/'python3';link.symlink_to(target);binding=trust.bind_executable(link,[root],target.stat().st_uid)
+            try:
+                other=root/'replacement';other.write_bytes(b'foreign');link.unlink();link.symlink_to(other)
+                with self.assertRaises(RuntimeError):trust.recheck_executable(binding)
+                self.assertEqual(target.stat().st_ino,os.fstat(binding['fd']).st_ino)
+            finally:os.close(binding['fd'])
+        self.fixture(operation)
+    def test_real_target_mode_or_content_substitution_refused(self):
+        import os
+        trust=self.modules()['workflows_linux_trust']
+        def operation(root,target):
+            binding=trust.bind_executable(target,[root],target.stat().st_uid)
+            try:
+                target.chmod(0o666)
+                with self.assertRaises(RuntimeError):trust.recheck_executable(binding)
+                target.write_bytes(b'replaced interpreter');target.chmod(0o444)
+                with self.assertRaises(RuntimeError):trust.recheck_executable(binding)
+            finally:os.close(binding['fd'])
+        self.fixture(operation)
+    def test_wrong_owner_or_digest_and_escape_refused(self):
+        trust=self.modules()['workflows_linux_trust']
+        def operation(root,target):
+            for uid,sha in [(target.stat().st_uid+1,None),(target.stat().st_uid,'0'*64)]:
+                with self.assertRaises(RuntimeError):trust.bind_executable(target,[root],uid,sha)
+            child=root/'allowed';child.mkdir()
+            with self.assertRaises(RuntimeError):trust.bind_executable(target,[child],target.stat().st_uid)
+        self.fixture(operation)
+    def test_entry_can_execute_before_helper_materialization(self):
+        import sys,types
+        entries=mod.verified_entries(real_kit(),json.loads((ROOT/'hosted-static-policy.json').read_bytes()))
+        previous=sys.modules.pop('workflows_linux_trust',None)
+        try:
+            module=types.ModuleType('unmaterialized_entry');exec(compile(entries['outputs/hosted_linux_entry.py'],'<entry>','exec'),module.__dict__)
+            self.assertTrue(callable(module.main))
+        finally:
+            if previous is not None:sys.modules['workflows_linux_trust']=previous
+    def test_sdk_marker_failures_preserve_primary_and_emit_receipt(self):
+        import tempfile,time,sys
+        modules=self.modules();entry=modules['hosted_linux_entry'];trust=modules['workflows_linux_trust']
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory,patch.dict(sys.modules,{'workflows_linux_trust':trust}):
+            root=Path(directory).resolve();parent=root/'sdk-parent';parent.mkdir();sdk=parent/'sdk';sdk.mkdir();row=parent.stat();identity=(row.st_dev,row.st_ino,row.st_uid)
+            permit=dict(owner='task',leaseId='lease',expiresUtc='expiry');primary=RuntimeError('original build failure')
+            for malformed in [None,b'{',b'{"owner":"foreign"}']:
+                marker=sdk/'.codex-sdk-owner.json'
+                if malformed is None:
+                    if marker.exists():marker.unlink()
+                else:marker.write_bytes(malformed)
+                receipt=root/'receipt.json'
+                with self.assertRaises(RuntimeError) as error:
+                    mod.preserve_first_failure(primary,lambda:entry.cleanup_sdk_namespace(sdk,permit,identity,time.monotonic()+2),lambda state,errors:entry.emit_bounded_receipt(receipt,dict(cleanupFailureTypes=errors)))
+                self.assertIs(primary,error.exception);self.assertTrue(sdk.exists());self.assertTrue(json.loads(receipt.read_bytes())['cleanupFailureTypes'])
+    def test_sdk_namespace_success_and_shared_deadline_refusal(self):
+        import tempfile,time,sys
+        from unittest.mock import patch
+        modules=self.modules();entry=modules['hosted_linux_entry'];trust=modules['workflows_linux_trust']
+        with tempfile.TemporaryDirectory() as directory,patch.dict(sys.modules,{'workflows_linux_trust':trust}):
+            root=Path(directory).resolve();parent=root/'private-sdk';parent.mkdir();sdk=parent/'sdk';sdk.mkdir();row=parent.stat();identity=(row.st_dev,row.st_ino,row.st_uid)
+            permit=dict(owner='task',leaseId='lease',expiresUtc='expiry');(sdk/'.codex-sdk-owner.json').write_text(json.dumps(dict(permit,persistentData=False)))
+            with self.assertRaises(TimeoutError):entry.cleanup_sdk_namespace(sdk,permit,identity,time.monotonic()-1)
+            self.assertTrue(sdk.exists());self.assertTrue(entry.cleanup_sdk_namespace(sdk,permit,identity,time.monotonic()+2));self.assertFalse(parent.exists())
+    def test_sdk_parent_identity_substitution_refuses_deletion(self):
+        import tempfile,time,sys
+        from unittest.mock import patch
+        modules=self.modules();entry=modules['hosted_linux_entry'];trust=modules['workflows_linux_trust']
+        with tempfile.TemporaryDirectory() as directory,patch.dict(sys.modules,{'workflows_linux_trust':trust}):
+            parent=Path(directory).resolve()/'parent';parent.mkdir();sdk=parent/'sdk';sdk.mkdir();permit=dict(owner='task',leaseId='lease',expiresUtc='expiry')
+            (sdk/'.codex-sdk-owner.json').write_text(json.dumps(dict(permit,persistentData=False)))
+            with self.assertRaises(ValueError):entry.cleanup_sdk_namespace(sdk,permit,(0,0,0),time.monotonic()+2)
+            self.assertTrue(sdk.exists())
+    def test_graceful_retained_child_precedes_group_force(self):
+        import time
+        from unittest.mock import patch
+        scope=self.modules()['workflows_linux_owned_scope_v1'];owner=object.__new__(scope.LinuxOwnedScope);owner.root=Path('/owned');owner.verify=lambda path:None
+        owner.children={123:dict(group=str(owner.root/'daemon'),reaped=False,pidfd=7,pid=123)};events=[]
+        with patch.object(scope.select,'select',return_value=([],[],[])),patch.object(scope.signal,'pidfd_send_signal',side_effect=lambda *args:events.append('term'),create=True),patch.object(scope,'populated',side_effect=[False,True,False]),patch.object(scope.Path,'write_text',side_effect=lambda *args:events.append('force')),patch.object(scope.os,'waitpid',return_value=(123,0),create=True),patch.object(scope.os,'WNOHANG',1,create=True):
+            owner.stop_group('daemon',time.monotonic()+2)
+        self.assertEqual(['term','force'],events);self.assertTrue(owner.children[123]['reaped'])
+    def test_expired_shared_deadline_prevents_signals_and_force(self):
+        import time
+        from unittest.mock import Mock,patch
+        scope=self.modules()['workflows_linux_owned_scope_v1'];owner=object.__new__(scope.LinuxOwnedScope);owner.root=Path('/owned');owner.verify=Mock();owner.children={}
+        with patch.object(scope.Path,'write_text') as force,self.assertRaises(RuntimeError):owner.stop_group('daemon',time.monotonic()-1)
+        force.assert_not_called()
+    def test_registration_mask_restored_after_acquisition_failure(self):
+        from unittest.mock import patch
+        scope=self.modules()['workflows_linux_owned_scope_v1']
+        with patch.object(scope.signal,'pthread_sigmask',return_value={1},create=True) as mask,patch.object(scope.signal,'SIG_BLOCK',0,create=True),patch.object(scope.signal,'SIG_SETMASK',2,create=True):
+            with self.assertRaises(ValueError),scope.registration_window():raise ValueError('controlled failure')
+            self.assertEqual((2,{1}),mask.call_args.args)
+    def test_parent_death_guard_refuses_wrong_parent(self):
+        from unittest.mock import Mock,patch
+        scope=self.modules()['workflows_linux_owned_scope_v1'];libc=Mock();libc.prctl.return_value=0
+        with patch.object(scope.os,'getppid',return_value=999),patch.object(scope.signal,'SIGKILL',9,create=True),self.assertRaises(RuntimeError):scope.child_guard(123,libc)
+        libc.prctl.assert_called_once()
+
+    def test_cli_home_replaces_root_home_and_clears_authority_environment(self):
+        import tempfile,types,stat
+        from unittest.mock import patch
+        runtime=self.modules()['workflows_linux_runtime']
+        with tempfile.TemporaryDirectory() as directory:
+            home=Path(directory).resolve();observed=home.stat();real_stat=Path.stat
+            def metadata(path,*args,**kwargs):
+                row=real_stat(path,*args,**kwargs)
+                if path==home:return types.SimpleNamespace(st_uid=row.st_uid,st_gid=row.st_gid,st_mode=stat.S_IFDIR|0o700)
+                return row
+            with patch.object(Path,'stat',metadata):
+                result=runtime.runtime_environment(dict(HOME='/root',GH_TOKEN='redacted-fixture',ROOT_STATIC_PERMIT='fixture'),home,observed.st_uid,observed.st_gid)
+            self.assertEqual(str(home),result['HOME']);self.assertEqual(str(home),result['DOTNET_CLI_HOME'])
+            self.assertNotIn('GH_TOKEN',result);self.assertNotIn('ROOT_STATIC_PERMIT',result)
+            for key in ['XDG_CACHE_HOME','XDG_CONFIG_HOME','XDG_DATA_HOME','TMPDIR']:self.assertTrue(Path(result[key]).is_relative_to(home))
+    def test_cli_home_real_symlink_refused(self):
+        import tempfile
+        runtime=self.modules()['workflows_linux_runtime']
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve();home=root/'home';home.mkdir();link=root/'link';link.symlink_to(home,target_is_directory=True);row=home.stat()
+            with self.assertRaises(RuntimeError):runtime.runtime_environment({'HOME':'/root'},link,row.st_uid,row.st_gid)
+    def test_bounded_receipt_file_failure_keeps_stdout_evidence_and_primary(self):
+        import io
+        from unittest.mock import patch
+        entry=self.modules()['hosted_linux_entry'];primary=RuntimeError('original')
+        output=io.StringIO()
+        with patch.object(Path,'open',side_effect=PermissionError('controlled receipt refusal')),patch('sys.stdout',output),self.assertRaises(RuntimeError) as error:
+            mod.preserve_first_failure(primary,lambda:None,lambda state,errors:entry.emit_bounded_receipt(Path('unused'),dict(cleanupFailures=['PermissionError'])))
+        self.assertIs(primary,error.exception);self.assertEqual(['PermissionError'],json.loads(output.getvalue())['cleanupFailures']);self.assertTrue(primary.__notes__)
+
+    def test_unadmitted_child_is_stopped_by_exact_handle_without_resume(self):
+        from unittest.mock import patch
+        scope=self.modules()['workflows_linux_owned_scope_v1'];owner=object.__new__(scope.LinuxOwnedScope);owner.root=Path('/owned');owner.verify=lambda path:None
+        owner.children={123:dict(group=str(owner.root/'sdk'),reaped=False,pidfd=7,pid=123,admitted=False)};signals=[]
+        with patch.object(scope.time,'monotonic',side_effect=[0,0,2,2,2]),patch.object(scope.select,'select',return_value=([],[],[])),patch.object(scope.signal,'pidfd_send_signal',side_effect=lambda fd,number:signals.append((fd,number)),create=True),patch.object(scope.signal,'SIGKILL',9,create=True),patch.object(scope,'populated',return_value=False),patch.object(scope.os,'waitpid',side_effect=[(0,0),(123,0)],create=True),patch.object(scope.os,'WNOHANG',1,create=True):
+            owner.stop_group('sdk',10)
+        self.assertEqual([(7,scope.signal.SIGTERM),(7,9)],signals);self.assertTrue(owner.children[123]['reaped'])
+    def test_sdk_rmdir_failure_preserves_primary_and_receipt(self):
+        import tempfile,time,sys
+        from unittest.mock import patch
+        modules=self.modules();entry=modules['hosted_linux_entry'];trust=modules['workflows_linux_trust']
+        with tempfile.TemporaryDirectory() as directory,patch.dict(sys.modules,{'workflows_linux_trust':trust}):
+            root=Path(directory).resolve();parent=root/'private-sdk';parent.mkdir();sdk=parent/'sdk';sdk.mkdir();row=parent.stat();identity=(row.st_dev,row.st_ino,row.st_uid)
+            permit=dict(owner='task',leaseId='lease',expiresUtc='expiry');(sdk/'.codex-sdk-owner.json').write_text(json.dumps(dict(permit,persistentData=False)))
+            primary=RuntimeError('original phase');receipt=root/'receipt.json'
+            with patch.object(Path,'rmdir',side_effect=PermissionError('controlled deletion failure')),self.assertRaises(RuntimeError) as error:
+                mod.preserve_first_failure(primary,lambda:entry.cleanup_sdk_namespace(sdk,permit,identity,time.monotonic()+2),lambda state,errors:entry.emit_bounded_receipt(receipt,dict(cleanupFailureTypes=errors)))
+            self.assertIs(primary,error.exception);self.assertTrue(sdk.exists());self.assertEqual(['PermissionError'],json.loads(receipt.read_bytes())['cleanupFailureTypes'])
+
+class LinuxFiniteCleanupControls(unittest.TestCase):
+    def modules(self):return LinuxProviderControls().modules()
+    class Clock:
+        def __init__(self):self.now=0
+        def read(self):return self.now
+        def wait(self,seconds):self.now+=seconds
+    def test_permanent_quarantine_stops_at_fixed_boundary_with_custody(self):
+        from unittest.mock import Mock
+        supervisor=self.modules()['workflows_cleanup_supervisor_v1'];clock=self.Clock();resources={'stuck':True};events=[];slot=Mock(released=False,partial_creation=False);journal=Mock(closed=False)
+        journal.close.side_effect=lambda:setattr(journal,'closed',True)
+        recover=Mock(side_effect=RuntimeError('permanent observation refusal'))
+        result=supervisor.supervise(resources,recover,slot,journal,lambda kind,state:events.append((kind,state)),absolute_deadline=.25,monotonic=clock.read,wait=clock.wait)
+        self.assertLessEqual(clock.now,.25);self.assertEqual(1,result['attempts']);self.assertTrue(result['fixedDeadlineExpired']);self.assertFalse(result['cleanupVerified']);self.assertFalse(result['slotReleased']);self.assertTrue(result['journalClosed']);slot.close.assert_not_called();self.assertEqual({'stuck':True},resources)
+        self.assertEqual('cleanup-expired-checkpoint',events[-1][0]);self.assertEqual(['stuck'],events[-1][1]['ownedLeases'])
+    def test_already_expired_boundary_never_attempts_recovery_or_claim_release(self):
+        from unittest.mock import Mock
+        supervisor=self.modules()['workflows_cleanup_supervisor_v1'];resources={'stuck':True};recover=Mock();slot=Mock(released=False);journal=Mock(closed=False);journal.close.side_effect=lambda:setattr(journal,'closed',True)
+        state=supervisor.supervise(resources,recover,slot,journal,lambda *args:None,absolute_deadline=0,monotonic=lambda:1,wait=Mock())
+        recover.assert_not_called();slot.close.assert_not_called();self.assertEqual(0,state['attempts']);self.assertTrue(state['custodyRetained'])
+    def test_legacy_without_fixed_deadline_keeps_accepted_renewal(self):
+        supervisor=self.modules()['workflows_cleanup_supervisor_v1'];clock=self.Clock();resources={'owned':True};calls=[]
+        def recover(lease):
+            calls.append(lease)
+            if len(calls)<5:raise RuntimeError('temporary observation failure')
+            del resources[lease]
+        state=supervisor.supervise(resources,recover,None,None,lambda *args:None,attempt_seconds=.1,attention_seconds=.2,monotonic=clock.read,wait=clock.wait)
+        self.assertTrue(state['cleanupVerified']);self.assertGreater(state['attempts'],1);self.assertGreater(state['attentionCount'],0);self.assertEqual(5,len(calls))
+    def test_cleanup_boundary_never_renews_frozen_scope_deadline(self):
+        from unittest.mock import patch
+        import types
+        runtime=self.modules()['workflows_linux_runtime'];runtime.SCOPE=types.SimpleNamespace(deadline=100,cleanup_deadline=12)
+        with patch.object(runtime.time,'monotonic',return_value=80):self.assertEqual(12,runtime.cleanup_boundary())
+    def test_actual_core_final_receipt_after_permanent_quarantine(self):
+        import types,sys,tempfile,subprocess
+        from unittest.mock import Mock,patch
+        modules=self.modules();supervisor=modules['workflows_cleanup_supervisor_v1'];clock=self.Clock();slot=Mock(released=False,partial_creation=False)
+        admission=types.ModuleType('workflows_native_admission_v3');admission.read_json=lambda path:({},b'fixture');admission.validate=lambda *args:datetime.now(timezone.utc)+timedelta(hours=1);admission.owner_identity=lambda:{'owner':'source-fixture'};admission.preflight=lambda *args:{};admission.Lease=lambda *args:slot
+        owned=types.ModuleType('workflows_linux_runtime');owned._quarantined={'stuck':(None,{'job_lease':'stuck','cleanup_verified':False})};owned.prepare_result_directories=lambda path:{};owned.result_permission_arguments=lambda *args:['permission-probe'];owned.SCOPE=types.SimpleNamespace(uid=1001,gid=100);owned.cleanup_boundary=lambda:.25;owned.supervision_boundary=lambda:.25;owned.recover_quarantined=Mock(side_effect=RuntimeError('permanent resource refusal'))
+        injected={'workflows_linux_runtime':owned,'workflows_native_admission_v3':admission,'workflows_cleanup_supervisor_v1':supervisor}
+        for name in ['artifact_pin_native_result_validation_v3','workflows_gitleaks_compiled_result_association_v1','hosted_package_graph']:injected[name]=types.ModuleType(name)
+        with tempfile.TemporaryDirectory() as directory,patch.dict(sys.modules,injected):
+            core_path=Path(directory)/'source-core.py';core_path.write_bytes(sealed_source('hosted_static_core.py'));core=types.ModuleType('source_core');core.__file__=str(core_path);exec(compile(core_path.read_bytes(),core.__file__,'exec'),core.__dict__)
+            core.OUT=Path(directory).resolve();core.candidate_check=lambda:None
+            expected=core.OUT/'workflows-gitleaks-toolchain-build-request-20261008-v3/scope-frozen.txt';expected.parent.mkdir();expected.write_bytes(b'exact fixture scope')
+            original_sha=core.sha;core.sha=lambda path:core.SCOPE_HASH if path==expected else original_sha(path)
+            failure=RuntimeError('original phase failure');failure.resource_row={'job_lease':'stuck'}
+            owned.run_owned=Mock(side_effect=[(subprocess.CompletedProcess([],0,(core.BASE+'\n').encode(),b''),{}),(subprocess.CompletedProcess([],0,expected.read_bytes(),b''),{}),failure])
+            original_supervise=supervisor.supervise
+            def finite(*args,**kwargs):return original_supervise(*args,**kwargs,monotonic=clock.read,wait=clock.wait)
+            with patch.object(supervisor,'supervise',finite),patch.object(sys,'argv',['core','hosted-qualification','permit']),patch('sys.stdout',io.StringIO()),self.assertRaises(SystemExit) as error:core.main()
+            self.assertEqual(1,error.exception.code);receipts=list(core.OUT.glob('*/receipt.json'));self.assertEqual(1,len(receipts));receipt=json.loads(receipts[0].read_bytes())
+            self.assertIn('original phase failure',receipt['failure']);self.assertEqual(1,receipt['quarantineCount']);self.assertFalse(receipt['claimReleased']);self.assertTrue(receipt['cleanupSupervision']['fixedDeadlineExpired']);self.assertTrue(receipt['cleanupSupervision']['journalClosed']);self.assertLessEqual(clock.now,.25);slot.close.assert_not_called()
+
+class LinuxResultsOwnershipControls(unittest.TestCase):
+    def fixture(self,operation):
+        import tempfile,types,stat
+        from unittest.mock import patch
+        runtime=LinuxProviderControls().modules()['workflows_linux_runtime'];runtime.SCOPE=types.SimpleNamespace(uid=1001,gid=100)
+        with tempfile.TemporaryDirectory() as directory:
+            runroot=Path(directory).resolve()/'run';runroot.mkdir();owners={};modes={};actual_stat=Path.stat
+            def metadata(path,*args,**kwargs):
+                row=actual_stat(path,*args,**kwargs);uid,gid=owners.get(path,(0,0))
+                return types.SimpleNamespace(st_dev=row.st_dev,st_ino=row.st_ino,st_uid=uid,st_gid=gid,st_mode=(row.st_mode & ~0o777)|modes.get(path,row.st_mode & 0o777))
+            with patch.object(runtime.os,'chown',side_effect=lambda path,uid,gid:owners.update({Path(path):(uid,gid)}),create=True),patch.object(runtime.os,'chmod',side_effect=lambda path,mode:modes.update({Path(path):mode})),patch.object(runtime,'registration_window',__import__('contextlib').nullcontext),patch.object(Path,'stat',metadata):
+                proof=runtime.prepare_result_directories(runroot);operation(runtime,runroot,proof,owners,modes)
+    def test_only_phase_directories_receive_sdk_uid_and_gid(self):
+        def operation(runtime,runroot,proof,owners,modes):
+            self.assertEqual({runroot/'test-results/focused',runroot/'test-results/suite'},set(owners));self.assertEqual(0o755,modes[runroot]);self.assertEqual(0o755,modes[runroot/'test-results'])
+            for phase in ('focused','suite'):self.assertTrue(runtime.verify_result_directory(runroot,phase,proof[phase]));self.assertEqual((1001,100),owners[runroot/'test-results'/phase])
+        self.fixture(operation)
+    def test_foreign_owner_or_writable_authority_parent_refused(self):
+        def operation(runtime,runroot,proof,owners,modes):
+            target=runroot/'test-results/focused';owners[target]=(9999,100)
+            with self.assertRaises(RuntimeError):runtime.verify_result_directory(runroot,'focused',proof['focused'])
+            owners[target]=(1001,100);modes[runroot]=0o777
+            with self.assertRaises(RuntimeError):runtime.verify_result_directory(runroot,'focused',proof['focused'])
+        self.fixture(operation)
+    def test_real_directory_substitution_refused_by_recorded_inode(self):
+        def operation(runtime,runroot,proof,owners,modes):
+            target=runroot/'test-results/focused';target.rename(target.parent/'original');target.mkdir()
+            with self.assertRaises(RuntimeError):runtime.verify_result_directory(runroot,'focused',proof['focused'])
+        self.fixture(operation)
+    def test_bootstrap_writes_stay_outside_controller_authority_directory(self):
+        entry=sealed_source('hosted_linux_entry.py').decode();bootstrap=sealed_source('hosted_linux_sdk_bootstrap.py').decode()
+        self.assertNotIn('os.chown(outputs, uid, gid)',entry);self.assertIn("archive = SDK_ROOT.parent/'official-linux-sdk.tar.gz'",bootstrap);self.assertIn("(SDK_ROOT.parent/'sdk-bootstrap-record.json')",bootstrap)
+
+    def test_real_permission_probe_uses_existing_uid_drop_before_sdk_phases(self):
+        import types
+        runtime=LinuxProviderControls().modules()['workflows_linux_runtime'];runtime.SCOPE=types.SimpleNamespace(uid=1001,gid=100)
+        args=runtime.result_permission_arguments(Path('/owned/run'),Path('/owned/permit'))
+        self.assertEqual(['-I','-B','-c'],args[1:4]);compile(args[4],'<permission-probe>','exec')
+        self.assertIn('os.getuid()==os.geteuid()==uid',args[4]);self.assertIn("target.open('xb')",args[4]);self.assertIn('target.unlink()',args[4]);self.assertIn('not os.access(path,os.W_OK)',args[4])
+        core=sealed_source('hosted_static_core.py').decode();self.assertLess(core.index('permissions,row=owned.run_owned'),core.index('for current_phase, arguments in commands.items()'))
+        self.assertIn('results-permission.json',core)
+
+class LinuxReaderContainmentControls(unittest.TestCase):
+    def modules(self):return LinuxProviderControls().modules()
+    def test_actual_subprocess_exits_with_non_daemon_reader_and_pipe_writer_open(self):
+        import subprocess,sys,time
+        entries=mod.verified_entries(real_kit(),json.loads((ROOT/'hosted-static-policy.json').read_bytes()))
+        names=['workflows_linux_trust','workflows_linux_owned_scope_v1','workflows_private_docker_proxy_v1','workflows_linux_runtime','hosted_linux_entry']
+        sources={name:entries['outputs/'+name+'.py'].decode() for name in names}
+        code="import types,sys,json,io,os,time,threading,tempfile\nfrom pathlib import Path\n"
+        code+='sources='+repr(sources)+'\n'
+        code+="for name,source in sources.items():\n module=types.ModuleType(name);module.__file__='<sealed-'+name+'>';sys.modules[name]=module;exec(compile(source,module.__file__,'exec'),module.__dict__)\n"
+        code+="""runtime=sys.modules['workflows_linux_runtime'];entry=sys.modules['hosted_linux_entry']
+read,write=os.pipe();os.set_blocking(read,False)
+scope=types.SimpleNamespace(deadline=time.monotonic()+1,cleanup_deadline=time.monotonic()+1,daemon_reader_stop=threading.Event(),daemon_pipes=[read,write],daemon_reader_receipt=None,daemon_failure=None,proxy=None,root=Path('/not-a-real-kernel-group'),births={})
+runtime.SCOPE=scope;runtime._quarantined['retained']=(None,{'cleanup_verified':False})
+scope.daemon_reader=threading.Thread(target=runtime.retain_daemon_output,args=(scope,read,io.BytesIO()),daemon=False);scope.daemon_reader.start()
+actual_birth=None
+if os.name=='nt':
+ import ctypes
+ class FileTime(ctypes.Structure):_fields_=[('low',ctypes.c_uint32),('high',ctypes.c_uint32)]
+ api=ctypes.WinDLL('kernel32',use_last_error=True);api.GetProcessTimes.argtypes=[ctypes.c_void_p,*([ctypes.POINTER(FileTime)]*4)];api.GetProcessTimes.restype=ctypes.c_int
+ created,ended,kernel,user=FileTime(),FileTime(),FileTime(),FileTime()
+ assert api.GetProcessTimes(ctypes.c_void_p(-1),ctypes.byref(created),ctypes.byref(ended),ctypes.byref(kernel),ctypes.byref(user))
+ actual_birth=(created.high<<32)|created.low
+else:
+ raw=Path('/proc/self/stat').read_text();actual_birth=int(raw[raw.rfind(')')+2:].split()[19])
+primary=RuntimeError('original validation failure');cleanup_error=None
+try:runtime.finish(scope.cleanup_deadline)
+except RuntimeError as error:cleanup_error=type(error).__name__
+assert not scope.daemon_reader.is_alive() and scope.daemon_reader.daemon is False
+assert scope.controller_reader_cleanup['joined'] and scope.controller_reader_cleanup['reader']['pipeClosed']
+assert runtime._quarantined and scope.quarantine_containment['custodyRetained']
+os.fstat(write) # Writer deliberately stays open through final receipt and process exit.
+with tempfile.TemporaryDirectory() as directory:
+ receipt=Path(directory)/'wrapper-receipt.json'
+ entry.emit_bounded_receipt(receipt,dict(pid=os.getpid(),actualStart=actual_birth,executable=sys.executable,timeoutSeconds=3,persistentData=False,originalFailure=str(primary),cleanupError=cleanup_error,quarantineCount=len(runtime._quarantined),writerStillOpen=True,readerJoined=True,readerDaemon=False,claimReleased=False,fullCleanupVerified=False))
+ print(receipt.read_text(),flush=True)
+# No EOF or writer close is used to settle the reader. OS closes writer on exit.
+"""
+        started=time.monotonic();result=subprocess.run([sys.executable,'-I','-B','-'],input=code.encode(),capture_output=True,timeout=3)
+        self.assertEqual(0,result.returncode,result.stderr.decode());proof=json.loads(result.stdout)
+        self.assertLess(time.monotonic()-started,3);self.assertTrue(proof['writerStillOpen']);self.assertTrue(proof['readerJoined']);self.assertFalse(proof['readerDaemon']);self.assertFalse(proof['claimReleased']);self.assertFalse(proof['fullCleanupVerified']);self.assertEqual(1,proof['quarantineCount']);self.assertGreater(proof['actualStart'],0);self.assertIn('original validation failure',proof['originalFailure'])
+        print('Actual bounded controller exit fixture: '+json.dumps(proof))
+    def test_reader_self_expires_without_controller_stop_or_pipe_eof(self):
+        import os,types,threading
+        runtime=self.modules()['workflows_linux_runtime'];read,write=os.pipe();os.set_blocking(read,False)
+        scope=types.SimpleNamespace(deadline=0,cleanup_deadline=1,daemon_reader_stop=threading.Event(),daemon_pipes=[read,write],daemon_reader_receipt=None,daemon_failure=None)
+        try:
+            runtime.retain_daemon_output(scope,read,io.BytesIO(),monotonic=lambda:2)
+            self.assertEqual('fixed-deadline',scope.daemon_reader_receipt['stopReason']);self.assertTrue(scope.daemon_reader_receipt['pipeClosed']);self.assertNotIn(read,scope.daemon_pipes);os.fstat(write)
+        finally:os.close(write)
+    def test_controller_reserve_is_inside_original_boundary_and_never_renews(self):
+        import types
+        runtime=self.modules()['workflows_linux_runtime'];runtime.SCOPE=types.SimpleNamespace(deadline=100,cleanup_deadline=12)
+        self.assertEqual(10,runtime.supervision_boundary());self.assertEqual(12,runtime.cleanup_boundary())
+    def test_quarantine_unsettled_proxy_keeps_daemon_and_kernel_custody(self):
+        import types,time
+        from unittest.mock import Mock,patch
+        runtime=self.modules()['workflows_linux_runtime'];root=Path('/owned');proxy=Mock();proxy.stop.side_effect=RuntimeError('unsettled retained client')
+        runtime.SCOPE=types.SimpleNamespace(proxy=proxy,root=root,births={root/'docker':(1,2),root/'daemon':(1,3)},stop_group=Mock())
+        with patch.object(runtime,'settle_controller_reader',return_value={'joined':True}):state=runtime.contain_quarantined_controller(time.monotonic()+1)
+        runtime.SCOPE.stop_group.assert_not_called();self.assertTrue(state['custodyRetained']);self.assertFalse(state['claimReleaseAuthorized']);self.assertFalse(state['daemonStopped']);self.assertIn('RuntimeError',state['errors'])
+    def test_quarantine_controller_stop_uses_same_deadline_and_preserves_sdk(self):
+        import types,time
+        from unittest.mock import Mock,patch
+        runtime=self.modules()['workflows_linux_runtime'];root=Path('/owned');proxy=Mock();proxy.stop.return_value=dict(admissionFenced=True,activeClients=0,workersJoined=True)
+        runtime.SCOPE=types.SimpleNamespace(proxy=proxy,root=root,births={root/'docker':(1,2),root/'daemon':(1,3),root/'sdk':(1,4)},stop_group=Mock());deadline=time.monotonic()+1
+        with patch.object(runtime,'settle_controller_reader',return_value={'joined':True}):state=runtime.contain_quarantined_controller(deadline)
+        self.assertEqual([('docker',deadline),('daemon',deadline)],[call.args for call in runtime.SCOPE.stop_group.call_args_list]);self.assertTrue(state['daemonStopped']);self.assertTrue(state['custodyRetained']);self.assertFalse(state['claimReleaseAuthorized'])
+    def test_release_failure_still_settles_reader_and_preserves_first_error(self):
+        import types,time
+        from unittest.mock import Mock,patch
+        runtime=self.modules()['workflows_linux_runtime'];primary=RuntimeError('original release refusal');runtime.SCOPE=types.SimpleNamespace(cleanup_deadline=None,release=Mock(side_effect=primary))
+        with patch.object(runtime,'settle_controller_reader',side_effect=TimeoutError('reader refusal')) as settle,self.assertRaises(RuntimeError) as error:runtime.finish(time.monotonic()+1)
+        settle.assert_called_once();self.assertIs(primary,error.exception);self.assertIn('Secondary controller',primary.__notes__[0])
+
+    def test_expired_quarantine_still_fences_proxy_without_join_or_force(self):
+        import types,time
+        from unittest.mock import Mock,patch
+        runtime=self.modules()['workflows_linux_runtime'];root=Path('/owned');proxy=Mock()
+        runtime.SCOPE=types.SimpleNamespace(proxy=proxy,root=root,births={root/'daemon':(1,2)},stop_group=Mock())
+        with patch.object(runtime,'settle_controller_reader',return_value={'joined':True}):state=runtime.contain_quarantined_controller(time.monotonic()-1)
+        proxy.request_fence.assert_called_once();proxy.stop.assert_not_called();runtime.SCOPE.stop_group.assert_not_called();self.assertFalse(state['daemonStopped']);self.assertTrue(state['custodyRetained']);self.assertIn('TimeoutError',state['errors'])
+    def test_proxy_cancellation_closes_only_retained_streams_without_waiting(self):
+        import types,threading
+        from unittest.mock import Mock
+        proxy=self.modules()['workflows_private_docker_proxy_v1'];owner=object.__new__(proxy.PrivateDockerProxy);owner.closed=threading.Event();owner.lock=threading.RLock();owner.listener=Mock();stream=Mock();owner.sockets={1:[stream]};owner.listener_thread=Mock()
+        owner.request_fence();self.assertTrue(owner.closed.is_set());owner.listener.close.assert_called_once();stream.shutdown.assert_called_once();owner.listener_thread.join.assert_not_called()
+
+class LinuxRecoveryReserveControls(unittest.TestCase):
+    def modules(self):return LinuxProviderControls().modules()
+    def test_real_command_cleanup_closure_honors_sdk_and_recovery_deadlines(self):
+        import tempfile,os,sys,contextlib,inspect
+        from unittest.mock import patch
+        modules=self.modules();runtime=modules['workflows_linux_runtime'];scope=modules['workflows_linux_owned_scope_v1']
+        class Clock:
+            now=0.0
+            def read(self):return self.now
+            def wait(self,seconds):self.now=round(self.now+seconds,6)
+        clock=Clock();first=[True]
+        def populated(path):
+            if first[0]:first[0]=False;raise RuntimeError('controlled first SDK observation refusal')
+            return True
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve();sdk=root/'sdk';sdk.mkdir();holder=root/'held-file';holder.write_bytes(b'owned fixture descriptor')
+            with holder.open('rb') as held:
+                owner=object.__new__(scope.LinuxOwnedScope);owner.root=root;owner.deadline=100;owner.closed=False;owner.daemon_failure=None;owner.cleanup_deadline=None;owner.handles={sdk:held.fileno()};owner.children={};owner.verify=lambda path:None;owner.cli_home=root;owner.uid=1001;owner.gid=100;owner.front_parent=root
+                actual_stop=owner.stop_group;deadlines=[]
+                def record_stop(name,deadline):deadlines.append((name,deadline));return actual_stop(name,deadline)
+                owner.stop_group=record_stop;runtime.SCOPE=owner
+                with patch.object(runtime,'check_cli_home'),patch.object(runtime,'runtime_environment',return_value={}),patch.object(runtime,'registration_window',contextlib.nullcontext),patch.object(runtime,'bind_executable',side_effect=RuntimeError('controlled executable refusal')),patch.object(scope,'populated',populated),patch.object(scope.time,'monotonic',clock.read),patch.object(scope.time,'sleep',clock.wait):
+                    with self.assertRaises(RuntimeError) as original:runtime.run_owned([sys.executable],timeout=1)
+                    lease=original.exception.resource_row['job_lease'];cleanup,row=runtime._quarantined[lease];descriptors=inspect.getclosurevars(cleanup).nonlocals['descriptors']
+                    try:
+                        self.assertEqual(25,owner.cleanup_deadline);self.assertEqual(('sdk',23),deadlines[0]);clock.now=21
+                        with self.assertRaises(RuntimeError):runtime.recover_quarantined(lease,deadline=22.5)
+                        self.assertEqual(('sdk',22.5),deadlines[-1]);self.assertLessEqual(clock.now,22.52);self.assertGreaterEqual(owner.cleanup_deadline-clock.now,2.48)
+                        self.assertIn(lease,runtime._quarantined);self.assertFalse(row.get('cleanup_verified',False));self.assertEqual(25,owner.cleanup_deadline)
+                        clock.now=21
+                        with self.assertRaises(RuntimeError):runtime.recover_quarantined(lease)
+                        self.assertEqual(('sdk',23),deadlines[-1]);self.assertLessEqual(clock.now,23.02);self.assertGreaterEqual(owner.cleanup_deadline-clock.now,1.98)
+                    finally:
+                        for descriptor in list(descriptors):os.close(descriptor);descriptors.remove(descriptor)
+                        runtime._quarantined.clear()
+    def release_fixture(self,expired):
+        import tempfile,os,time,threading,sys
+        from unittest.mock import Mock,patch
+        modules=self.modules();runtime=modules['workflows_linux_runtime'];scope=modules['workflows_linux_owned_scope_v1'];proxy_module=modules['workflows_private_docker_proxy_v1']
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve();sdk=root/'sdk';sdk.mkdir();read,write=os.pipe();os.set_blocking(read,False)
+            owner=object.__new__(scope.LinuxOwnedScope);owner.root=root;owner.deadline=time.monotonic()+100;owner.cleanup_deadline=time.monotonic()+.75;owner.closed=False;owner.births={sdk:(1,2)};owner.handles={};owner.children={};owner.entered=False
+            proxy=object.__new__(proxy_module.PrivateDockerProxy);proxy.closed=threading.Event();proxy.lock=threading.RLock();proxy.sockets={};proxy.workers={};proxy.bytes=0;proxy.failure=None;proxy.identity=None;proxy.deadline=owner.deadline
+            def accept():
+                if proxy.closed.wait(.02):raise OSError('cancelled listener')
+                raise proxy_module.socket.timeout()
+            proxy.listener=Mock();proxy.listener.accept.side_effect=accept;proxy.listener_thread=threading.Thread(target=proxy._accept,daemon=False);proxy.listener_thread.start();owner.proxy=proxy
+            owner.daemon_reader_stop=threading.Event();owner.daemon_pipes=[read,write];owner.daemon_reader_receipt=None;owner.daemon_failure=None;owner.daemon_reader=threading.Thread(target=runtime.retain_daemon_output,args=(owner,read,io.BytesIO()),daemon=False);owner.daemon_reader.start();runtime.SCOPE=owner
+            try:
+                deadline=time.monotonic()-1 if expired else owner.cleanup_deadline
+                with patch.dict(sys.modules,{'workflows_linux_trust':modules['workflows_linux_trust']}),self.assertRaises(TimeoutError if expired else RuntimeError) as failure:runtime.finish(deadline)
+                if not expired:self.assertIn('Linux owned scope refused',str(failure.exception))
+                self.assertTrue(proxy.closed.is_set());self.assertFalse(owner.closed);self.assertEqual({},runtime._quarantined);self.assertTrue(owner.quarantine_containment['custodyRetained']);self.assertFalse(owner.quarantine_containment['claimReleaseAuthorized']);self.assertFalse(owner.quarantine_containment['daemonStopped'])
+                self.assertEqual({sdk:(1,2)},owner.births)
+            finally:
+                proxy.request_fence();owner.daemon_reader_stop.set();proxy.listener_thread.join(.5);owner.daemon_reader.join(.5);os.close(write)
+                self.assertFalse(proxy.listener_thread.is_alive());self.assertFalse(owner.daemon_reader.is_alive())
+    def test_real_scope_sdk_custody_refusal_always_fences_real_proxy_thread(self):self.release_fixture(False)
+    def test_real_scope_expired_remaining_always_cancels_real_proxy_thread(self):self.release_fixture(True)
 
 if __name__=='__main__':unittest.main()
