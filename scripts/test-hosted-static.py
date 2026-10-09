@@ -639,6 +639,66 @@ class LinuxSdkThreadPressureControls(unittest.TestCase):
     def test_actual_cleanup_failure_preserves_primary_and_recovers_exact_lease(self):
         self.actual_path(cleanup_failure=True)
 
+
+class LinuxSuiteObservationControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls): cls.runtime=LinuxProviderControls().modules()['workflows_linux_runtime']
+    def test_fixed_phase_selection_excludes_other_commands(self):
+        for phase in ('discovery','focused','suite'):self.assertEqual(phase,self.runtime.observed_phase(Path('/owned')/(phase+'.log')))
+        for path in (None,'audit.log','suite.log.extra','SUITE.log','suite-stdout.log'):
+            self.assertIsNone(self.runtime.observed_phase(path))
+    def test_unknown_phase_counter_retention_refused(self):
+        with self.assertRaises(RuntimeError):self.runtime.retain_discovery_observation('audit.log','before',{})
+    def test_invalid_stage_cannot_select_another_artifact_path(self):
+        for stage in ('../escape','live-0','live-9','unknown',True):
+            with self.subTest(stage=stage),self.assertRaises(RuntimeError):self.runtime.retain_discovery_observation('suite.log',stage,{})
+    def test_live_sampler_honors_tighter_command_boundary(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        runtime=self.runtime;scope=SimpleNamespace(deadline=100);state={'count':0,'nextAt':0}
+        with patch.object(runtime,'SCOPE',scope),patch.object(runtime.time,'monotonic',return_value=2),patch.object(runtime,'retain_discovery_observation') as observer:
+            runtime.sample_phase_observation('suite.log',state,{},deadline=2)
+            observer.assert_not_called();self.assertEqual(0,state['count']);self.assertEqual(100,scope.deadline)
+    def sample(self,state,clock=2,deadline=10,phase='suite.log'):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        runtime=self.runtime
+        with patch.object(runtime,'SCOPE',SimpleNamespace(deadline=deadline)),patch.object(runtime.time,'monotonic',return_value=clock),patch.object(runtime,'retain_discovery_observation') as observer:
+            runtime.sample_phase_observation(phase,state,{})
+            return observer.call_args_list
+    def test_live_sampler_closed_shape_and_types(self):
+        for state in ({},{'count':0,'nextAt':1,'foreign':True},{'count':True,'nextAt':1},{'count':9,'nextAt':1},{'count':0,'nextAt':float('nan')},{'count':0,'nextAt':float('inf')},{'count':0,'nextAt':-1}):
+            with self.subTest(state=state),self.assertRaises(RuntimeError):self.sample(state)
+    def test_live_sampler_never_exceeds_eight_or_renews_deadline(self):
+        state={'count':0,'nextAt':0}
+        for second in range(1,12):self.sample(state,clock=second,deadline=20)
+        self.assertEqual(8,state['count']);self.assertEqual(9,state['nextAt'])
+        expired={'count':0,'nextAt':0};self.assertEqual([],self.sample(expired,clock=10,deadline=10));self.assertEqual(0,expired['count'])
+    def test_live_sampler_does_not_sample_before_interval(self):
+        state={'count':0,'nextAt':3};self.assertEqual([],self.sample(state,clock=2));self.assertEqual(0,state['count'])
+    def test_each_observed_phase_retains_same_closed_counters_with_own_prefix(self):
+        import tempfile,types,time
+        from unittest.mock import patch
+        runtime=self.runtime
+        def read(path,bound=4096):
+            if path.name=='cgroup.procs':return b''
+            if path.name.startswith('memory.events'):return b'low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\n'
+            if path.name=='pids.events':return b'max 0\n'
+            return b'64\n'
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path('/sys/fs/cgroup/owned');scope=types.SimpleNamespace(root=root,deadline=time.monotonic()+10,verify=lambda path:None)
+            for phase in ('discovery','focused','suite'):
+                row={}
+                with patch.object(runtime,'SCOPE',scope),patch.object(runtime,'observation_read',read):runtime.retain_discovery_observation(Path(directory)/(phase+'.log'),'terminal',row)
+                path=Path(directory)/(phase+'-observation-terminal.json');body=json.loads(path.read_bytes())
+                self.assertFalse(body['qualified']);self.assertEqual(set(runtime.COUNTER_FILES),set(body['groups']['sdk']))
+                self.assertEqual(path.name,row['discoveryObservations']['terminal']['file'])
+    def test_suite_streams_and_pre_teardown_sampling_use_actual_command_path(self):
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());entries=mod.verified_entries(real_kit(),policy);raw=entries['outputs/workflows_linux_runtime.py'].decode()
+        self.assertIn('if discovery_observation: sample_phase_observation(log_path,observation_state,row,deadline=deadline)',raw)
+        self.assertIn('with_name(observation_phase+"-stdout.log")',raw);self.assertIn('with_name(observation_phase+"-stderr.log")',raw)
+        self.assertLess(raw.index('retain_discovery_observation(log_path,"terminal",row)'),raw.index("SCOPE.stop_group('sdk',effective)"))
+
 class LinuxProviderControls(unittest.TestCase):
     def modules(self):
         import tempfile, types, sys

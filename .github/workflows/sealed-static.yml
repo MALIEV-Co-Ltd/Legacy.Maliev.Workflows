@@ -64,6 +64,12 @@ jobs:
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/build.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery-observation-*.json
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/focused-observation-*.json
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/focused-stdout.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/focused-stderr.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/suite-observation-*.json
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/suite-stdout.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/suite-stderr.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery-stdout.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery-stderr.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery-assembly-observation.json
