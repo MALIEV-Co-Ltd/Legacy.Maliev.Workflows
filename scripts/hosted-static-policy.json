@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "repository": "MALIEV-Co-Ltd/Legacy.Maliev.Workflows",
-  "baseSha": "53892c362a30130f582c40da7525e44f11474e8e",
-  "candidateSha": "9e38b30a23ab53db13d0c89aaaccabdc2db1ec4503549b217d83ecf2137c36c0",
+  "baseSha": "69135d56050470d59384a69357eca4ff7248e6a0",
+  "candidateSha": "c01d8789b9b38b95a2b73e68ba294591713eb53dff652a41c0314d78bedbbf2e",
   "worktree": "/tmp/maliev-workflows-qualification/worktree",
   "outputsRoot": "/tmp/maliev-workflows-qualification/outputs",
-  "kitGitBlob": "38d634aa3f35e8883e7f27731c304c351a71ec9e",
-  "kitSha256": "5bc0c2df521f1495aa19b2b7964a51d00ce7544d2a38855a4fb30a144b288fcd",
-  "kitBytes": 32727388,
+  "kitGitBlob": "08a6ffd05b0571cad8c25436f02428eee7027b98",
+  "kitSha256": "ff72e9e9674311926c7604f1a8229267d6948fd2b2b6114ef2eef974c290729d",
+  "kitBytes": 32841279,
   "entries": {
     "outputs/accepted-package-assets/tests/Legacy.Maliev.Workflows.Tests/obj/project.assets.json": {
       "bytes": 106333,
@@ -33,13 +33,21 @@
       "bytes": 481,
       "sha256": "024ab25901cc84c278b4cf29a01ea463ac85f63cbf1ceb9f587a923f37a6570f"
     },
+    "outputs/hosted_linux_entry.py": {
+      "bytes": 10911,
+      "sha256": "1f2279520f03c3f94b3f93dcdcbff8095327ae41f67173a2992f56555729c4fd"
+    },
+    "outputs/hosted_linux_sdk_bootstrap.py": {
+      "bytes": 4691,
+      "sha256": "b11cf3cbffd08175da89e9bd998505c4e714db3b9cdd630ec0f329b34450b228"
+    },
     "outputs/hosted_package_graph.py": {
       "bytes": 2913,
       "sha256": "eed5ef4ab6dc76173c0859124c8db5a6aaa50d6ca9ce09d50589039efa8103f0"
     },
     "outputs/hosted_static_core.py": {
-      "bytes": 24481,
-      "sha256": "7d31bbf6188a431706178fffe1645a3cf92b3c79d8a035551ce6d0133c99889a"
+      "bytes": 24700,
+      "sha256": "f028964aaf2e4458aee32c9af07f80d3e2c573b86d91ada6f19fd46f4ffb105b"
     },
     "outputs/offline-packages/microsoft.applicationinsights.2.23.0.nupkg": {
       "bytes": 1737910,
@@ -130,16 +138,16 @@
       "sha256": "59ffe65ade67ad9d886267f877b634a450363cb81b94e19db9ca4c36461416f6"
     },
     "outputs/workflows-gitleaks-toolchain-build-request-20261008-v3/scope-frozen.txt": {
-      "bytes": 350,
-      "sha256": "abf0aac549840d3ae1cc2ff30c66c7a69b05a9295cf7a90872beb769fef5476d"
+      "bytes": 378,
+      "sha256": "9df6aeb210daff54606e25b0f52712b79bb629c737f838bc8a43e649c19180a2"
     },
     "outputs/workflows-go1269-hosted-candidate/candidate-manifest.json": {
-      "bytes": 1431,
-      "sha256": "9e38b30a23ab53db13d0c89aaaccabdc2db1ec4503549b217d83ecf2137c36c0"
+      "bytes": 1526,
+      "sha256": "c01d8789b9b38b95a2b73e68ba294591713eb53dff652a41c0314d78bedbbf2e"
     },
     "outputs/workflows-go1269-hosted-candidate/preserved-existing-hashes.json": {
-      "bytes": 14751,
-      "sha256": "45a581d680750bb4affba3590d22e2bc0db61f17580d967e627341a3e35025fe"
+      "bytes": 15397,
+      "sha256": "82f22d67e196217b25637949bb20b252ed9b03cc6a3a49e46d0cb4777b568578"
     },
     "outputs/workflows_cleanup_supervisor_v1.py": {
       "bytes": 5008,
@@ -149,6 +157,22 @@
       "bytes": 125196,
       "sha256": "319a5eb51d725e24a05160252054e0e64a2470bb5901d618ecd87e6d93733b83"
     },
+    "outputs/workflows_inventory_cli_association_v1.py": {
+      "bytes": 6905,
+      "sha256": "8e93b51c5c095775af65b56717124716cc1d44f7644bcd65ceca795e7aa5067d"
+    },
+    "outputs/workflows_linux_owned_scope_v1.py": {
+      "bytes": 12407,
+      "sha256": "f4a15c1fca820cceafe2e4d70e1a363f46b46e7708c7c868edbc6051abdea971"
+    },
+    "outputs/workflows_linux_runtime.py": {
+      "bytes": 35877,
+      "sha256": "b47ba092bca5955f5a47b4172268253fe097440beb22bbb43a5063e371a184d6"
+    },
+    "outputs/workflows_linux_trust.py": {
+      "bytes": 4627,
+      "sha256": "a53ffd82dbd0d1e3300e0e123d05f0bfbc470bbce19ec98a30430f5903477e6d"
+    },
     "outputs/workflows_native_admission_v3.py": {
       "bytes": 9620,
       "sha256": "b4bdec9cade0ae4f51c0c46c94873b67b1b9fb23fe62313a60db53e474027c44"
@@ -156,6 +180,10 @@
     "outputs/workflows_owned_command_auth_job_accounting_v2.py": {
       "bytes": 27743,
       "sha256": "890e9279929e25dfc6839e753cc53121e82c589dd192d264165b052484638ed6"
+    },
+    "outputs/workflows_private_docker_proxy_v1.py": {
+      "bytes": 21302,
+      "sha256": "745a66883baa8e2a427ccc034102630a24c336f96840eca1f343a57487172300"
     },
     "outputs/workflows_snapshot_census_v3.py": {
       "bytes": 2745,
@@ -174,12 +202,12 @@
       "sha256": "b83622d1e150694d70f5f2d59508ef9597cd6d626187085e3fa7e3a9e2326b40"
     },
     "worktree/.github/workflows/sealed-static.yml": {
-      "bytes": 4737,
-      "sha256": "f27b1d4810765abe6d52bfd6297cfee3b27b9c857f779f59ef82860e96bfe812"
+      "bytes": 6737,
+      "sha256": "3003f1d789dc92d8d6174a4d3b68d5fee9a6d920814fc4453f6104a2c5ede226"
     },
     "worktree/.github/workflows/validate.yml": {
-      "bytes": 2920,
-      "sha256": "786978b11b2708b4a030e89f027164235104067034b0a3afb40fa7f02e010184"
+      "bytes": 6214,
+      "sha256": "db06d1a248926b513ae5f0e3c6a52f7a7826d9651d3c84bae7c21aa8f0a92519"
     },
     "worktree/.gitignore": {
       "bytes": 107,
@@ -217,6 +245,10 @@
       "bytes": 1316,
       "sha256": "09598366ee14812a5155d82082ff2df3bd2318281650e7c041df3235510814f7"
     },
+    "worktree/docs/additive-quotation-evidence-2026-09-19.md": {
+      "bytes": 11971,
+      "sha256": "507c764a0310d077fd49da7d33d92496632c6aefa49348d90208d7ffd56569ff"
+    },
     "worktree/docs/production-observability.md": {
       "bytes": 17625,
       "sha256": "929257e50df1c3c962c8b3d6e0f5621108a4a0733623c098f15bfd99cdc6b3c4"
@@ -224,6 +256,14 @@
     "worktree/docs/provider-credential-deployment-gates.md": {
       "bytes": 5076,
       "sha256": "d99cd526c6ae23fe5a0bd1b85472fecd696c439f8d629d1069d98fd22d0a732d"
+    },
+    "worktree/docs/superpowers/plans/2026-09-19-additive-production-completion.md": {
+      "bytes": 3075,
+      "sha256": "9ae4008fbd85e9e6aef4145da0ec9e6d38fc0db4eaae55df08b65b195a1d87b2"
+    },
+    "worktree/docs/superpowers/verification/2026-09-20-fdm-simulation-results.md": {
+      "bytes": 7568,
+      "sha256": "747ee41763a7a998b3d3b53faa14a24fc45ef518c3a7c9d71c4fb7a5bdfa1cfe"
     },
     "worktree/scripts/Assert-OfflineReleaseSource.ps1": {
       "bytes": 4782,
@@ -282,8 +322,8 @@
       "sha256": "7aa63fbe398a090a8c1ae17f19a3c2542d2133cc0304a658bf17c83c3d145564"
     },
     "worktree/scripts/hosted-static-policy.json": {
-      "bytes": 34679,
-      "sha256": "cdc751a61ba18697c697316f054c8eb77cc9b7af5ce121b53cf69272196266bd"
+      "bytes": 34820,
+      "sha256": "2bd930ec29ca1f7cc5d9d024c0e520074349756d733c9e72601e6898a0792302"
     },
     "worktree/scripts/offline-image-only-plan.md": {
       "bytes": 4025,
@@ -302,8 +342,8 @@
       "sha256": "08c4b43f0f6ec14ab555f2880b6e2f996ff4b0fd39fb9db3be9eb8cd0ab79c67"
     },
     "worktree/scripts/run-hosted-static.py": {
-      "bytes": 16179,
-      "sha256": "4b48dd0b3f99b90e48f1a01016927340ef25e7abcdae3463198c21bc5c8e9030"
+      "bytes": 16935,
+      "sha256": "4691d0736f6867aba536560eb6a3c553663626865b563687ad2843bb95ba5c93"
     },
     "worktree/scripts/service-manifest-wrapper.md": {
       "bytes": 5157,
@@ -322,8 +362,8 @@
       "sha256": "fc4e7967a2563d6b40696db00201ddc0d60c70614a7b96fe80406a3a0d1ca151"
     },
     "worktree/scripts/test-hosted-static.py": {
-      "bytes": 25899,
-      "sha256": "c8eea8d29ce199862aca08a58325f51a0c9da46f474c2bffd4c40a7761ecf746"
+      "bytes": 240800,
+      "sha256": "945aa85a3c11424db53d737c5848cf1b7184755babb1242b34bf0a3617523efa"
     },
     "worktree/scripts/validate-host-dependency-context.py": {
       "bytes": 11019,
@@ -400,6 +440,10 @@
     "worktree/tests/Legacy.Maliev.Workflows.Tests/PackagedWebImageTests.cs": {
       "bytes": 22187,
       "sha256": "bb637f4bc697d850521e31f1e638840d8ad63ec45a4cffa1e242f698274b040f"
+    },
+    "worktree/tests/Legacy.Maliev.Workflows.Tests/PrivateCorpusInventoryCliTests.cs": {
+      "bytes": 9271,
+      "sha256": "631234fea026edf850016cc0fa56ea6dfb758d0f6e7ac45f818e1afde0f3d4d7"
     },
     "worktree/tests/Legacy.Maliev.Workflows.Tests/PrivateCorpusInventoryTests.cs": {
       "bytes": 16599,
@@ -534,8 +578,8 @@
       "sha256": "c3a0e4671307235d132a5be057b43c4a74ab899da3feb0fd71df2c05f7bc0360"
     },
     "worktree/tools/additive-benchmark/AdditiveBenchmarkCli.cs": {
-      "bytes": 5568,
-      "sha256": "3cb7ca53b16d113cc7914c4cba0679aaeb5cdec2c90d27f47effeaa8bef1db5d"
+      "bytes": 8811,
+      "sha256": "4f908d0646a59ecabf7577adc8fa7ac8ce2c21674b1666ac70073e1251bc5224"
     },
     "worktree/tools/additive-benchmark/AdditiveBenchmarkRunner.cs": {
       "bytes": 51213,
@@ -562,8 +606,8 @@
       "sha256": "1e48124ad2ecbfdff33110b42bb14e38921139f44419e58a08b7fffaa0de64f8"
     },
     "worktree/tools/additive-benchmark/CORPUS-INVENTORY.md": {
-      "bytes": 2427,
-      "sha256": "6caa56db5ae32d5189df8f7282b50f7863ef4a2e6a9cf0b21b57baa71fd01ceb"
+      "bytes": 3589,
+      "sha256": "d6f13ce84f7102ccdf13363ef03c5bdf56e181e222b73caeb2fd437ea114071d"
     },
     "worktree/tools/additive-benchmark/FilamentProfileCatalogValidator.cs": {
       "bytes": 9535,
@@ -680,30 +724,6 @@
     "worktree/tools/security/tests/test_current_tree_secrets.py": {
       "bytes": 15913,
       "sha256": "14b7e387b725fd823d9d49433c2f34193b1c9c783897b940447335b525609c2f"
-    },
-    "outputs/workflows_linux_runtime.py": {
-      "bytes": 35877,
-      "sha256": "b47ba092bca5955f5a47b4172268253fe097440beb22bbb43a5063e371a184d6"
-    },
-    "outputs/workflows_linux_owned_scope_v1.py": {
-      "bytes": 12407,
-      "sha256": "f4a15c1fca820cceafe2e4d70e1a363f46b46e7708c7c868edbc6051abdea971"
-    },
-    "outputs/workflows_private_docker_proxy_v1.py": {
-      "bytes": 21302,
-      "sha256": "745a66883baa8e2a427ccc034102630a24c336f96840eca1f343a57487172300"
-    },
-    "outputs/hosted_linux_sdk_bootstrap.py": {
-      "bytes": 4691,
-      "sha256": "b11cf3cbffd08175da89e9bd998505c4e714db3b9cdd630ec0f329b34450b228"
-    },
-    "outputs/hosted_linux_entry.py": {
-      "bytes": 10911,
-      "sha256": "1f2279520f03c3f94b3f93dcdcbff8095327ae41f67173a2992f56555729c4fd"
-    },
-    "outputs/workflows_linux_trust.py": {
-      "bytes": 4627,
-      "sha256": "a53ffd82dbd0d1e3300e0e123d05f0bfbc470bbce19ec98a30430f5903477e6d"
     }
   },
   "initialMemoryFloorMiB": 5120,
@@ -719,7 +739,7 @@
     "format",
     "audit"
   ],
-  "coreSha256": "7d31bbf6188a431706178fffe1645a3cf92b3c79d8a035551ce6d0133c99889a",
+  "coreSha256": "f028964aaf2e4458aee32c9af07f80d3e2c573b86d91ada6f19fd46f4ffb105b",
   "qualifiedProviderSha256": "b47ba092bca5955f5a47b4172268253fe097440beb22bbb43a5063e371a184d6",
   "protectedWorkflowNotPublished": true,
   "unconstrainedPackageResolution": false,
