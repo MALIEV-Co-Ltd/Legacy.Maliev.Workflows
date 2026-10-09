@@ -1,4 +1,4 @@
-"""Protected-main sealed Windows static validation; no builds or tests."""
+"""Protected-main sealed Windows build-first qualification; historical build/test evidence is never replayed."""
 import base64
 from datetime import datetime, timezone
 import hashlib
@@ -41,7 +41,7 @@ def validate_permit(raw, policy, now=None):
     permit = json.loads(raw, object_pairs_hook=unique)
     required = {'issuedBy','owner','phase','leaseId','issuedUtc','expiresUtc','worktree','baseSha','candidateSha'}
     if set(permit) != required or any(type(v) is not str for v in permit.values()): raise ValueError('Permit shape')
-    fixed = {'issuedBy':ROOT,'owner':OWNER,'phase':'hosted-static','worktree':policy['worktree'],'baseSha':policy['baseSha'],'candidateSha':policy['candidateSha']}
+    fixed = {'issuedBy':ROOT,'owner':OWNER,'phase':'hosted-qualification','worktree':policy['worktree'],'baseSha':policy['baseSha'],'candidateSha':policy['candidateSha']}
     if any(permit[k] != v for k,v in fixed.items()): raise ValueError('Permit association')
     import uuid
     if str(uuid.UUID(permit['leaseId'])) != permit['leaseId']: raise ValueError('Lease identity')
@@ -233,7 +233,7 @@ def main():
         identity['isolated']=sdk_identity(module.SDK_FILES)
         (outputs/'sdk-identity.json').write_text(json.dumps(identity,indent=2))
         module.candidate_check()
-        sys.argv=[str(core),'hosted-static',str(permit_path)]
+        sys.argv=[str(core),'hosted-qualification',str(permit_path)]
         module.main()
     except BaseException as error:
         failure=error
@@ -258,7 +258,7 @@ def main():
                     if owned._quarantined: continue  # Retain and supervise exact owned handles.
                     raise
         def receipt(state,errors):
-            (outputs/'wrapper-receipt.json').write_text(json.dumps({'owner':OWNER,'leaseId':validated_permit['leaseId'],'leaseExpiresUtc':validated_permit['expiresUtc'],'failureType':type(failure).__name__ if failure else None,'resources':ledger,'cleanup':state,'cleanupFailureTypes':errors,'buildOrTestsReplayed':False},indent=2))
+            (outputs/'wrapper-receipt.json').write_text(json.dumps({'owner':OWNER,'leaseId':validated_permit['leaseId'],'leaseExpiresUtc':validated_permit['expiresUtc'],'failureType':type(failure).__name__ if failure else None,'resources':ledger,'cleanup':state,'cleanupFailureTypes':errors,'historicalBuildOrTestsReplayed':False},indent=2))
         preserve_first_failure(failure,cleanup,receipt)
 
 

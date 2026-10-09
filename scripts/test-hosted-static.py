@@ -17,7 +17,7 @@ class SealedStaticControls(unittest.TestCase):
     def setUp(self):
         self.now=datetime(2026,10,9,tzinfo=timezone.utc)
         self.policy={'worktree':'D:/fixed','baseSha':'a'*40,'candidateSha':'b'*64}
-        self.permit={'issuedBy':mod.ROOT,'owner':mod.OWNER,'phase':'hosted-static','leaseId':str(uuid.uuid4()),'issuedUtc':self.now.isoformat(),'expiresUtc':(self.now+timedelta(minutes=10)).isoformat(),'worktree':'D:/fixed','baseSha':'a'*40,'candidateSha':'b'*64}
+        self.permit={'issuedBy':mod.ROOT,'owner':mod.OWNER,'phase':'hosted-qualification','leaseId':str(uuid.uuid4()),'issuedUtc':self.now.isoformat(),'expiresUtc':(self.now+timedelta(minutes=10)).isoformat(),'worktree':'D:/fixed','baseSha':'a'*40,'candidateSha':'b'*64}
         self.context={'repository':mod.REPOSITORY,'ref':'refs/heads/main','eventName':'workflow_dispatch','sha':'c'*40,'job':{'workflow_repository':mod.REPOSITORY,'workflow_sha':'c'*40}}
     def encode(self,value): return json.dumps(value).encode()
     def kit(self,names=None,symlink=False):
@@ -86,13 +86,13 @@ class SealedStaticControls(unittest.TestCase):
     def test_real_sealed_candidate(self):
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
         files=mod.verified_entries(data,policy)
-        self.assertEqual(177,len(files));self.assertEqual(policy['kitSha256'],mod.digest(data))
+        self.assertEqual(168,len(files));self.assertEqual(policy['kitSha256'],mod.digest(data))
         core=files['outputs/hosted_static_core.py'];self.assertEqual(policy['coreSha256'],mod.digest(core))
         self.assertEqual(5120,policy['initialMemoryFloorMiB']);self.assertEqual(4096,policy['runtimeMemoryFloorMiB'])
     def test_native_fixed_commands(self):
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
         source=mod.verified_entries(data,policy)['outputs/hosted_static_core.py'].decode('utf-8')
-        self.assertNotIn("'focused': [",source);self.assertNotIn("'suite': [",source)
+        self.assertIn("'focused': [",source);self.assertIn("'suite': [",source)
         for token in ["'restore': [","'format': [","'audit': [","memory_limit=3 * 1024**3","cpu_rate=5000","output_limit=4 * 1024 * 1024","min(600", "--configfile"]:self.assertIn(token,source)
 
 
@@ -354,5 +354,89 @@ class CandidateGitNormalizationControls(unittest.TestCase):
         self.assertEqual(3,len(frozen.splitlines()))
         self.assertIn(b'scope.stdout != expected_scope.read_bytes()',raw)
         self.assertIn(b"raise RuntimeError('Workflows owned or preserved source bytes changed')",raw)
+
+
+class FreshQualificationPhaseControls(unittest.TestCase):
+    def evidence(self):
+        import ast, types, sys
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        entries=mod.verified_entries(data,policy)
+        tree=ast.parse(entries['outputs/hosted_static_core.py'])
+        strict=types.ModuleType('artifact_pin_native_result_validation_v3')
+        exec(compile(entries['outputs/artifact_pin_native_result_validation_v3.py'],'<sealed-strict>','exec'),strict.__dict__)
+        previous=sys.modules.get(strict.__name__);sys.modules[strict.__name__]=strict
+        association=types.ModuleType('sealed_association')
+        try:exec(compile(entries['outputs/workflows_gitleaks_compiled_result_association_v1.py'],'<sealed-association>','exec'),association.__dict__)
+        finally:
+            if previous is None:sys.modules.pop(strict.__name__,None)
+            else:sys.modules[strict.__name__]=previous
+        return ast,entries,tree,association
+    def branch(self,phase):
+        ast,entries,tree,association=self.evidence()
+        node=next(n for n in ast.walk(tree) if isinstance(n,ast.If) and isinstance(n.test,ast.Compare) and isinstance(n.test.left,ast.Name) and n.test.left.id=='current_phase' and len(n.test.comparators)==1 and isinstance(n.test.comparators[0],ast.Constant) and n.test.comparators[0].value==phase)
+        return compile(ast.Module(body=node.body,type_ignores=[]),'<actual-phase-branch>','exec'),association
+    def test_build_baseline_and_failures_use_actual_guard(self):
+        from types import SimpleNamespace
+        code,association=self.branch('build')
+        baseline=b'Build succeeded.\n0 Warning(s)\n0 Error(s)\n'
+        state={'result':SimpleNamespace(stdout=baseline),'phase_receipts':{},'current_phase':'build'}
+        exec(code,state);self.assertEqual(0,state['phase_receipts']['build']['warnings'])
+        for raw in [baseline.replace(b'0 Warning',b'1 Warning'),baseline.replace(b'Build succeeded.',b'Build failed.'),b'Build succeeded.\n']:
+            with self.subTest(raw=raw),self.assertRaises(RuntimeError):exec(code,{'result':SimpleNamespace(stdout=raw),'phase_receipts':{},'current_phase':'build'})
+    def test_fresh_discovery_refuses_missing_duplicate_or_old_go_identity(self):
+        from types import SimpleNamespace
+        from tempfile import TemporaryDirectory
+        code,association=self.branch('discovery')
+        focus=association.focused_names([dict(method=m,arguments=None,executed=False) for m in association.METHODS])
+        names=focus+[association.ASSEMBLY+'.Synthetic.Case'+str(i) for i in range(489)]
+        for mutation in ['baseline','missing','duplicate','old-go','historical-assembly']:
+            with self.subTest(mutation=mutation),TemporaryDirectory() as temporary:
+                actual=names.copy()
+                if mutation=='missing':actual.pop()
+                if mutation=='duplicate':actual[-1]=actual[-2]
+                text='The following Tests are available:\n'+''.join('    '+n+'\n' for n in actual)
+                if mutation=='old-go':text=text.replace('go1.26.9+auto','go1.26.8+auto')
+                state=dict(result=SimpleNamespace(stdout=text.encode(),stderr=b''),REPO=Path(temporary),runroot=Path(temporary),CANDIDATE='a'*64,BASE='b'*40,association=association,json=json,current_phase='discovery',phase_receipts={},sha=lambda p:'e2278ee608bf879e73ba5f49955143d1a7613c959552be5c47b7e9abef08c74d' if mutation=='historical-assembly' else 'c'*64)
+                if mutation=='baseline':exec(code,state);self.assertEqual(497,len(state['FRESH_INVENTORY']['names']))
+                else:
+                    with self.assertRaises((ValueError,RuntimeError)):exec(code,state)
+    def test_tampered_assembly_after_discovery_uses_actual_guard(self):
+        ast,entries,tree,association=self.evidence()
+        function=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='candidate_check')
+        node=next(n for n in function.body if isinstance(n,ast.If) and isinstance(n.test,ast.Compare) and isinstance(n.test.left,ast.Name) and n.test.left.id=='FRESH_INVENTORY')
+        code=compile(ast.Module(body=node.body,type_ignores=[]),'<actual-fresh-custody>','exec')
+        state=dict(FRESH_INVENTORY={},REPO=Path('/modeled'),ASSEMBLY_HASH='a'*64,sha=lambda path:'b'*64)
+        with self.assertRaises(RuntimeError):exec(code,state)
+    def test_phase_order_and_no_old_receipt_acceptance(self):
+        ast,entries,tree,association=self.evidence()
+        main=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='main')
+        commands=next(n.value for n in main.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='commands' for t in n.targets))
+        self.assertEqual(['restore','build','discovery','focused','suite','format','audit'],[n.value for n in commands.keys])
+        self.assertFalse(any('/bin/' in name or 'build-b909' in name or 'validation-81cc' in name for name in entries))
+        self.assertNotIn(b'RAW_BUILD_HASHES',entries['outputs/hosted_static_core.py'])
+    def test_fixed_shared_deadline_and_resource_supervision(self):
+        ast,entries,tree,association=self.evidence()
+        core=entries['outputs/hosted_static_core.py'].decode()
+        for text in ['timeout = min(600, remaining-25)','phase_deadline-time.monotonic()',"raise RuntimeError('Fixed remaining validation route deadline exceeded')",'supervisor.supervise(owned._quarantined, recover, slot, journal, checkpoint)','memory_limit=3 * 1024**3','cpu_rate=5000','output_limit=4 * 1024 * 1024']:
+            self.assertIn(text,core)
+
+
+
+class PhasePolicyMetadataControls(unittest.TestCase):
+    def test_policy_phase_authority_matches_actual_core_and_historical_replay_semantics(self):
+        import ast
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        entries=mod.verified_entries(data,policy)
+        main=next(n for n in ast.parse(entries['outputs/hosted_static_core.py']).body if isinstance(n,ast.FunctionDef) and n.name=='main')
+        commands=next(n.value for n in main.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='commands' for t in n.targets))
+        self.assertEqual([n.value for n in commands.keys],policy['nativePhases'])
+        self.assertEqual(['restore','build','discovery','focused','suite','format','audit'],policy['nativePhases'])
+        self.assertNotIn('buildOrTestReplayed',policy)
+        self.assertIs(False,policy['historicalBuildOrTestsReplayed'])
+        wrapper=(ROOT/'run-hosted-static.py').read_text()
+        self.assertIn("'historicalBuildOrTestsReplayed':False",wrapper)
+        self.assertNotIn('no builds or tests',wrapper)
 
 if __name__=='__main__':unittest.main()
