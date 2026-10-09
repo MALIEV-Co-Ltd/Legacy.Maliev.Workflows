@@ -5,9 +5,9 @@
   "candidateSha": "1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3",
   "worktree": "/tmp/maliev-workflows-qualification/worktree",
   "outputsRoot": "/tmp/maliev-workflows-qualification/outputs",
-  "kitGitBlob": "5a9432840423a4bdfaebb9d7b4571d3baad1e541",
-  "kitSha256": "cc3916878322b8318bcb2bcef83375114691c06010517afa3e86ee2c5b3d245c",
-  "kitBytes": 32640621,
+  "kitGitBlob": "31346fb67ed9eeb830108f35a82bd3125ad1b406",
+  "kitSha256": "44be53f6b42a6d7e9cebb7d54bf5f4c884281ac2b3113f1777838c113d2df421",
+  "kitBytes": 32642847,
   "entries": {
     "outputs/accepted-package-assets/tests/Legacy.Maliev.Workflows.Tests/obj/project.assets.json": {
       "bytes": 106333,
@@ -38,8 +38,8 @@
       "sha256": "eed5ef4ab6dc76173c0859124c8db5a6aaa50d6ca9ce09d50589039efa8103f0"
     },
     "outputs/hosted_static_core.py": {
-      "bytes": 19193,
-      "sha256": "8f73288117798654ed36d918c0f392ec063895e7738f7ca13146db1c06fa9709"
+      "bytes": 20127,
+      "sha256": "c945ab433f9342bf1528c1d6027ecce59d1db0edbebceb692ae6d7d8b9f199ae"
     },
     "outputs/offline-packages/microsoft.applicationinsights.2.23.0.nupkg": {
       "bytes": 1737910,
@@ -682,8 +682,8 @@
       "sha256": "14b7e387b725fd823d9d49433c2f34193b1c9c783897b940447335b525609c2f"
     },
     "outputs/workflows_linux_runtime.py": {
-      "bytes": 26694,
-      "sha256": "5843273ff93edebb5a84dce1874506afa3b8e62992b7312571474dd1d1c1dbc9"
+      "bytes": 33295,
+      "sha256": "1c5c975705288f817fae5c2f07f82ad611a70c186aa384bdf6973f7eb9f89f51"
     },
     "outputs/workflows_linux_owned_scope_v1.py": {
       "bytes": 12140,
@@ -719,8 +719,8 @@
     "format",
     "audit"
   ],
-  "coreSha256": "8f73288117798654ed36d918c0f392ec063895e7738f7ca13146db1c06fa9709",
-  "qualifiedProviderSha256": "5843273ff93edebb5a84dce1874506afa3b8e62992b7312571474dd1d1c1dbc9",
+  "coreSha256": "c945ab433f9342bf1528c1d6027ecce59d1db0edbebceb692ae6d7d8b9f199ae",
+  "qualifiedProviderSha256": "1c5c975705288f817fae5c2f07f82ad611a70c186aa384bdf6973f7eb9f89f51",
   "protectedWorkflowNotPublished": true,
   "unconstrainedPackageResolution": false,
   "acceptedPackages": 22,
@@ -734,7 +734,7 @@
   "historicalBuildOrTestsReplayed": false,
   "providerPlatform": "linux",
   "linuxHelpers": {
-    "workflows_linux_runtime.py": "5843273ff93edebb5a84dce1874506afa3b8e62992b7312571474dd1d1c1dbc9",
+    "workflows_linux_runtime.py": "1c5c975705288f817fae5c2f07f82ad611a70c186aa384bdf6973f7eb9f89f51",
     "workflows_linux_owned_scope_v1.py": "082d6114a933d3b2b826a6a70fa124e2c75a2e9e1ec63863c805a4c8dc885e95",
     "workflows_private_docker_proxy_v1.py": "b88951c5fdf719a0306efd16e767972bc77232b0e6619e404535c12277617bb9",
     "hosted_linux_sdk_bootstrap.py": "b11cf3cbffd08175da89e9bd998505c4e714db3b9cdd630ec0f329b34450b228",

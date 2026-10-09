@@ -63,6 +63,10 @@ jobs:
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/format.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/build.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery-observation-*.json
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery-stdout.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery-stderr.log
+            /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/discovery-assembly-observation.json
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/focused.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/suite.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/compiled-discovery.log
