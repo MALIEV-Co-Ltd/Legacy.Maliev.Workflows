@@ -413,10 +413,14 @@ class FreshQualificationPhaseControls(unittest.TestCase):
         from types import SimpleNamespace
         code,association=self.branch('build')
         baseline=b'Build succeeded.\n0 Warning(s)\n0 Error(s)\n'
-        state={'result':SimpleNamespace(stdout=baseline),'phase_receipts':{},'current_phase':'build'}
-        exec(code,state);self.assertEqual(0,state['phase_receipts']['build']['warnings'])
+        from unittest.mock import Mock
+        capture=Mock(return_value='a'*64)
+        state={'result':SimpleNamespace(stdout=baseline),'phase_receipts':{},'current_phase':'build','verify_built_assembly':capture}
+        exec(code,state);self.assertEqual(0,state['phase_receipts']['build']['warnings']);self.assertEqual('a'*64,state['phase_receipts']['build']['builtAssemblySha256']);capture.assert_called_once_with()
         for raw in [baseline.replace(b'0 Warning',b'1 Warning'),baseline.replace(b'Build succeeded.',b'Build failed.'),b'Build succeeded.\n']:
-            with self.subTest(raw=raw),self.assertRaises(RuntimeError):exec(code,{'result':SimpleNamespace(stdout=raw),'phase_receipts':{},'current_phase':'build'})
+            capture=Mock(side_effect=AssertionError('Failed build must not capture assembly'))
+            with self.subTest(raw=raw),self.assertRaises(RuntimeError):exec(code,{'result':SimpleNamespace(stdout=raw),'phase_receipts':{},'current_phase':'build','verify_built_assembly':capture})
+            capture.assert_not_called()
     def test_fresh_discovery_refuses_missing_duplicate_or_old_go_identity(self):
         from types import SimpleNamespace
         from tempfile import TemporaryDirectory
@@ -698,6 +702,105 @@ class LinuxSuiteObservationControls(unittest.TestCase):
         self.assertIn('if discovery_observation: sample_phase_observation(log_path,observation_state,row,deadline=deadline)',raw)
         self.assertIn('with_name(observation_phase+"-stdout.log")',raw);self.assertIn('with_name(observation_phase+"-stderr.log")',raw)
         self.assertLess(raw.index('retain_discovery_observation(log_path,"terminal",row)'),raw.index("SCOPE.stop_group('sdk',effective)"))
+
+
+class LinuxBuiltDllControls(unittest.TestCase):
+    def source(self):
+        import ast
+        raw=sealed_source('hosted_static_core.py');return raw.decode(),ast.parse(raw)
+    def commands(self):
+        import ast
+        text,tree=self.source();main=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='main')
+        node=next(n for n in main.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='commands' for t in n.targets))
+        return node.value
+    def guard(self,root):
+        import ast,stat,types,hashlib
+        text,tree=self.source();names={'verify_built_assembly','sha','TEST_ASSEMBLY_RELATIVE'}
+        nodes=[n for n in tree.body if (isinstance(n,ast.FunctionDef) and n.name in names) or (isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id in names for t in n.targets))]
+        state=dict(Path=Path,REPO=root,stat=stat,hashlib=hashlib)
+        exec(compile(ast.Module(body=nodes,type_ignores=[]),'<actual-built-assembly-guard>','exec'),state)
+        return state
+    def fixture(self,operation):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve();state=self.guard(root);assembly=root/state['TEST_ASSEMBLY_RELATIVE'];assembly.parent.mkdir(parents=True);assembly.write_bytes(b'newly built source fixture')
+            operation(state,assembly,root)
+    def test_exact_three_dll_commands_and_no_project_options(self):
+        import ast
+        node=self.commands();state={'OUT':Path('/sealed')};commands=eval(compile(ast.Expression(body=node),'<actual-phase-argv>','eval'),state)
+        sdk='/tmp/maliev-workflows-qualification/private-sdk/sdk/dotnet';dll='tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0/Legacy.Maliev.Workflows.Tests.dll'
+        self.assertEqual([sdk,'test',dll,'--list-tests'],commands['discovery'])
+        self.assertEqual([sdk,'test',dll,'--filter','FullyQualifiedName~RepositoryContractTests.GitleaksInstallation_When'],commands['focused'])
+        self.assertEqual([sdk,'test',dll],commands['suite'])
+        self.assertEqual(['restore','build','discovery','focused','suite','format','audit'],list(commands))
+    def test_non_test_commands_ast_byte_contract_unchanged(self):
+        import ast,hashlib
+        expected={'restore':'25b366116b2fb986c5fcb99d8b6c1d54639aaac289d515133bdfe94c2adb672a','build':'91e399a7e27e95b0ef6cd9a117ce074b9760bca551c60fcb5235eb5d50bb0fb0','format':'7b065a54c29f49cfd24021d284ad652a13ac146fa6be254a080b876394ec9b2c','audit':'888340692fb7ec4e3bbc3f4d488b2382488453458af46798deabfdcf5daa824f'}
+        node=self.commands()
+        actual={k.value:hashlib.sha256(ast.dump(v,include_attributes=False).encode()).hexdigest() for k,v in zip(node.keys,node.values) if k.value in expected}
+        self.assertEqual(expected,actual)
+    def test_build_captures_before_discovery_and_rechecks_before_owned_spawn(self):
+        text,tree=self.source()
+        self.assertLess(text.index("if 'Build succeeded.' not in text"),text.index('BUILT_ASSEMBLY_HASH = verify_built_assembly()'))
+        start=text.index('for current_phase, arguments in commands.items():');loop=text[start:]
+        self.assertLess(loop.index('verify_built_assembly(BUILT_ASSEMBLY_HASH)'),loop.index('result, row = owned.run_owned(arguments'))
+        self.assertIn("if BUILT_ASSEMBLY_HASH is None:",loop)
+        self.assertIn("builtAssemblySha256=BUILT_ASSEMBLY_HASH",text)
+    def test_regular_fresh_assembly_capture_and_recheck(self):
+        def operation(s,a,r):
+            value=s['verify_built_assembly']();self.assertEqual(hashlib.sha256(a.read_bytes()).hexdigest(),value);self.assertEqual(value,s['verify_built_assembly'](value))
+        self.fixture(operation)
+    def test_missing_assembly_refused(self):
+        def operation(s,a,r):
+            a.unlink()
+            with self.assertRaises(OSError):s['verify_built_assembly']()
+        self.fixture(operation)
+    def test_nonregular_assembly_refused(self):
+        def operation(s,a,r):
+            a.unlink();a.mkdir()
+            with self.assertRaises(RuntimeError):s['verify_built_assembly']()
+        self.fixture(operation)
+    def test_empty_assembly_refused(self):
+        def operation(s,a,r):
+            a.write_bytes(b'')
+            with self.assertRaises(RuntimeError):s['verify_built_assembly']()
+        self.fixture(operation)
+    def test_changed_assembly_refused(self):
+        def operation(s,a,r):
+            value=s['verify_built_assembly']();a.write_bytes(b'changed')
+            with self.assertRaises(RuntimeError):s['verify_built_assembly'](value)
+        self.fixture(operation)
+    def test_malformed_binding_refused(self):
+        def operation(s,a,r):
+            for value in (True,1,'','G'*64,'a'*63,b'a'*64):
+                with self.subTest(value=value),self.assertRaises(RuntimeError):s['verify_built_assembly'](value)
+        self.fixture(operation)
+    def test_historical_assembly_refused(self):
+        def operation(s,a,r):
+            s['sha']=lambda path:'e2278ee608bf879e73ba5f49955143d1a7613c959552be5c47b7e9abef08c74d'
+            with self.assertRaises(RuntimeError):s['verify_built_assembly']()
+        self.fixture(operation)
+    def test_changed_during_hash_refused(self):
+        def operation(s,a,r):
+            original=s['sha']
+            def raced(path):value=original(path);a.write_bytes(b'raced replacement');return value
+            s['sha']=raced
+            with self.assertRaises(RuntimeError):s['verify_built_assembly']()
+        self.fixture(operation)
+    def test_assembly_symlink_refused(self):
+        def operation(s,a,r):
+            target=r/'foreign.dll';target.write_bytes(a.read_bytes());a.unlink();a.symlink_to(target)
+            with self.assertRaises(RuntimeError):s['verify_built_assembly']()
+        self.fixture(operation)
+    def test_parent_symlink_refused(self):
+        def operation(s,a,r):
+            parent=a.parent;moved=parent.with_name('moved');parent.rename(moved);parent.symlink_to(moved,target_is_directory=True)
+            with self.assertRaises(RuntimeError):s['verify_built_assembly']()
+        self.fixture(operation)
+    def test_result_filter_inventory_and_resource_acceptance_guards_preserved(self):
+        text,tree=self.source()
+        for token in ("len(FRESH_INVENTORY['names']) != 497","association.verify(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['--logger', 'trx;LogFileName=' + current_phase + '.trx', '--results-directory', str(runroot / 'test-results' / current_phase)]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
+
 
 class LinuxProviderControls(unittest.TestCase):
     def modules(self):

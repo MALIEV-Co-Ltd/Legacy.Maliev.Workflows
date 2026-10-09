@@ -5,9 +5,9 @@
   "candidateSha": "1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3",
   "worktree": "/tmp/maliev-workflows-qualification/worktree",
   "outputsRoot": "/tmp/maliev-workflows-qualification/outputs",
-  "kitGitBlob": "296a22dee0fcd31df35dd7ef5200b499857529bb",
-  "kitSha256": "f219b8c88f8c2f6e96bd6b12c66d1be6c8edf16124503977bb29365d2f587fe8",
-  "kitBytes": 32643535,
+  "kitGitBlob": "dff592df9146a470755768a8ec0d991f637bd65b",
+  "kitSha256": "203c8e085ada58929a2b23f2405ba4febb85703159a113a5aa1dfd99d2f05667",
+  "kitBytes": 32644015,
   "entries": {
     "outputs/accepted-package-assets/tests/Legacy.Maliev.Workflows.Tests/obj/project.assets.json": {
       "bytes": 106333,
@@ -38,8 +38,8 @@
       "sha256": "eed5ef4ab6dc76173c0859124c8db5a6aaa50d6ca9ce09d50589039efa8103f0"
     },
     "outputs/hosted_static_core.py": {
-      "bytes": 20127,
-      "sha256": "a6f261a9d3ee1b04f42f88920d578cd614a9599ac665ab41ff0e0cd80971f4fe"
+      "bytes": 22236,
+      "sha256": "0e49a2a8c960b0f481a448a99b45b5ea4bffbac8a6850aed13c55dad9a47bc45"
     },
     "outputs/offline-packages/microsoft.applicationinsights.2.23.0.nupkg": {
       "bytes": 1737910,
@@ -719,7 +719,7 @@
     "format",
     "audit"
   ],
-  "coreSha256": "a6f261a9d3ee1b04f42f88920d578cd614a9599ac665ab41ff0e0cd80971f4fe",
+  "coreSha256": "0e49a2a8c960b0f481a448a99b45b5ea4bffbac8a6850aed13c55dad9a47bc45",
   "qualifiedProviderSha256": "f607980ae6c8e85c80021a4bee0d48bb099fb0216777d81b4df0e42ec1538faf",
   "protectedWorkflowNotPublished": true,
   "unconstrainedPackageResolution": false,
