@@ -1021,10 +1021,10 @@ public sealed class RepositoryContractTests
     [Theory]
     [InlineData(".github/workflows/dotnet-validate.yml", false, "missing")]
     [InlineData(".github/workflows/dotnet-validate.yml", false, "auto")]
-    [InlineData(".github/workflows/dotnet-validate.yml", false, "go1.26.8+auto")]
+    [InlineData(".github/workflows/dotnet-validate.yml", false, "go1.26.9+auto")]
     [InlineData("actions/dotnet-validate/action.yml", true, "missing")]
     [InlineData("actions/dotnet-validate/action.yml", true, "auto")]
-    [InlineData("actions/dotnet-validate/action.yml", true, "go1.26.8+auto")]
+    [InlineData("actions/dotnet-validate/action.yml", true, "go1.26.9+auto")]
     public void GitleaksInstallation_WhenToolchainSelectionCanDrift_RejectsChangedEnvironment(string path, bool composite, string mutation)
     {
         YamlMappingNode installer = ReadGitleaksInstaller(path, composite);
@@ -1053,7 +1053,7 @@ public sealed class RepositoryContractTests
     private static void AssertPinnedGitleaksToolchain(YamlMappingNode installer)
     {
         YamlMappingNode environment = ReadMapping(installer, "env");
-        Assert.Equal("go1.26.8", ReadOptionalScalar(environment, "GOTOOLCHAIN"));
+        Assert.Equal("go1.26.9", ReadOptionalScalar(environment, "GOTOOLCHAIN"));
         Assert.Contains("go install github.com/zricethezav/gitleaks/v8@6eaad039603a4de39fddd1cf5f727391efe9974e", ReadScalar(installer, "run"), StringComparison.Ordinal);
         Assert.Null(ReadOptionalScalar(installer, "continue-on-error"));
     }
