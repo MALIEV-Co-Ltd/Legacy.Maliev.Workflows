@@ -539,6 +539,115 @@ class LinuxProviderControls(unittest.TestCase):
         context=Mock();context.__enter__=Mock(return_value=client);context.__exit__=Mock(return_value=False)
         with patch.object(runtime.socket,'socket',return_value=context),patch.object(runtime.socket,'AF_UNIX',1,create=True),self.assertRaises(RuntimeError):runtime.private_daemon_version(Path('/private/backend.sock'),time.monotonic()+1)
 
+class LinuxDockerdSizeControls(unittest.TestCase):
+    observed_size=83666424
+    def fixture(self, size, operation):
+        import tempfile,os,types,stat
+        from unittest.mock import patch
+        trust=LinuxProviderControls().modules()['workflows_linux_trust']
+        with tempfile.TemporaryDirectory(prefix='dockerd-size-control-') as directory:
+            root=Path(directory).resolve();target=root/'dockerd'
+            with target.open('wb') as stream:stream.truncate(size)
+            target.chmod(0o444)
+            real_stat=Path.stat;real_fstat=os.fstat
+            def observed(row):
+                return types.SimpleNamespace(st_mode=stat.S_IFREG|0o755,st_uid=0,st_gid=0,
+                    st_dev=row.st_dev,st_ino=row.st_ino,st_size=row.st_size,st_mtime_ns=row.st_mtime_ns)
+            def metadata(path,*args,**kwargs):
+                row=real_stat(path,*args,**kwargs)
+                return observed(row) if path==target else row
+            try:
+                with patch.object(Path,'stat',metadata),patch.object(trust.os,'fstat',side_effect=lambda fd:observed(real_fstat(fd))):
+                    operation(trust,root,target)
+            finally:target.chmod(0o666)
+    def test_actual_observed_daemon_size_refused_by_default(self):
+        def operation(trust,root,target):
+            with self.assertRaises(RuntimeError):trust.bind_executable(target,[root],0)
+        self.fixture(self.observed_size,operation)
+    def test_actual_observed_daemon_size_accepted_with_explicit_bounded_ceiling(self):
+        import os
+        def operation(trust,root,target):
+            binding=trust.bind_executable(target,[root],0,maximum_bytes=96*1024**2)
+            try:
+                self.assertEqual(self.observed_size,binding['bytes']);self.assertEqual(96*1024**2,binding['maximumBytes'])
+                self.assertTrue(trust.recheck_executable(binding))
+            finally:os.close(binding['fd'])
+        self.fixture(self.observed_size,operation)
+    def test_daemon_above96MiB_refused_before_hashing(self):
+        def operation(trust,root,target):
+            with self.assertRaises(RuntimeError):trust.bind_executable(target,[root],0,maximum_bytes=96*1024**2)
+        self.fixture(96*1024**2+1,operation)
+    def test_daemon_growth_above96MiB_refused_on_recheck(self):
+        import os
+        def operation(trust,root,target):
+            binding=trust.bind_executable(target,[root],0,maximum_bytes=96*1024**2)
+            try:
+                target.chmod(0o666)
+                with target.open('r+b') as stream:stream.truncate(96*1024**2+1)
+                target.chmod(0o444)
+                with self.assertRaises(RuntimeError):trust.recheck_executable(binding)
+            finally:os.close(binding['fd'])
+        self.fixture(self.observed_size,operation)
+    def test_explicit_ceiling_cannot_be_widened_or_used_for_other_executables(self):
+        def operation(trust,root,target):
+            for limit in (96*1024**2+1,128*1024**2,True):
+                with self.subTest(limit=limit),self.assertRaises(RuntimeError):trust.bind_executable(target,[root],0,maximum_bytes=limit)
+            other=root/'python3';other.write_bytes(b'interpreter');other.chmod(0o444)
+            try:
+                with self.assertRaises(RuntimeError):trust.bind_executable(other,[root],other.stat().st_uid,maximum_bytes=96*1024**2)
+            finally:other.chmod(0o666)
+        self.fixture(16,operation)
+    def test_explicit_daemon_ceiling_preserves_foreign_uid_refusal(self):
+        def operation(trust,root,target):
+            with self.assertRaises(RuntimeError):trust.bind_executable(target,[root],1,maximum_bytes=96*1024**2)
+        self.fixture(self.observed_size,operation)
+    def test_explicit_daemon_ceiling_preserves_unsafe_mode_refusal(self):
+        from unittest.mock import patch
+        def operation(trust,root,target):
+            original=trust.os.fstat
+            def unsafe(fd):
+                row=original(fd);row.st_mode=0o100777;return row
+            with patch.object(trust.os,'fstat',side_effect=unsafe),self.assertRaises(RuntimeError):
+                trust.bind_executable(target,[root],0,maximum_bytes=96*1024**2)
+        self.fixture(16,operation)
+    def test_explicit_daemon_ceiling_preserves_symlink_escape_refusal(self):
+        import tempfile
+        def operation(trust,root,target):
+            with tempfile.TemporaryDirectory(prefix='foreign-daemon-control-') as directory:
+                other=Path(directory).resolve()/'dockerd';other.write_bytes(b'foreign')
+                alias=root/'alias';alias.mkdir();link=alias/'dockerd';link.symlink_to(other)
+                with self.assertRaises(RuntimeError):trust.bind_executable(link,[root],0,maximum_bytes=96*1024**2)
+        self.fixture(16,operation)
+    def test_explicit_daemon_ceiling_preserves_symlink_substitution_refusal(self):
+        import os
+        def operation(trust,root,target):
+            alias=root/'alias';alias.mkdir();link=alias/'dockerd';link.symlink_to(target)
+            binding=trust.bind_executable(link,[root],0,maximum_bytes=96*1024**2)
+            try:
+                replacement=root/'replacement';replacement.mkdir();other=replacement/'dockerd';other.write_bytes(b'foreign')
+                link.unlink();link.symlink_to(other)
+                with self.assertRaises(RuntimeError):trust.recheck_executable(binding)
+                self.assertEqual(target.stat().st_ino,os.fstat(binding['fd']).st_ino)
+            finally:os.close(binding['fd'])
+        self.fixture(16,operation)
+    def test_only_real_daemon_caller_selects96MiB_and_root_uid(self):
+        import ast
+        calls=[n for n in ast.walk(ast.parse(sealed_source('workflows_linux_runtime.py'))) if isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=='bind_executable']
+        explicit=[n for n in calls if any(k.arg=='maximum_bytes' for k in n.keywords)]
+        self.assertEqual(1,len(explicit));call=explicit[0]
+        self.assertEqual("executables['dockerd']",ast.unparse(call.args[0]));self.assertEqual(0,call.args[2].value)
+        self.assertEqual('96 * 1024 ** 2',ast.unparse(next(k.value for k in call.keywords if k.arg=='maximum_bytes')))
+    def test_daemon_binding_cannot_widen_recorded_ceiling_on_recheck(self):
+        import os
+        def operation(trust,root,target):
+            binding=trust.bind_executable(target,[root],0,maximum_bytes=96*1024**2)
+            try:
+                binding['maximumBytes']=128*1024**2
+                with self.assertRaises(RuntimeError):trust.recheck_executable(binding)
+            finally:os.close(binding['fd'])
+        self.fixture(16,operation)
+
+
 class LinuxTrustCorrections(unittest.TestCase):
     def modules(self):return LinuxProviderControls().modules()
     def fixture(self, operation):
