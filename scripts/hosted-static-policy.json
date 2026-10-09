@@ -5,9 +5,9 @@
   "candidateSha": "1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3",
   "worktree": "/tmp/maliev-workflows-qualification/worktree",
   "outputsRoot": "/tmp/maliev-workflows-qualification/outputs",
-  "kitGitBlob": "dff592df9146a470755768a8ec0d991f637bd65b",
-  "kitSha256": "203c8e085ada58929a2b23f2405ba4febb85703159a113a5aa1dfd99d2f05667",
-  "kitBytes": 32644015,
+  "kitGitBlob": "f68e5327b127064648c1fbef6a46625c55b0f0f8",
+  "kitSha256": "649426d91e4b70fa841e697afe7973e33cc90343a9cebe6fb96cfd5a4782f438",
+  "kitBytes": 32645202,
   "entries": {
     "outputs/accepted-package-assets/tests/Legacy.Maliev.Workflows.Tests/obj/project.assets.json": {
       "bytes": 106333,
@@ -38,8 +38,8 @@
       "sha256": "eed5ef4ab6dc76173c0859124c8db5a6aaa50d6ca9ce09d50589039efa8103f0"
     },
     "outputs/hosted_static_core.py": {
-      "bytes": 22236,
-      "sha256": "0e49a2a8c960b0f481a448a99b45b5ea4bffbac8a6850aed13c55dad9a47bc45"
+      "bytes": 24442,
+      "sha256": "31d0ad9bc13c1fa675052ffff6bef16d78fe1267978866bb19b13de8daa05249"
     },
     "outputs/offline-packages/microsoft.applicationinsights.2.23.0.nupkg": {
       "bytes": 1737910,
@@ -146,8 +146,8 @@
       "sha256": "6e9ea49359abb4e2610e746b1f43bfb72624544754f5e54c41b4301ec01bc007"
     },
     "outputs/workflows_gitleaks_compiled_result_association_v1.py": {
-      "bytes": 5701,
-      "sha256": "d19a0f00520d122e1d9de6555383c55b465d95da3c7e99205eacc5a3c115cf4e"
+      "bytes": 9351,
+      "sha256": "0bd0d3bc0b5f049b6d503cf593b53836b428478c1ee895a1218d9c14a87faa72"
     },
     "outputs/workflows_native_admission_v3.py": {
       "bytes": 9620,
@@ -719,7 +719,7 @@
     "format",
     "audit"
   ],
-  "coreSha256": "0e49a2a8c960b0f481a448a99b45b5ea4bffbac8a6850aed13c55dad9a47bc45",
+  "coreSha256": "31d0ad9bc13c1fa675052ffff6bef16d78fe1267978866bb19b13de8daa05249",
   "qualifiedProviderSha256": "f607980ae6c8e85c80021a4bee0d48bb099fb0216777d81b4df0e42ec1538faf",
   "protectedWorkflowNotPublished": true,
   "unconstrainedPackageResolution": false,
