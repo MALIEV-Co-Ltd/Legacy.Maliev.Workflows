@@ -305,9 +305,28 @@ class SdkArchiveControls(unittest.TestCase):
 
 class SdkCleanupIdentityControls(unittest.TestCase):
     def setUp(self):
+        from tempfile import TemporaryDirectory
+        from unittest.mock import patch
+        temporary=TemporaryDirectory(prefix='sdk-cleanup-identity-')
+        self.addCleanup(temporary.cleanup)
+        self.sdk_root=Path(temporary.name).resolve()
+        binding=patch.object(mod,'SDK_ROOT',str(self.sdk_root))
+        binding.start()
+        self.addCleanup(binding.stop)
         self.permit={'leaseId':'synthetic-source-control','expiresUtc':'2000-01-01T00:00:00Z'}
         self.owner={'owner':mod.OWNER,**self.permit,'persistentData':False}
         mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit)
+    def test_fixture_root_is_absolute_on_current_platform(self):
+        self.assertTrue(Path(mod.SDK_ROOT).is_absolute())
+        self.assertEqual(Path(mod.SDK_ROOT),Path(mod.SDK_ROOT).resolve())
+    def test_relative_provider_root_refused(self):
+        from unittest.mock import patch
+        with patch.object(mod,'SDK_ROOT','relative-sdk-cleanup-root'):
+            with self.assertRaises(ValueError):mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit)
+    def test_symlink_marker_refused(self):
+        from unittest.mock import patch
+        with patch.object(Path,'is_symlink',return_value=True):
+            with self.assertRaises(ValueError):mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit)
     def test_exact_startup_lease_cleanup_without_renewal(self):
         before=dict(self.permit);mod.validate_sdk_cleanup(mod.SDK_ROOT,self.owner,self.permit);self.assertEqual(before,self.permit)
     def test_foreign_lease_refused(self):
