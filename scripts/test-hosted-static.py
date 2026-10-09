@@ -360,7 +360,8 @@ class FreshQualificationPhaseControls(unittest.TestCase):
     def evidence(self):
         import ast, types, sys
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
-        entries=mod.verified_entries((ROOT/'sealed-static-kit.zip').read_bytes(),policy)
+        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        entries=mod.verified_entries(data,policy)
         tree=ast.parse(entries['outputs/hosted_static_core.py'])
         strict=types.ModuleType('artifact_pin_native_result_validation_v3')
         exec(compile(entries['outputs/artifact_pin_native_result_validation_v3.py'],'<sealed-strict>','exec'),strict.__dict__)
@@ -426,7 +427,8 @@ class PhasePolicyMetadataControls(unittest.TestCase):
     def test_policy_phase_authority_matches_actual_core_and_historical_replay_semantics(self):
         import ast
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
-        entries=mod.verified_entries((ROOT/'sealed-static-kit.zip').read_bytes(),policy)
+        data=(ROOT/'sealed-static-kit.zip').read_bytes() if (ROOT/'sealed-static-kit.zip').is_file() else mod.fetch(policy)
+        entries=mod.verified_entries(data,policy)
         main=next(n for n in ast.parse(entries['outputs/hosted_static_core.py']).body if isinstance(n,ast.FunctionDef) and n.name=='main')
         commands=next(n.value for n in main.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='commands' for t in n.targets))
         self.assertEqual([n.value for n in commands.keys],policy['nativePhases'])
