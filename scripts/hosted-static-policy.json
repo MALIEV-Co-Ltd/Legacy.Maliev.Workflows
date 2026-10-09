@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "repository": "MALIEV-Co-Ltd/Legacy.Maliev.Workflows",
   "baseSha": "53892c362a30130f582c40da7525e44f11474e8e",
-  "candidateSha": "eaf885b1e381e60d405d7d234633d4800537facd0eac4a2345b73e52b554316d",
-  "worktree": "D:\\codex-temp\\2026-10-08\\task\\workflows-gitleaks-toolchain-pin",
-  "outputsRoot": "D:\\codex-temp\\2026-10-03\\legacy-code-workflows-20261003\\outputs",
-  "kitGitBlob": "9c56ce3f94e846c984e8a9c1e5724d91a3f442ec",
-  "kitSha256": "99097359671eb66a87103f5c7456992c682044a831bbcd89a91ca2203c68ff57",
-  "kitBytes": 32617444,
+  "candidateSha": "1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3",
+  "worktree": "/tmp/maliev-workflows-qualification/worktree",
+  "outputsRoot": "/tmp/maliev-workflows-qualification/outputs",
+  "kitGitBlob": "c1f25dffa770c4cdf4353b46c6bde3b33c7650c8",
+  "kitSha256": "e7d3801fbef34c95652d43fcfe5e9352e7725a8b3cc9e7d7234ecba3964b0ce0",
+  "kitBytes": 32640542,
   "entries": {
     "outputs/accepted-package-assets/tests/Legacy.Maliev.Workflows.Tests/obj/project.assets.json": {
       "bytes": 106333,
@@ -30,16 +30,16 @@
       "sha256": "82bd62a3bb998d773dfdbae8297905415136ade4fd2c20e338b089c96aa524a4"
     },
     "outputs/hosted-nuget.config": {
-      "bytes": 521,
-      "sha256": "4ade177f46cb207a0a465de7a67bf281f75eab00f7036a620da541192a1e19c2"
+      "bytes": 481,
+      "sha256": "024ab25901cc84c278b4cf29a01ea463ac85f63cbf1ceb9f587a923f37a6570f"
     },
     "outputs/hosted_package_graph.py": {
       "bytes": 2913,
       "sha256": "eed5ef4ab6dc76173c0859124c8db5a6aaa50d6ca9ce09d50589039efa8103f0"
     },
     "outputs/hosted_static_core.py": {
-      "bytes": 17842,
-      "sha256": "c915f05e7193eb301b3ebc0398d4813d50d7a94bc24537b3157559d2e0263b1a"
+      "bytes": 19193,
+      "sha256": "371b507348419bccf66b74c8540998db9eee685f93176e29ad42fc45bd92f9cb"
     },
     "outputs/offline-packages/microsoft.applicationinsights.2.23.0.nupkg": {
       "bytes": 1737910,
@@ -134,24 +134,24 @@
       "sha256": "56263288362806c71c9cf79fb8fbddb2ee4e8b62a49436e899284cf7e95c3e0d"
     },
     "outputs/workflows-go1269-hosted-candidate/candidate-manifest.json": {
-      "bytes": 852,
-      "sha256": "eaf885b1e381e60d405d7d234633d4800537facd0eac4a2345b73e52b554316d"
+      "bytes": 830,
+      "sha256": "1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3"
     },
     "outputs/workflows-go1269-hosted-candidate/preserved-existing-hashes.json": {
       "bytes": 15166,
       "sha256": "fa8271007920d6522effac338dbbdebd593c7a76ca95915b0abd081dabb38cb8"
     },
     "outputs/workflows_cleanup_supervisor_v1.py": {
-      "bytes": 3585,
-      "sha256": "6fa7ade16fd4527e55eb50a4d4abedbb181042d6c17f3e565679d956cba5e53a"
+      "bytes": 5008,
+      "sha256": "6e9ea49359abb4e2610e746b1f43bfb72624544754f5e54c41b4301ec01bc007"
     },
     "outputs/workflows_gitleaks_compiled_result_association_v1.py": {
       "bytes": 5701,
       "sha256": "d19a0f00520d122e1d9de6555383c55b465d95da3c7e99205eacc5a3c115cf4e"
     },
     "outputs/workflows_native_admission_v3.py": {
-      "bytes": 9224,
-      "sha256": "8fbb3d63658726afd1c48a695565d50212fa1e7c1b0e80bb42fde4aae7857d52"
+      "bytes": 9620,
+      "sha256": "b4bdec9cade0ae4f51c0c46c94873b67b1b9fb23fe62313a60db53e474027c44"
     },
     "outputs/workflows_owned_command_auth_job_accounting_v2.py": {
       "bytes": 27743,
@@ -680,6 +680,30 @@
     "worktree/tools/security/tests/test_current_tree_secrets.py": {
       "bytes": 15913,
       "sha256": "14b7e387b725fd823d9d49433c2f34193b1c9c783897b940447335b525609c2f"
+    },
+    "outputs/workflows_linux_runtime.py": {
+      "bytes": 27169,
+      "sha256": "91a457aa821f82f24d44c3919c521a6f8df095ab7078ec72d190c98295dff918"
+    },
+    "outputs/workflows_linux_owned_scope_v1.py": {
+      "bytes": 12140,
+      "sha256": "082d6114a933d3b2b826a6a70fa124e2c75a2e9e1ec63863c805a4c8dc885e95"
+    },
+    "outputs/workflows_private_docker_proxy_v1.py": {
+      "bytes": 10195,
+      "sha256": "b88951c5fdf719a0306efd16e767972bc77232b0e6619e404535c12277617bb9"
+    },
+    "outputs/hosted_linux_sdk_bootstrap.py": {
+      "bytes": 4691,
+      "sha256": "b11cf3cbffd08175da89e9bd998505c4e714db3b9cdd630ec0f329b34450b228"
+    },
+    "outputs/hosted_linux_entry.py": {
+      "bytes": 10399,
+      "sha256": "dcd58087375708080eb633953750c3c170a18abc6a70aa7ab070a0e79c1cf6a8"
+    },
+    "outputs/workflows_linux_trust.py": {
+      "bytes": 4165,
+      "sha256": "a863e663f6415fc9d79d5ad42f96aedcb5096fa7628784ed0b5bf3af44ffd1b9"
     }
   },
   "initialMemoryFloorMiB": 5120,
@@ -695,8 +719,8 @@
     "format",
     "audit"
   ],
-  "coreSha256": "c915f05e7193eb301b3ebc0398d4813d50d7a94bc24537b3157559d2e0263b1a",
-  "qualifiedProviderSha256": "890e9279929e25dfc6839e753cc53121e82c589dd192d264165b052484638ed6",
+  "coreSha256": "371b507348419bccf66b74c8540998db9eee685f93176e29ad42fc45bd92f9cb",
+  "qualifiedProviderSha256": "91a457aa821f82f24d44c3919c521a6f8df095ab7078ec72d190c98295dff918",
   "protectedWorkflowNotPublished": true,
   "unconstrainedPackageResolution": false,
   "acceptedPackages": 22,
@@ -707,5 +731,42 @@
     "bytes": 300608304,
     "sha512": "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430"
   },
-  "historicalBuildOrTestsReplayed": false
+  "historicalBuildOrTestsReplayed": false,
+  "providerPlatform": "linux",
+  "linuxHelpers": {
+    "workflows_linux_runtime.py": "91a457aa821f82f24d44c3919c521a6f8df095ab7078ec72d190c98295dff918",
+    "workflows_linux_owned_scope_v1.py": "082d6114a933d3b2b826a6a70fa124e2c75a2e9e1ec63863c805a4c8dc885e95",
+    "workflows_private_docker_proxy_v1.py": "b88951c5fdf719a0306efd16e767972bc77232b0e6619e404535c12277617bb9",
+    "hosted_linux_sdk_bootstrap.py": "b11cf3cbffd08175da89e9bd998505c4e714db3b9cdd630ec0f329b34450b228",
+    "hosted_linux_entry.py": "dcd58087375708080eb633953750c3c170a18abc6a70aa7ab070a0e79c1cf6a8",
+    "workflows_linux_trust.py": "a863e663f6415fc9d79d5ad42f96aedcb5096fa7628784ed0b5bf3af44ffd1b9"
+  },
+  "linuxSdkProvider": {
+    "url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.401/dotnet-sdk-10.0.401-linux-x64.tar.gz",
+    "bytes": 240059572,
+    "sha512": "51c8b999af9e8dd9998c9edc5944e19a90788862068acd38694e098889054ce8c23d4f0c5cccfa16bf187d044562359e5ee69a9f8ad0bbe913ba90311fbce25b",
+    "files": {
+      "sdk/10.0.401/NuGet.ProjectModel.dll": {
+        "bytes": 622416,
+        "sha256": "81fcd659ea2388c5647c809f5aa71958330673b41a9a0caffc1d956e2e354633"
+      },
+      "sdk/10.0.401/.version": {
+        "bytes": 98,
+        "sha256": "496179aced13abd185f027a1ce8519cc57aa194a5538c51226c0c12e63a4a5ba"
+      },
+      "sdk/10.0.401/dotnet.dll": {
+        "bytes": 3525416,
+        "sha256": "bf8844d3d50869c1c05ff4aaf1908a81ca657106bed52be1388a8323690f5049"
+      },
+      "sdk/10.0.401/NuGet.Packaging.dll": {
+        "bytes": 1719080,
+        "sha256": "d1347085c89142139ec26c860a7635207cebd5af5a6bf1908a067b69233d73d2"
+      },
+      "dotnet": {
+        "bytes": 71808,
+        "sha256": "01d89e0a0191052bfea616cd4ce624c8faf13b05bbddf7f64499c23e2a9d9269"
+      }
+    },
+    "sdkExecuted": false
+  }
 }
