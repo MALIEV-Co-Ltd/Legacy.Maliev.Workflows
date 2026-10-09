@@ -13,6 +13,11 @@ public static class AdditiveBenchmarkCli
             return RunProfile(args[1..]);
         }
 
+        if (args.Length > 0 && args[0] == "inventory-corpus")
+        {
+            return RunInventoryCorpus(args[1..]);
+        }
+
         Dictionary<string, string> paths = new(StringComparer.Ordinal);
         if (args.Length != 6)
         {
@@ -52,6 +57,79 @@ public static class AdditiveBenchmarkCli
             Console.Error.WriteLine("Unable to admit benchmark inputs or write the report.");
             return 1;
         }
+    }
+
+    private static int RunInventoryCorpus(string[] args)
+    {
+        Dictionary<string, string> options = new(StringComparer.Ordinal);
+        for (int index = 0; index < args.Length; index += 2)
+        {
+            if (index + 1 >= args.Length
+                || args[index] is not ("--root" or "--output" or "--consent-id" or "--limit")
+                || string.IsNullOrWhiteSpace(args[index + 1])
+                || !options.TryAdd(args[index], args[index + 1]))
+            {
+                return InventoryUsage();
+            }
+        }
+
+        int limit = 48;
+        if (!options.TryGetValue("--root", out string? root)
+            || !options.TryGetValue("--output", out string? output)
+            || !options.TryGetValue("--consent-id", out string? consentId)
+            || (options.TryGetValue("--limit", out string? value)
+                && !int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out limit)))
+        {
+            return InventoryUsage();
+        }
+
+        string? temporary = null;
+        bool ownsTemporary = false;
+        try
+        {
+            PrivateCorpusInventoryResult inventory = PrivateCorpusInventory.Create(root, limit, consentId);
+            string destination = Path.GetFullPath(output);
+            string directory = Path.GetDirectoryName(destination)!;
+            BambuStudioProfileResolver.RejectLinkedAncestors(directory);
+            Directory.CreateDirectory(directory);
+            BambuStudioProfileResolver.RejectLinkedAncestors(directory);
+            temporary = Path.Combine(directory, ".legacy-inventory-" + Guid.NewGuid().ToString("N") + ".tmp");
+            using (FileStream file = new(temporary, FileMode.CreateNew, FileAccess.Write))
+            {
+                ownsTemporary = true;
+                using StreamWriter writer = new(file, new UTF8Encoding(false));
+                writer.Write(inventory.Json);
+            }
+            File.Move(temporary, destination, overwrite: false);
+            ownsTemporary = false;
+            Console.WriteLine($"Anonymous private corpus inventory: {inventory.EntryCount} unique entries.");
+            return inventory.EntryCount == limit ? 0 : 2;
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            Console.Error.WriteLine("Unable to admit corpus inputs or create anonymous inventory output.");
+            return 1;
+        }
+        finally
+        {
+            if (ownsTemporary)
+            {
+                try
+                {
+                    File.Delete(temporary!);
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    Console.Error.WriteLine("Unable to remove owned temporary inventory output.");
+                }
+            }
+        }
+    }
+
+    private static int InventoryUsage()
+    {
+        Console.Error.WriteLine("Usage: Legacy.Maliev.AdditiveBenchmark inventory-corpus --root <directory> --output <new-path> --consent-id <id> [--limit <count>]");
+        return 1;
     }
 
     private static int RunProfile(string[] args)
