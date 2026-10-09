@@ -383,8 +383,8 @@ class CandidateGitNormalizationControls(unittest.TestCase):
         self.assertEqual(1,len(calls))
         self.assertEqual(['git','-c','core.autocrlf=true','status','--porcelain=v1','--untracked-files=all'],ast.literal_eval(calls[0].args[0]))
         frozen=entries['outputs/workflows-gitleaks-toolchain-build-request-20261008-v3/scope-frozen.txt']
-        self.assertEqual('56263288362806c71c9cf79fb8fbddb2ee4e8b62a49436e899284cf7e95c3e0d',mod.digest(frozen))
-        self.assertEqual(3,len(frozen.splitlines()))
+        self.assertEqual('ec1b18ab1b6e77d24b24e553480c0eca3b1a4acc898c65bd342483055b8b998a',mod.digest(frozen))
+        self.assertEqual(5,len(frozen.splitlines()))
         self.assertIn(b'scope.stdout != expected_scope.read_bytes()',raw)
         self.assertIn(b"raise RuntimeError('Workflows owned or preserved source bytes changed')",raw)
 
@@ -426,7 +426,8 @@ class FreshQualificationPhaseControls(unittest.TestCase):
         from tempfile import TemporaryDirectory
         code,association=self.branch('discovery')
         focus=association.focused_names([dict(method=m,arguments=None,executed=False) for m in association.METHODS])
-        names=focus+[association.ASSEMBLY+'.Synthetic.Case'+str(i) for i in range(489)]
+        pairs=list(association._ORIGINAL_SUITE_PAIRS)+[(name,hashlib.sha256(('new'+str(i)).encode()).hexdigest()) for i,name in enumerate(association.NEW_DIAGNOSTIC_NAMES)]
+        names=[name for name,case_id in pairs]
         for mutation in ['baseline','missing','duplicate','old-go','historical-assembly']:
             with self.subTest(mutation=mutation),TemporaryDirectory() as temporary:
                 actual=names.copy()
@@ -436,11 +437,11 @@ class FreshQualificationPhaseControls(unittest.TestCase):
                 data=[]
                 for i,name in enumerate(actual):
                     class_name,method=name.split('(',1)[0].rsplit('.',1)
-                    data.append(dict(Assembly=assembly,DisplayName=name,ID=hashlib.sha256(str(i).encode()).hexdigest(),Class=class_name,Method=method))
+                    data.append(dict(Assembly=assembly,DisplayName=name,ID=pairs[i][1],Class=class_name,Method=method))
                 text=json.dumps(data)
                 if mutation=='old-go':text=text.replace('go1.26.9+auto','go1.26.8+auto')
                 state=dict(result=SimpleNamespace(stdout=text.encode(),stderr=b''),REPO=Path(temporary),runroot=Path(temporary),CANDIDATE='a'*64,BASE='b'*40,association=association,json=json,current_phase='discovery',phase_receipts={},datetime=__import__('datetime').datetime,timezone=__import__('datetime').timezone,sha=lambda p:'e2278ee608bf879e73ba5f49955143d1a7613c959552be5c47b7e9abef08c74d' if mutation=='historical-assembly' else 'c'*64)
-                if mutation=='baseline':exec(code,state);self.assertEqual(497,len(state['FRESH_INVENTORY']['names']))
+                if mutation=='baseline':exec(code,state);self.assertEqual(507,len(state['FRESH_INVENTORY']['names']))
                 else:
                     with self.assertRaises((ValueError,RuntimeError)):exec(code,state)
     def test_tampered_assembly_after_discovery_uses_actual_guard(self):
@@ -823,7 +824,7 @@ class LinuxBuiltDllControls(unittest.TestCase):
         self.fixture(operation)
     def test_result_filter_inventory_and_resource_acceptance_guards_preserved(self):
         text,tree=self.source()
-        for token in ("len(FRESH_INVENTORY['names']) != 497","association.verify_native(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
+        for token in ("len(FRESH_INVENTORY['names']) != 507","association.verify_successor_native(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
 
 
 class LinuxDirectXunitControls(unittest.TestCase):
@@ -977,7 +978,7 @@ class LinuxDirectXunitControls(unittest.TestCase):
         loop=text[text.index('for current_phase, arguments in commands.items():'):]
         self.assertLess(loop.index('verify_built_runtime(BUILT_RUNTIME_HASHES)'),loop.index('result, row = owned.run_owned(arguments'))
         self.assertIn('builtRuntimeFilesSha256=BUILT_RUNTIME_HASHES',text)
-        self.assertIn('association.native_discovery(result.stdout',text)
+        self.assertIn('association.native_successor_discovery(result.stdout',text)
     def test_actual_phase_failure_or_stop_never_accepts_discovery_or_trx(self):
         import ast,time
         from types import SimpleNamespace
@@ -1111,7 +1112,7 @@ class LinuxNativeResultEncodingControls(unittest.TestCase):
             with self.subTest(mode=mode),self.assertRaises(ValueError):self.verify(ET.tostring(root),inventory,'suite')
     def test_core_routes_only_native_trx_join_and_keeps_owned_trx_and_caps(self):
         source=sealed_source('hosted_static_core.py')
-        self.assertEqual(1,source.count(b'association.verify_native(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)'))
+        self.assertEqual(1,source.count(b'association.verify_successor_native(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)'))
         self.assertNotIn(b'association.verify(trx.read_bytes()',source)
         self.assertIn(b"arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]",source)
         self.assertIn(b'memory_limit=3 * 1024**3',source);self.assertIn(b'cpu_rate=5000',source);self.assertIn(b'output_limit=4 * 1024 * 1024',source)
@@ -1151,12 +1152,113 @@ class LinuxCandidateHelperPinControls(unittest.TestCase):
         entries,expected,code,state=self.evidence()
         source=entries['outputs/hosted_static_core.py'].decode()
         current=expected['workflows_gitleaks_compiled_result_association_v1.py']
-        self.assertEqual('4bd34e992f50868629c517fb7dcc4dad5481b633dece746769d2f7b63ef76a92',current)
+        self.assertEqual(hashlib.sha256(entries['outputs/workflows_gitleaks_compiled_result_association_v1.py']).hexdigest(),current)
         self.assertEqual(1,source.count(current))
         source=source.replace(current,'0bd0d3bc0b5f049b6d503cf593b53836b428478c1ee895a1218d9c14a87faa72')
         function=next(n for n in ast.parse(source).body if isinstance(n,ast.FunctionDef) and n.name=='candidate_check')
         code=compile(ast.fix_missing_locations(ast.Module(body=[function.body[0]],type_ignores=[])),'<exact-v17-stale-pin>','exec')
         with self.assertRaisesRegex(RuntimeError,'^Reviewed resource/result helper changed$'):exec(code,state)
+
+
+ORIGINAL_FIXTURE_PAYLOADS={'BambuStudioProfileResolverTests.cs': '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', 'DockerContextCorpusTests.cs': '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'}
+ORIGINAL_FIXTURE_HASHES={'BambuStudioProfileResolverTests.cs': 'e81699d2465d0a87038ba406efbbe0939a61eb4a765748c75e17181613aed5ca', 'DockerContextCorpusTests.cs': '32007ebd151dd7878925439fc05c1ff53e4dae8dc4977e60325032a283e9e3a4'}
+
+class LinuxSuiteFixtureControls(unittest.TestCase):
+    def evidence(self):
+        import zlib
+        policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes())
+        entries=mod.verified_entries(real_kit(),policy)
+        originals={name:zlib.decompress(base64.b64decode(encoded)) for name,encoded in ORIGINAL_FIXTURE_PAYLOADS.items()}
+        for name,digest in ORIGINAL_FIXTURE_HASHES.items():self.assertEqual(digest,hashlib.sha256(originals[name]).hexdigest())
+        return policy,entries,originals
+    def test_five_candidate_files_and125_preserved_files_form_exact130(self):
+        policy,entries,originals=self.evidence()
+        candidate=json.loads(entries['outputs/workflows-go1269-hosted-candidate/candidate-manifest.json'])
+        preserved=json.loads(entries['outputs/workflows-go1269-hosted-candidate/preserved-existing-hashes.json'])
+        self.assertEqual(5,len(candidate['files']));self.assertEqual(125,len(preserved));self.assertEqual(125,candidate['preservedSourceFiles'])
+        self.assertEqual(policy['candidateSha'],hashlib.sha256(entries['outputs/workflows-go1269-hosted-candidate/candidate-manifest.json']).hexdigest())
+        expected={r['path']:r['sha256'] for r in candidate['files']};self.assertEqual(5,len(expected));self.assertFalse(set(expected)&set(preserved));expected.update(preserved)
+        self.assertEqual(set(expected),{n.removeprefix('worktree/') for n in entries if n.startswith('worktree/')})
+        for name,digest in expected.items():
+            with self.subTest(path=name):self.assertEqual(digest,hashlib.sha256(entries['worktree/'+name]).hexdigest())
+        core=entries['outputs/hosted_static_core.py'].decode()
+        for required in (policy['candidateSha'],hashlib.sha256(entries['outputs/workflows-go1269-hosted-candidate/preserved-existing-hashes.json']).hexdigest(),hashlib.sha256(entries['outputs/workflows-gitleaks-toolchain-build-request-20261008-v3/scope-frozen.txt']).hexdigest(),"len(manifest['files']) != 5"):
+            self.assertIn(required,core)
+    def test_bambu_change_is_only_existing_owned_temp_constructor(self):
+        policy,entries,originals=self.evidence();name='BambuStudioProfileResolverTests.cs'
+        original=originals[name];current=entries['worktree/tests/Legacy.Maliev.Workflows.Tests/'+name]
+        needle=b'using Presets files = new(Directory.GetParent(RepositoryContractTests.FindRepositoryRoot())!.FullName);'
+        self.assertEqual(1,original.count(needle));self.assertEqual(original.replace(needle,b'using Presets files = new();'),current)
+        self.assertIn(b'parent ?? System.IO.Path.GetTempPath()',current)
+        self.assertIn(b'TMPDIR=str(home/',entries['outputs/workflows_linux_runtime.py'])
+    def test_both_fixture_test_attributes_names_and_assertions_unchanged(self):
+        import re
+        policy,entries,originals=self.evidence()
+        for name,original in originals.items():
+            current=entries['worktree/tests/Legacy.Maliev.Workflows.Tests/'+name]
+            with self.subTest(name=name):
+                old_attributes=re.findall(rb'^\s*\[(?:Fact|Theory|InlineData)[^\r\n]*',original,re.M);new_attributes=re.findall(rb'^\s*\[(?:Fact|Theory|InlineData)[^\r\n]*',current,re.M)
+                old_methods=re.findall(rb'^\s*public (?:async )?(?:Task|void) \w+\([^\r\n]*',original,re.M);new_methods=re.findall(rb'^\s*public (?:async )?(?:Task|void) \w+\([^\r\n]*',current,re.M)
+                self.assertEqual(old_attributes,new_attributes[:len(old_attributes)]);self.assertEqual(old_methods,new_methods[:len(old_methods)])
+                self.assertEqual(10 if name=='DockerContextCorpusTests.cs' else 0,len(new_methods)-len(old_methods))
+                assertions=re.findall(rb'Assert\.[\s\S]*?;',original);current_assertions=re.findall(rb'Assert\.[\s\S]*?;',current.replace(b', isCleanup: true',b''))
+                self.assertEqual(assertions,current_assertions[:len(assertions)])
+    def test_docker_commands_and_original_limits_are_identical(self):
+        import re
+        policy,entries,originals=self.evidence();original=originals['DockerContextCorpusTests.cs'];current=entries['worktree/tests/Legacy.Maliev.Workflows.Tests/DockerContextCorpusTests.cs']
+        self.assertEqual(re.findall(rb'await Docker\(\[[\s\S]*?\]\)',original),re.findall(rb'await Docker\(\[[\s\S]*?\]\)',current.replace(b', isCleanup: true',b'')))
+        for bound in (b'TimeSpan.FromMinutes(1)',b'TimeSpan.FromSeconds(10)',b'16 * 1024 * 1024',b'byte[16384]',b'process.Kill(entireProcessTree: true)'):
+            self.assertEqual(original.count(bound),current.count(bound))
+        runtime=entries['outputs/workflows_linux_runtime.py'];self.assertIn(b'uid>=',entries['outputs/workflows_linux_owned_scope_v1.py']);self.assertIn(b'authorityNotWritable=True',runtime)
+    def test_docker_primary_and_each_cleanup_error_remain_visible(self):
+        policy,entries,originals=self.evidence();current=entries['worktree/tests/Legacy.Maliev.Workflows.Tests/DockerContextCorpusTests.cs'].decode()
+        def verify(source):
+            for required in ('primary = error;','foreach (Func<Task> release in cleanup)','cleanupErrors.Add(error);','new[] { primary }.Concat(cleanupErrors)','ExceptionDispatchInfo.Capture(primary).Throw()','ExceptionDispatchInfo.Capture(cleanupErrors[0]).Throw()','new AggregateException("Owned Docker cleanup failed.", cleanupErrors)','Owned Docker primary failure before cleanup:','Owned Docker cleanup failure:','BestEffortDiagnostic(Func<string> details','Task.WhenAll(output, error)','await joined.WaitAsync(cleanup)','DisposeAfterReaders','PendingFixtureDisposals','copied.IsCompleted && error.IsCompleted && ExitVerified()','FixtureCustody(Process? Process, int? ProcessId, DateTime? StartUtc','if (!ExitVerified())','await Task.WhenAll(copy, error).WaitAsync(command.Token)'):
+                if required not in source:raise ValueError('Primary or cleanup custody missing')
+        verify(current)
+        for removed in ('primary = error;','cleanupErrors.Add(error);','new[] { primary }.Concat(cleanupErrors)','Owned Docker primary failure before cleanup:'):
+            with self.subTest(removed=removed),self.assertRaises(ValueError):verify(current.replace(removed,''))
+        self.assertGreaterEqual(current.count('RunWithCleanup'),10)
+    def test_docker_diagnostics_are_bounded_snapshots_before_cleanup(self):
+        policy,entries,originals=self.evidence();current=entries['worktree/tests/Legacy.Maliev.Workflows.Tests/DockerContextCorpusTests.cs'].decode()
+        for required in ('Math.Min((int)output.Length, 4096)','value.Length <= 4096','value[..4096]','JsonSerializer.Serialize(arguments)','error.IsCompletedSuccessfully ? error.Result','<stderr task unavailable:','stdoutSnapshot=','stderrSnapshot=','lock (output)'):
+            self.assertIn(required,current)
+        self.assertNotIn('Environment.GetEnvironmentVariables',current)
+        self.assertLess(current.index('primary = error;'),current.index('foreach (Func<Task> release in cleanup)'))
+
+
+class LinuxSuccessorCensusControls(unittest.TestCase):
+    def rows(self):
+        a=LinuxNativeResultEncodingControls().evidence()
+        pairs=list(a._ORIGINAL_SUITE_PAIRS)+[(name,hashlib.sha256(('added'+str(i)).encode()).hexdigest()) for i,name in enumerate(a.NEW_DIAGNOSTIC_NAMES)]
+        path='/tmp/maliev-workflows-qualification/worktree/tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0/'+a.ASSEMBLY+'.dll'
+        rows=[]
+        for name,case_id in pairs:
+            cls,method=name.split('(',1)[0].rsplit('.',1)
+            rows.append(dict(Assembly=path,DisplayName=name,ID=case_id,Class=cls,Method=method))
+        return a,path,rows
+    def parse(self,mutate=None):
+        a,path,rows=self.rows()
+        if mutate:mutate(rows)
+        return a,a.native_successor_discovery(json.dumps(rows).encode(),[dict(method=m,arguments=None,executed=False) for m in a.METHODS],'a'*64,'b'*64,'c'*40,path)
+    def test_current507_discovery_keeps_exact_original497_and_ten_additions(self):
+        a,inventory=self.parse();self.assertEqual(507,len(inventory['names']));self.assertEqual(8,len(inventory['focusedNames']))
+        a.require_original_plus_diagnostics(inventory['names'],inventory['nativeCaseIds'])
+        for mutation in (lambda rows:rows.pop(),lambda rows:rows[0].update(ID='f'*64),lambda rows:rows[0].update(DisplayName=rows[0]['DisplayName']+' changed'),lambda rows:rows[-1].update(DisplayName=rows[0]['DisplayName'],Class=rows[0]['Class'],Method=rows[0]['Method'])):
+            with self.subTest(mutation=mutation),self.assertRaises(ValueError):self.parse(mutation)
+    def test_current507_full_trx_uses_same_strict_counts_and_exact_associations(self):
+        import xml.etree.ElementTree as ET
+        a,inventory=self.parse();a,root=LinuxDirectXunitControls().native_trx(inventory,'suite')
+        receipt=a.verify_successor_native(ET.tostring(root),inventory,'suite','a'*64,'b'*64,'c'*40)
+        self.assertEqual(507,receipt['total']);self.assertEqual(507,receipt['passed'])
+        ns='{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}'
+        root.find(ns+'Results')[0].set('outcome','Failed')
+        with self.assertRaises(ValueError):a.verify_successor_native(ET.tostring(root),inventory,'suite','a'*64,'b'*64,'c'*40)
+    def test_historical497_cannot_qualify_current507_source_route(self):
+        a=LinuxNativeResultEncodingControls().evidence();old=LinuxNativeResultEncodingControls().inventory()
+        with self.assertRaises(ValueError):a.verify_successor_native(LinuxNativeResultEncodingControls().trx(),old,'focused','58886646bc8a00fe979653b60881ee3b32990614a10eaa018835d27ba1eaf894','1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3','53892c362a30130f582c40da7525e44f11474e8e')
+        source=sealed_source('hosted_static_core.py')
+        self.assertIn(b'association.native_successor_discovery(result.stdout',source);self.assertIn(b'association.verify_successor_native(trx.read_bytes()',source);self.assertIn(b"len(FRESH_INVENTORY['names']) != 507",source)
 
 
 class LinuxProviderControls(unittest.TestCase):
@@ -1211,11 +1313,11 @@ class LinuxProviderControls(unittest.TestCase):
         child=tarfile.TarInfo('dotnet/child');child.mode=0o755;child.size=1
         for members in ([host,host],[host,child]):
             with self.assertRaises(ValueError):bootstrap.archive_plan(members)
-    def test_linux_route_retains_all497_and_exact_three_business_files(self):
+    def test_linux_route_retains_all497_and_exact_five_business_files(self):
         policy=json.loads((ROOT/'hosted-static-policy.json').read_bytes());entries=mod.verified_entries(real_kit(),policy)
         candidate=json.loads(entries['outputs/workflows-go1269-hosted-candidate/candidate-manifest.json'])
-        self.assertEqual(3,len(candidate['files']));self.assertEqual(130,len([n for n in entries if n.startswith('worktree/')]))
-        self.assertIn(b"len(FRESH_INVENTORY['names']) != 497",entries['outputs/hosted_static_core.py'])
+        self.assertEqual(5,len(candidate['files']));self.assertEqual(130,len([n for n in entries if n.startswith('worktree/')]))
+        self.assertIn(b"len(FRESH_INVENTORY['names']) != 507",entries['outputs/hosted_static_core.py'])
         self.assertIn(b"group ==",entries['outputs/workflows_private_docker_proxy_v1.py'].replace(b'group==',b'group =='))
         for phase in ['restore','build','discovery','focused','suite','format','audit']:self.assertIn(phase,policy['nativePhases'])
     def test_private_daemon_windows_os_refused(self):
