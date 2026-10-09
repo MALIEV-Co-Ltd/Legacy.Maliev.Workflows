@@ -5,9 +5,9 @@
   "candidateSha": "1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3",
   "worktree": "/tmp/maliev-workflows-qualification/worktree",
   "outputsRoot": "/tmp/maliev-workflows-qualification/outputs",
-  "kitGitBlob": "583c4c0d7cff9b55ce20b7f4eedcd9729380e522",
-  "kitSha256": "9cd0978c8d00208c962b246d567a271241b93d96300413ea2e443436d5869cca",
-  "kitBytes": 32645210,
+  "kitGitBlob": "10f16780a098c7b553d74113bcf9a27eca4974b3",
+  "kitSha256": "47d5985ef08b084534fbc7645e9c3f643da748ab2770227b030003591f9e48e3",
+  "kitBytes": 32646104,
   "entries": {
     "outputs/accepted-package-assets/tests/Legacy.Maliev.Workflows.Tests/obj/project.assets.json": {
       "bytes": 106333,
@@ -38,8 +38,8 @@
       "sha256": "eed5ef4ab6dc76173c0859124c8db5a6aaa50d6ca9ce09d50589039efa8103f0"
     },
     "outputs/hosted_static_core.py": {
-      "bytes": 24454,
-      "sha256": "3843969f6e79f6cb6d60360da5557dc904627bd0638854fcabdfa86f14c38a68"
+      "bytes": 24461,
+      "sha256": "3b92cc2a082c05e83e32d31c65bae121416da93c91e20279942447f8a13acbe9"
     },
     "outputs/offline-packages/microsoft.applicationinsights.2.23.0.nupkg": {
       "bytes": 1737910,
@@ -146,8 +146,8 @@
       "sha256": "6e9ea49359abb4e2610e746b1f43bfb72624544754f5e54c41b4301ec01bc007"
     },
     "outputs/workflows_gitleaks_compiled_result_association_v1.py": {
-      "bytes": 9351,
-      "sha256": "0bd0d3bc0b5f049b6d503cf593b53836b428478c1ee895a1218d9c14a87faa72"
+      "bytes": 13847,
+      "sha256": "4bd34e992f50868629c517fb7dcc4dad5481b633dece746769d2f7b63ef76a92"
     },
     "outputs/workflows_native_admission_v3.py": {
       "bytes": 9620,
@@ -719,7 +719,7 @@
     "format",
     "audit"
   ],
-  "coreSha256": "3843969f6e79f6cb6d60360da5557dc904627bd0638854fcabdfa86f14c38a68",
+  "coreSha256": "3b92cc2a082c05e83e32d31c65bae121416da93c91e20279942447f8a13acbe9",
   "qualifiedProviderSha256": "f607980ae6c8e85c80021a4bee0d48bb099fb0216777d81b4df0e42ec1538faf",
   "protectedWorkflowNotPublished": true,
   "unconstrainedPackageResolution": false,

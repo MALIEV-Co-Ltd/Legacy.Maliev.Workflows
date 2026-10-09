@@ -823,7 +823,7 @@ class LinuxBuiltDllControls(unittest.TestCase):
         self.fixture(operation)
     def test_result_filter_inventory_and_resource_acceptance_guards_preserved(self):
         text,tree=self.source()
-        for token in ("len(FRESH_INVENTORY['names']) != 497","association.verify(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
+        for token in ("len(FRESH_INVENTORY['names']) != 497","association.verify_native(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)","arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]","memory_limit=3 * 1024**3",'cpu_rate=5000','output_limit=4 * 1024 * 1024','phase_deadline-time.monotonic()'):self.assertIn(token,text)
 
 
 class LinuxDirectXunitControls(unittest.TestCase):
@@ -899,16 +899,16 @@ class LinuxDirectXunitControls(unittest.TestCase):
         ET.SubElement(summary,ns+'Counters',counts)
         for name in names:
             uid=str(uuid.uuid4());cls,method=name.split('(',1)[0].rsplit('.',1)
-            definition=ET.SubElement(definitions,ns+'UnitTest',id=uid,name=name);ET.SubElement(definition,ns+'Execution',id=uid)
+            definition=ET.SubElement(definitions,ns+'UnitTest',id=uid,name=a.native_trx_display(name));ET.SubElement(definition,ns+'Execution',id=uid)
             ET.SubElement(definition,ns+'TestMethod',codeBase='/fresh/Legacy.Maliev.Workflows.Tests.dll',className=cls,name=method,adapterTypeName='executor://source-control/xunit.v3/3.2.2')
-            ET.SubElement(results,ns+'UnitTestResult',testId=uid,executionId=uid,testName=name,outcome='Passed')
+            ET.SubElement(results,ns+'UnitTestResult',testId=uid,executionId=uid,testName=a.native_trx_display(name),outcome='Passed')
         return a,root
     def test_native_discovery_retains_unchanged_strict8_and497_trx_association(self):
         import xml.etree.ElementTree as ET
         inventory=self.parse()
         for phase,total in (('focused',8),('suite',497)):
             with self.subTest(phase=phase):
-                a,root=self.native_trx(inventory,phase);result=a.verify(ET.tostring(root),inventory,phase,'a'*64,'b'*64,'c'*40)
+                a,root=self.native_trx(inventory,phase);result=a.verify_native(ET.tostring(root),inventory,phase,'a'*64,'b'*64,'c'*40)
                 self.assertEqual(total,result['total']);self.assertTrue(result['allExecutionAssociationsVerified'])
     def test_native_trx_missing_definition_foreign_dll_duplicate_id_and_fail_refused(self):
         import xml.etree.ElementTree as ET
@@ -920,7 +920,7 @@ class LinuxDirectXunitControls(unittest.TestCase):
                 elif mode=='foreign-dll':root.find(ns+'TestDefinitions')[0].find(ns+'TestMethod').set('codeBase','Foreign.dll')
                 elif mode=='duplicate':root.find(ns+'Results')[1].set('executionId',root.find(ns+'Results')[0].get('executionId'))
                 else:root.find(ns+'Results')[0].set('outcome','Failed')
-                with self.assertRaises(ValueError):a.verify(ET.tostring(root),inventory,'focused','a'*64,'b'*64,'c'*40)
+                with self.assertRaises(ValueError):a.verify_native(ET.tostring(root),inventory,'focused','a'*64,'b'*64,'c'*40)
     def runtime_guard(self,root):
         import ast,stat
         text=sealed_source('hosted_static_core.py');tree=ast.parse(text)
@@ -1027,6 +1027,94 @@ class LinuxNativeDiscoveryColorControls(unittest.TestCase):
         for changed in (b'\x1b[0m'+payload,payload+b'\x1b[31m',payload+b'[]',payload+b'\x1b[0m\x1b[0m'):
             with self.subTest(tail=repr(changed[-12:])):
                 with self.assertRaises(ValueError):self.parse(changed)
+
+
+class LinuxNativeResultEncodingControls(unittest.TestCase):
+    def evidence(self):
+        return FreshQualificationPhaseControls().evidence()[3]
+    def inventory(self):
+        raw=LinuxNativeDiscoveryColorControls().raw()[:-4]
+        self.assertEqual('c9b18e8f861b2320a05da23c3a4fc59af6ac08764c0204f38606e2a9569a6c96',hashlib.sha256(raw).hexdigest())
+        a=self.evidence()
+        return a.native_discovery(raw,[dict(method=m,arguments=None,executed=False) for m in a.METHODS],'58886646bc8a00fe979653b60881ee3b32990614a10eaa018835d27ba1eaf894','1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3','53892c362a30130f582c40da7525e44f11474e8e','/tmp/maliev-workflows-qualification/worktree/tests/Legacy.Maliev.Workflows.Tests/bin/Release/net10.0/Legacy.Maliev.Workflows.Tests.dll')
+    def trx(self):
+        import zlib
+        raw=zlib.decompress(base64.b64decode('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'))
+        self.assertEqual(14678,len(raw));self.assertEqual('183cbd5602b40191d602f9a6365a6ce55350ad9c293a6d3006734318d94a65b7',hashlib.sha256(raw).hexdigest())
+        return raw
+    def verify(self,raw=None,inventory=None,phase='focused'):
+        return self.evidence().verify_native(self.trx() if raw is None else raw,self.inventory() if inventory is None else inventory,phase,'58886646bc8a00fe979653b60881ee3b32990614a10eaa018835d27ba1eaf894','1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3','53892c362a30130f582c40da7525e44f11474e8e')
+    def test_actual_frozen8trx_and497compiled_inventory_exact_forward_join(self):
+        value=self.verify();self.assertEqual(8,value['total']);self.assertTrue(value['allExecutionAssociationsVerified']);self.assertEqual('xunit3.2.2/ExecutionSink.XmlEscape',value['nativeDisplayEncoding'])
+    def test_original_legacy_verifier_still_rejects_native_escaped_fixture(self):
+        a=self.evidence()
+        with self.assertRaises(ValueError):a.verify(self.trx(),self.inventory(),'focused','58886646bc8a00fe979653b60881ee3b32990614a10eaa018835d27ba1eaf894','1bc40306fb96fbd85e27ccec1eaa6d96ef0a1c0c6d15e177c334bd38c2159ec3','53892c362a30130f582c40da7525e44f11474e8e')
+    def test_forward_encoder_exact_quotes_slashes_controls_and_unicode(self):
+        a=self.evidence();cases=[('"',r'\"'),('\\',r'\\'),('\x00',r'\0'),('\x07',r'\a'),('\b',r'\b'),('\f',r'\f'),('\n',r'\n'),('\r',r'\r'),('\t',r'\t'),('\v',r'\v'),('\x01',r'\x01'),('\x1f',r'\x1f'),('\ufffe',r'\xfffe'),('\uffff',r'\xffff'),('ไทย😊','ไทย😊')]
+        for value,expected in cases:
+            with self.subTest(value=repr(value)):self.assertEqual(expected,a.native_trx_display(value))
+        for value in (None,'',True,'x'*16385):
+            with self.subTest(value=repr(value)[:20]),self.assertRaises(ValueError):a.native_trx_display(value)
+        with self.assertRaises(UnicodeError):a.native_trx_display('\ud800')
+    def test_real497_inventory_and_synthetic_fulltrx_preserve_reviewed_duplicate(self):
+        import xml.etree.ElementTree as ET
+        inventory=self.inventory();a,root=LinuxDirectXunitControls().native_trx(inventory,'suite')
+        self.assertEqual({a.ALLOWED_DUPLICATE:2},inventory['displayMultiplicity'])
+        value=self.verify(ET.tostring(root),inventory,'suite');self.assertEqual(497,value['total'])
+    def mutation(self,change):
+        import xml.etree.ElementTree as ET
+        root=ET.fromstring(self.trx());change(root,self.evidence().strict.NS)
+        return ET.tostring(root)
+    def test_actual_trx_missing_definition_duplicate_ids_and_failed_result_refused(self):
+        for mode in ('missing-definition','duplicate-id','failed'):
+            def change(root,ns):
+                definitions=root.find(ns+'TestDefinitions');results=root.find(ns+'Results')
+                if mode=='missing-definition':definitions.remove(definitions[-1])
+                elif mode=='duplicate-id':results[-1].set('testId',results[0].get('testId'))
+                else:results[0].set('outcome','Failed')
+            with self.subTest(mode=mode),self.assertRaises(ValueError):self.verify(self.mutation(change))
+    def test_actual_trx_foreign_dll_class_or_method_refused(self):
+        for key,value in [('codeBase','/foreign.dll'),('className','Foreign.Tests'),('name','ForeignMethod')]:
+            def change(root,ns):root.find(ns+'TestDefinitions')[0].find(ns+'TestMethod').set(key,value)
+            with self.subTest(key=key),self.assertRaises(ValueError):self.verify(self.mutation(change))
+    def test_unescaped_double_encoded_and_foreign_names_refused_without_normalization(self):
+        for mode in ('unescaped','double','foreign'):
+            def change(root,ns):
+                result=root.find(ns+'Results')[0];definition=root.find(ns+'TestDefinitions')[0];name=definition.get('name')
+                value=name.replace('\\"','"') if mode=='unescaped' else self.evidence().native_trx_display(name) if mode=='double' else name+'foreign'
+                definition.set('name',value);result.set('testName',value)
+            with self.subTest(mode=mode),self.assertRaises(ValueError):self.verify(self.mutation(change))
+    def test_native_inventory_unknown_format_shape_and_changed_bindings_refused(self):
+        import copy
+        for mode in ('format','extra','assembly','candidate','base','schema','ids','missing-name','foreign-focus'):
+            inventory=copy.deepcopy(self.inventory())
+            if mode=='format':inventory['nativeFormat']='foreign'
+            elif mode=='extra':inventory['foreign']=True
+            elif mode=='assembly':inventory['assemblySha256']='a'*64
+            elif mode=='candidate':inventory['candidateSha256']='a'*64
+            elif mode=='base':inventory['baseSha']='a'*40
+            elif mode=='schema':inventory['schemaVersion']=True
+            elif mode=='ids':inventory['nativeCaseIds'][-1]=inventory['nativeCaseIds'][0]
+            elif mode=='missing-name':inventory['names'].pop()
+            else:inventory['focusedNames'][0]+='foreign'
+            with self.subTest(mode=mode),self.assertRaises(ValueError):self.verify(inventory=inventory)
+    def test_extra_missing_and_unauthorized_duplicate_full_membership_refused(self):
+        import xml.etree.ElementTree as ET
+        inventory=self.inventory()
+        for mode in ('extra','missing','duplicate'):
+            a,root=LinuxDirectXunitControls().native_trx(inventory,'suite');ns=a.strict.NS
+            results=root.find(ns+'Results');definitions=root.find(ns+'TestDefinitions')
+            if mode=='missing':results.remove(results[-1]);definitions.remove(definitions[-1])
+            elif mode=='extra':root.find(ns+'ResultSummary').find(ns+'Counters').set('total','498')
+            else:
+                name=definitions[0].get('name');definitions[-1].set('name',name);results[-1].set('testName',name)
+            with self.subTest(mode=mode),self.assertRaises(ValueError):self.verify(ET.tostring(root),inventory,'suite')
+    def test_core_routes_only_native_trx_join_and_keeps_owned_trx_and_caps(self):
+        source=sealed_source('hosted_static_core.py')
+        self.assertEqual(1,source.count(b'association.verify_native(trx.read_bytes(), FRESH_INVENTORY, current_phase, ASSEMBLY_HASH, CANDIDATE, BASE)'))
+        self.assertNotIn(b'association.verify(trx.read_bytes()',source)
+        self.assertIn(b"arguments = arguments + ['-trx', str(runroot / 'test-results' / current_phase / (current_phase + '.trx'))]",source)
+        self.assertIn(b'memory_limit=3 * 1024**3',source);self.assertIn(b'cpu_rate=5000',source);self.assertIn(b'output_limit=4 * 1024 * 1024',source)
 
 
 class LinuxProviderControls(unittest.TestCase):
