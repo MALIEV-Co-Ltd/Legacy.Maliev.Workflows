@@ -2,6 +2,14 @@ name: Reviewed sealed Workflows static validation
 on:
   workflow_dispatch:
     inputs:
+      profile:
+        description: Fixed reviewed sealed profile; permit must match its exact candidate digest
+        type: choice
+        options:
+          - inventory
+          - auth-program-child-c-component-v1
+        default: inventory
+        required: true
       root_permit:
         description: Fresh Root-issued nine-field hosted-qualification cooperative lease; not cryptographic issuer authentication
         type: string
@@ -40,17 +48,20 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -B scripts/test-hosted-static.py
+        run: |
+          python3 -B scripts/test-hosted-static.py
+          python3 -B scripts/test-hosted-native-profile.py
       - name: Pinned SDK archive bootstrap then bounded build-first qualification
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          HOSTED_STATIC_PROFILE: ${{ inputs.profile }}
           ROOT_STATIC_PERMIT: ${{ inputs.root_permit }}
           TRUSTED_WORKFLOW_CONTEXT: >-
             {"repository":"${{ github.repository }}","ref":"${{ github.ref }}","eventName":"${{ github.event_name }}","sha":"${{ github.sha }}","job":${{ toJSON(job) }}}
         run: |
           export MALIEV_WORKFLOWS_UID="$(id -u)" MALIEV_WORKFLOWS_GID="$(id -g)"
-          sudo --preserve-env=GH_TOKEN,ROOT_STATIC_PERMIT,TRUSTED_WORKFLOW_CONTEXT,MALIEV_WORKFLOWS_UID,MALIEV_WORKFLOWS_GID,GIT_CONFIG_COUNT,GIT_CONFIG_KEY_0,GIT_CONFIG_VALUE_0 python3 -B scripts/run-hosted-static.py
+          sudo --preserve-env=GH_TOKEN,HOSTED_STATIC_PROFILE,ROOT_STATIC_PERMIT,TRUSTED_WORKFLOW_CONTEXT,MALIEV_WORKFLOWS_UID,MALIEV_WORKFLOWS_GID,GIT_CONFIG_COUNT,GIT_CONFIG_KEY_0,GIT_CONFIG_VALUE_0 python3 -B scripts/run-hosted-static.py
       - name: Retain strict raw evidence and cleanup receipts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -87,6 +98,7 @@ jobs:
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/restore.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/head.log
             /tmp/maliev-workflows-qualification/outputs/workflows-gitleaks-hosted-static-validation-v1-*/scope.log
+            /tmp/maliev-workflows-qualification/outputs/native-helper-*/**
             /tmp/maliev-workflows-qualification/outputs/wrapper-receipt.json
             /tmp/maliev-workflows-qualification/outputs/wrapper-cleanup.json
             /tmp/maliev-workflows-qualification/outputs/linux-capability.json
