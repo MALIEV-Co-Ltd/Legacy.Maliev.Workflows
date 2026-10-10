@@ -84,7 +84,21 @@ missing/zero TRX, stale heads, path escapes, duplicate cases, foreign phases,
 late/preexisting artifact custody, insufficient memory/foreign jobs, swapped
 joins, failure/skip/error/count controls, phase-manifest mutation, source/worker/
 coverage tampering, old full pin/dirty source, symlinks and duplicate JSON keys.
-All newly implemented guards/tests are NOT RUN in this source-only allocation.
+Local execution remains NOT RUN under the unchanged resource admission.
+Initial hosted run 38091768250 at 44c9e60445937abbea4ddd85a427df1b524061b7
+built Release with zero warnings/errors and passed formatting. Its full suite
+reported 542 passed, one failed, zero skipped of 543: the Python adapter rejected
+the word `skipped` in a passing negative test name. Its preceding exit-zero,
+twenty-four-test count and terminal-OK assertions passed in 412ms. Python source
+compilation and PowerShell parsing adapter facts passed. This failed run has no
+uploaded raw TRX artifact; its audit/analytics follow-up was not run.
+
+The correction checks actual verbose skip outcomes and the unittest skip summary,
+preserving the exact count/exit/terminal-OK checks. Four authored parser cases
+distinguish a passing name containing `skipped`, a real skipped row, a skip summary,
+and an ordinary pass. These new cases and the corrected adapter are NOT RUN.
+The original twenty-four Python controls and existing process supervisor are
+unchanged. New exact-head full hosted acceptance remains required.
 Earlier proposal YAML checks and Tracking338 tests do not validate this successor.
 
 The hosted C# suite includes `FdmValidationGuardTests`: it compiles the module

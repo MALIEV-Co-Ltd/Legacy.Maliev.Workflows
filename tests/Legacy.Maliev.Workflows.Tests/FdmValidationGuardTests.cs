@@ -14,7 +14,7 @@ public sealed class FdmValidationGuardTests
         Assert.Equal("", result.Output);
         Assert.Contains("Ran 24 tests", result.Error, StringComparison.Ordinal);
         Assert.True(result.Error.TrimEnd().EndsWith("OK", StringComparison.Ordinal), result.Error);
-        Assert.DoesNotContain("skipped", result.Error, StringComparison.Ordinal);
+        Assert.True(HasNoSkippedOutcomes(result.Error), result.Error);
     }
 
     [Fact]
@@ -44,6 +44,21 @@ public sealed class FdmValidationGuardTests
         Assert.Equal("", result.Output);
         Assert.Equal("", result.Error);
     }
+
+    [Theory]
+    [InlineData("test_failed_skipped_error_and_bad_counters_are_refused (Demo.Cases) ... ok\nRan 24 tests in 0.1s\nOK\n", true)]
+    [InlineData("test_guard (Demo.Cases) ... skipped 'fixture unavailable'\nRan 24 tests in 0.1s\nOK (skipped=1)\n", false)]
+    [InlineData("Ran 24 tests in 0.1s\nOK (skipped=1)\n", false)]
+    [InlineData("test_guard (Demo.Cases) ... ok\nRan 24 tests in 0.1s\nOK\n", true)]
+    public void SkipOutcomes_DistinguishVerbosePassingNamesFromActualSkippedCases(string diagnostics, bool expected)
+    {
+        Assert.Equal(expected, HasNoSkippedOutcomes(diagnostics));
+    }
+
+    private static bool HasNoSkippedOutcomes(string diagnostics) =>
+        !diagnostics.Split('\n').Any(line =>
+            line.Contains(" ... skipped", StringComparison.Ordinal)
+            || line.TrimStart().StartsWith("OK (skipped=", StringComparison.Ordinal));
 
     private static Task<OwnedTestProcess.Result> Run(string executable, params string[] arguments)
     {
