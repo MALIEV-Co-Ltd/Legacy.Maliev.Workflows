@@ -531,5 +531,46 @@ class PolicyTests(unittest.TestCase):
         self.assertNotIn("ROUTE_CANONICAL", tools.events)
         self.assertNotIn("DRAIN_GREEN", tools.events)
 
+    def test_postdrain_proof_precedes_capacity_release(self):
+        tools=FakeTools()
+        self.run_policy(tools)
+        end=tools.events.index('RELEASE_CAPACITY')
+        self.assertEqual('VERIFY_CANONICAL',tools.events[end-1])
+        self.assertLess(tools.events.index('DRAIN_GREEN'),end-1)
+        self.assertLess(tools.events.index('FINAL_HEALTH'),end-1)
+
+    def test_postdrain_process_rejection_prevents_success(self):
+        def fault(step,receipt,tools):
+            if step=='VERIFY_CANONICAL' and 'DRAIN_GREEN' in tools.events:
+                receipt['processVerified']=False
+        tools=FakeTools(mutate=fault)
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(tools)
+        self.assertEqual('VERIFY_CANONICAL',caught.exception.step)
+        self.assertTrue(caught.exception.canonical_mutation_started)
+        self.assertIsNone(caught.exception.green_uid)
+        self.assertNotIn('RELEASE_CAPACITY',tools.events)
+
+    def test_required_readonly_postdrain_rejection_prevents_success(self):
+        def fault(step,receipt,tools):
+            if step=='VERIFY_CANONICAL' and 'DRAIN_GREEN' in tools.events:
+                receipt['readOnlyStartupVerified']=False
+        tools=FakeTools(mutate=fault)
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(tools,require_read_only_startup=True)
+        self.assertEqual('VERIFY_CANONICAL',caught.exception.step)
+        self.assertNotIn('RELEASE_CAPACITY',tools.events)
+
+    def test_postdrain_nonzero_proof_prevents_success(self):
+        tools=FakeTools()
+        def boundary(step,request):
+            if step=='VERIFY_CANONICAL' and 'DRAIN_GREEN' in tools.events:
+                return dict(exitCode=73,receipt={})
+            return tools(step,request)
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(boundary)
+        self.assertEqual(73,caught.exception.exit_code)
+        self.assertNotIn('RELEASE_CAPACITY',tools.events)
+
 if __name__ == "__main__":
     unittest.main()

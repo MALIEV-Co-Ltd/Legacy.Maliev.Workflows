@@ -29,7 +29,7 @@ public sealed class ApplicationHandoffPolicyTests
             await process.WaitForExitAsync(budget.Token);
             await Task.WhenAll(output, error).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
             Assert.True(process.ExitCode == 0, await error);
-            Assert.Contains("Ran 39 tests", await error);
+            Assert.Contains("Ran 43 tests", await error);
         }
         finally
         {
