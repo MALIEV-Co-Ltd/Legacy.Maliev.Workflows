@@ -301,6 +301,7 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         green = None
         observe("FINAL_HEALTH")
         current(expected_selector="original", expected_image=image_digest)
+        prove("VERIFY_CANONICAL", baseline)
         released = invoke("RELEASE_CAPACITY", reservationId=reservation)
         require(released.get("reservationId") == reservation and released.get("released") is True, "RELEASE_CAPACITY")
         return dict(status="CONTROLLED_HANDOFF_COMPLETED", sourceCommit=source_commit, imageDigest=image_digest, runId=run_id, runtimeAccepted=False, consumerAdoptionAccepted=False)

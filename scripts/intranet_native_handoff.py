@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 
 PINS = {
-    'application_handoff_policy.py': '3832b6dec9a3c9445b04b2a37e4f8fc41629a134ca2388d4b5d111860f332fe3',
+    'application_handoff_policy.py': '03b80a61ffc19b9eb3286783934902ed413157edccedfd8ab46ebce2f153e5e2',
     'green_metadata.py': '137f2fa0c9e03dee1229ecc1652dd28f2f526a207e99ce7bbc964ef4dab1f77d',
 }
 ROLES = {
