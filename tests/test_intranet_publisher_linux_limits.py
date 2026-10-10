@@ -31,7 +31,7 @@ class LinuxGuardTests(unittest.TestCase):
             with namespace['export_disk_guard'](temporary):
                 self.assertLessEqual(resource.getrlimit(resource.RLIMIT_FSIZE)[0],4096)
                 result=subprocess.run([sys.executable,'-B','-c',
-                    'import errno,sys\ntry:\n open(sys.argv[1],"wb").write(b"x"*8192)\nexcept OSError as failure:\n sys.exit(91 if failure.errno==errno.EFBIG else 92)',str(path)],
+                    'import errno,sys\ntry:\n with open(sys.argv[1],"wb",buffering=0) as output:\n  output.write(b"x"*4096)\n  output.write(b"x")\nexcept OSError as failure:\n sys.exit(91 if failure.errno==errno.EFBIG else 92)',str(path)],
                     capture_output=True,timeout=5)
                 self.assertEqual(91,result.returncode)
                 self.assertLessEqual(path.stat().st_size,4096)
