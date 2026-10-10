@@ -414,7 +414,7 @@ public sealed class RepositoryContractTests
         Assert.True(buildIndex >= 0 && scanIndex > buildIndex, "Expected Trivy to scan the locally built image.");
         Assert.True(pushIndex > scanIndex, "Expected the vulnerability scan to pass before image publication.");
         Assert.True(digestIndex > pushIndex, "Expected immutable digest resolution after image publication.");
-        Assert.Single(Regex.Matches(source, @"GITHUB_OUTPUT"));
+        Assert.Single(Regex.Matches(source, @"echo ""digest=\$DIGEST"" >> ""\$GITHUB_OUTPUT"""));
     }
 
     [Fact]
