@@ -147,3 +147,110 @@ jobs:
 
       - name: Test analytics receipts and producer proof verifier
         run: python3 -B -W error -m unittest discover -s tools/analytics/tests -p 'test_*.py' -v
+
+  raw-head-evidence:
+    name: privacy-safe actual head validation evidence
+    needs: [validate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      EXPECTED_SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      EVIDENCE_OWNER_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      VSTestLogger: trx
+      VSTestResultsDirectory: ${{ github.workspace }}/TestResults/raw-evidence
+    steps:
+      - name: Check out exact head source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.EXPECTED_SOURCE_HEAD }}
+          persist-credentials: false
+      - name: Verify source custody before validation
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_HEAD"
+          test -z "$(git status --porcelain)"
+      - name: Check out exact evidence controls
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.EVIDENCE_OWNER_HEAD }}
+          path: .maliev-evidence-controls
+          persist-credentials: false
+          sparse-checkout: |
+            scripts
+            tests/test_fdm_validation_guards.py
+      - name: Run unchanged full validation with actual TRX logging
+        uses: MALIEV-Co-Ltd/Legacy.Maliev.Workflows/actions/dotnet-validate@ce7a577d9672c44cd445915420e3c552c70317d1
+        with:
+          solution: Legacy.Maliev.Workflows.slnx
+      - name: Prepare privacy-safe actual test evidence
+        if: always()
+        shell: bash
+        run: |
+          test "$(git -C .maliev-evidence-controls rev-parse HEAD)" = "$EVIDENCE_OWNER_HEAD"
+          test -z "$(git -C .maliev-evidence-controls status --porcelain)"
+          python3 -B .maliev-evidence-controls/scripts/retain_workflows_test_evidence.py
+      - name: Retain complete or explicitly unavailable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: workflows-head-evidence-${{ env.EXPECTED_SOURCE_HEAD }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/workflows-retained/
+          retention-days: 14
+          if-no-files-found: error
+          include-hidden-files: false
+
+  raw-baseline-evidence:
+    name: privacy-safe actual baseline validation evidence
+    if: github.event_name == 'pull_request' && github.event.pull_request.number == 341
+    needs: [raw-head-evidence]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      EXPECTED_SOURCE_HEAD: a08d488e64071cc97bd5a4b270808b5ff28f10a3
+      EVIDENCE_OWNER_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      VSTestLogger: trx
+      VSTestResultsDirectory: ${{ github.workspace }}/TestResults/raw-evidence
+    steps:
+      - name: Check out exact baseline source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.EXPECTED_SOURCE_HEAD }}
+          persist-credentials: false
+      - name: Verify source custody before validation
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_HEAD"
+          test -z "$(git status --porcelain)"
+      - name: Check out exact evidence controls
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.EVIDENCE_OWNER_HEAD }}
+          path: .maliev-evidence-controls
+          persist-credentials: false
+          sparse-checkout: |
+            scripts
+            tests/test_fdm_validation_guards.py
+      - name: Run unchanged full validation with actual TRX logging
+        uses: MALIEV-Co-Ltd/Legacy.Maliev.Workflows/actions/dotnet-validate@ce7a577d9672c44cd445915420e3c552c70317d1
+        with:
+          solution: Legacy.Maliev.Workflows.slnx
+      - name: Prepare privacy-safe actual test evidence
+        if: always()
+        shell: bash
+        run: |
+          test "$(git -C .maliev-evidence-controls rev-parse HEAD)" = "$EVIDENCE_OWNER_HEAD"
+          test -z "$(git -C .maliev-evidence-controls status --porcelain)"
+          python3 -B .maliev-evidence-controls/scripts/retain_workflows_test_evidence.py
+      - name: Retain complete or explicitly unavailable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: workflows-baseline-evidence-${{ env.EXPECTED_SOURCE_HEAD }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/workflows-retained/
+          retention-days: 14
+          if-no-files-found: error
+          include-hidden-files: false

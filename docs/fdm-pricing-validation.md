@@ -121,3 +121,74 @@ remain required before protected merge. Native build/focused/full/browser/raw-co
 head/main checks remain pending and require their own allocation and genuine
 Web551/552 consumer integration. No runtime acceptance or whole-source-SHA
 closure follows from this packet.
+
+
+## Actual evidence retention successor (not executed)
+
+The first corrected hosted run 38092330239 at ce7a577d9672c44cd445915420e3c552c70317d1
+reported 547 passed, zero failed/skipped, a zero-warning/error Release build and
+passing existing format/security/audit/analytics checks. Its unchanged workflow
+uploaded no TRX or per-case identity roster. It is not sufficient raw evidence
+for protected merge; no merge or issue339 closure follows.
+
+This proposal preserves the existing required `validate / validate` job and all
+existing reusable workflow/action interfaces. Two own-repository hosted evidence
+jobs use the unchanged full validation composite at immutable ce7a577. They run
+sequentially after existing validation. The proposed-head checkout is bound to
+the event's exact head; the frozen a08d488 baseline lane runs only for PR341.
+MSBuild VSTestLogger=trx and the fixed owned results directory supply actual test
+reports without test filtering. The baseline 540 roster is still unavailable;
+its genuine hosted report must be inspected, not inferred from source counts.
+
+The new retainer consumes the existing reviewed privacy-safe TRX/v2 transform:
+real IDs and complete definition/execution/entry/result joins, static class/method
+and display hashes. Original and transformed SHA256 values are both retained.
+Raw arbitrary outputs, exception values, source paths and display values are not
+exported. This is transformed actual TRX, not a claim of verbatim raw TRX bytes.
+
+The Python24 adapter emits its actual bounded result stderr through the existing
+xUnit `ITestOutputHelper` API. The retainer extracts only that exact passed test,
+checks all twenty-four source-known synthetic method rows, unique complete
+membership, count and terminal OK, then retains the actual validated diagnostics
+separately. Unknown content, failed/skipped rows, duplicated blocks or oversized
+output cannot enter retained diagnostics. The original lifecycle supervisor,
+timeout and Python controls are unchanged.
+
+Both jobs retain evidence with always-upload, an immutable upload-artifact action,
+fourteen-day retention and exact source/control/action/workflow/run binding.
+The retainer creates a new fixed output directory, bounds reads, rejects linked
+paths and refuses output overwrite. Missing reports or diagnostics remain
+explicitly unavailable, fail the preparer and do not certify acceptance.
+
+There is no Workflows coverage collector or current coverage gate in this solution.
+The actual production projects are AdditiveBenchmark and WireFixtures. The
+namespace-restricted production exporter is not fed a fictitious Workflows
+production project. Genuine Cobertura is retained only if it exists; availability
+is recorded separately. No coverage percentage, collector, exclusion, threshold,
+security qualification or SDK role is introduced. The Web80 coverage fixture
+and genuine Web consumer/full-workflow successor dependencies remain unchanged.
+
+New retention controls: seventeen authored Python cases and seventeen authored
+C# cases (two retention facts, six workflow mutation cases, nine producer-boundary
+negative cases). All new source compilation/tests/YAML/browser/
+native/format/security checks are NOT RUN under unchanged local admission. The
+existing full suite and process fault negatives remain required. Hosted exact-head
+evidence, baseline roster preservation and exact protected-main checks remain
+pending; no runtime or whole-source-SHA acceptance is claimed.
+
+xUnit output API reference: https://api.xunit.net/v3/2.0.0/Xunit.ITestOutputHelper.html
+
+
+Producer privacy correction: actual Python diagnostics are validated BEFORE any
+ITestOutputHelper emission. The gate requires native exit zero, empty stdout,
+exact twenty-four source-known unique passing names and their matching optional
+descriptor method suffix, one exact count summary, terminal OK and a256KiB bound.
+Only then does it emit the unchanged actual result stderr. Invalid data fails
+with fixed category/hash metadata; raw invalid stdout/stderr is not an assertion
+message. Nine authored negative cases call the emission boundary itself and
+assert no payload is emitted for arbitrary output, stdout, missing/duplicate/
+unknown/skipped cases, mismatched identity, malformed summary and oversized data.
+These are synthetic negative fixtures, not substitute successful diagnostics.
+Actual passing evidence still requires the genuine Python24 subprocess result.
+The retainer also rejects a mismatched descriptor suffix, and its control adapter
+failure messages withhold generic payloads. All new cases remain NOT RUN.
