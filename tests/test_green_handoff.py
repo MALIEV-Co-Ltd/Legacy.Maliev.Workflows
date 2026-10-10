@@ -9,6 +9,7 @@ from application_handoff_policy import HandoffFailure, run_handoff
 from test_application_handoff_policy import COMMIT, DIGEST, GREEN, FakeTools
 from test_green_metadata import CONTRACT, METADATA
 from startup_protection import SOURCE_SHA as STARTUP_SOURCE
+from green_metadata import decode_green_metadata, MetadataRejected
 
 
 class GreenTools(FakeTools):
@@ -54,6 +55,87 @@ class GreenTools(FakeTools):
 class GreenHandoffTests(unittest.TestCase):
     def run_policy(self, tools, **changes):
         return run_handoff(CONTRACT["target_application"], COMMIT, DIGEST, tools, green_contract=copy.deepcopy(CONTRACT), **changes)
+
+    def test_selected_json_observation_flows_through_actual_handoff_consumer(self):
+        for startup in ("absent", None, copy.deepcopy(METADATA["containerMetadata"]["readinessProbe"])):
+            metadata = copy.deepcopy(METADATA)
+            if startup != "absent":
+                metadata["containerMetadata"]["startupProbe"] = startup
+            def encode(tools, step, receipt):
+                if step in ("SNAPSHOT", "READ_CURRENT"):
+                    receipt["deployment"]["greenMetadata"] = json.dumps(receipt["deployment"]["greenMetadata"], ensure_ascii=False)
+            tools = GreenTools(metadata=metadata, fault=encode)
+            result = self.run_policy(tools)
+            self.assertFalse(result["runtimeAccepted"])
+            request = next(value for step, value in tools.requests if step == "CREATE_GREEN")
+            container = request["greenMetadataPlan"]["pod"]["containers"][0]
+            self.assertEqual(metadata["containerMetadata"]["envFrom"], container["envFrom"])
+            self.assertEqual(metadata["podMetadata"]["imagePullSecrets"], request["greenMetadataPlan"]["pod"]["imagePullSecrets"])
+            mutation = next(value for step, value in tools.requests if step == "MUTATE_CANONICAL")
+            self.assertEqual(metadata, mutation["expectedCanonicalMetadata"])
+            self.assertEqual(startup != "absent", "startupProbe" in mutation["expectedCanonicalMetadata"]["containerMetadata"])
+
+    def test_malformed_selected_json_rejects_before_source_or_image_callbacks(self):
+        for payload in ('{"private":"SYNTHETIC_PRIVATE"', '{"containerNames":[],"containerNames":[]}', 'null', '[]', '{"value":NaN}', '"' + ('x' * 16384) + '"'):
+            def corrupt(tools, step, receipt):
+                if step == "SNAPSHOT":
+                    receipt["deployment"]["greenMetadata"] = payload
+            tools = GreenTools(fault=corrupt)
+            with self.assertRaises(HandoffFailure) as caught:
+                self.run_policy(tools)
+            self.assertEqual("SNAPSHOT", caught.exception.step)
+            self.assertNotIn("SYNTHETIC_PRIVATE", str(caught.exception))
+            self.assertNotIn("VERIFY_SOURCE", tools.events)
+            self.assertNotIn("VERIFY_IMAGE", tools.events)
+
+    def test_unsafe_selected_json_shapes_reject_before_verification_callbacks(self):
+        for case in ("readiness", "liveness", "envFrom", "pullSecrets", "tolerations", "reference", "literal", "probe"):
+            metadata = copy.deepcopy(METADATA)
+            if case in ("readiness", "liveness"):
+                del metadata["containerMetadata"][case + "Probe"]
+            elif case == "envFrom":
+                metadata["containerMetadata"]["envFrom"] = {"configMapRef": {"name": "owned-config"}}
+            elif case == "pullSecrets":
+                metadata["podMetadata"]["imagePullSecrets"] = {"name": "existing-pull"}
+            elif case == "tolerations":
+                metadata["podMetadata"]["tolerations"] = {"key": "owned"}
+            elif case == "reference":
+                metadata["environment"][1]["valueFrom"] = "SYNTHETIC_PRIVATE"
+            elif case == "literal":
+                metadata["environment"][1] = {"name": "CONNECTION", "value": "SYNTHETIC_PRIVATE"}
+            else:
+                metadata["containerMetadata"]["startupProbe"] = {"httpGet": {"port": 8080}, "exec": {"command": ["SYNTHETIC_PRIVATE"]}}
+            def encode(tools, step, receipt):
+                if step == "SNAPSHOT":
+                    receipt["deployment"]["greenMetadata"] = json.dumps(metadata)
+            tools = GreenTools(fault=encode)
+            with self.assertRaises(HandoffFailure) as caught:
+                self.run_policy(tools)
+            self.assertEqual("SNAPSHOT", caught.exception.step)
+            self.assertNotIn("SYNTHETIC_PRIVATE", str(caught.exception))
+            self.assertNotIn("VERIFY_SOURCE", tools.events)
+            self.assertNotIn("VERIFY_IMAGE", tools.events)
+            self.assertNotIn("CREATE_GREEN", tools.events)
+
+    def test_parser_refusal_does_not_retain_private_json_exception_context(self):
+        with self.assertRaises(MetadataRejected) as caught:
+            decode_green_metadata('{"value":"SYNTHETIC_PRIVATE"')
+        self.assertIsNone(caught.exception.__context__)
+        self.assertIsNone(caught.exception.__cause__)
+        self.assertNotIn("SYNTHETIC_PRIVATE", str(caught.exception))
+
+    def test_changed_selected_json_readback_blocks_before_routing(self):
+        def change(tools, step, receipt):
+            if step == "READ_CURRENT":
+                metadata = receipt["deployment"]["greenMetadata"]
+                metadata["podMetadata"]["imagePullSecrets"] = {"name": "changed"}
+                receipt["deployment"]["greenMetadata"] = json.dumps(metadata)
+        tools = GreenTools(fault=change)
+        with self.assertRaises(HandoffFailure) as caught:
+            self.run_policy(tools)
+        self.assertEqual("READ_CURRENT", caught.exception.step)
+        self.assertNotIn("ROUTE_GREEN", tools.events)
+
 
     def test_actual_create_request_and_stored_green_proof_keep_complete_plan(self):
         tools = GreenTools()
