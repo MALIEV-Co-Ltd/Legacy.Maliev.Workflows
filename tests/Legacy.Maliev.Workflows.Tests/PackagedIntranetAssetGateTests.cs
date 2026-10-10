@@ -8,12 +8,15 @@ namespace Legacy.Maliev.Workflows.Tests;
 [Collection("Packaged image acceptance")]
 public sealed class PackagedIntranetAssetGateTests
 {
-    // Independent expected corpus from source ac62eab210926ade460f8a04129953579968de2b.
+    // Independent current compatibility corpus from Intranet b374ef520863404e9c53ef10b017a5bd77da45b8.
     // Removing any asset check must let a deliberately broken real image through.
     private static readonly string[] Assets =
     [
-        "vendor.min.css.gz", "app.min.css.gz", "vendor.min.js.gz", "app.min.js.gz",
-        "jquery.min.js.gz", "jquery.validate.min.js.gz", "jquery.validate.unobtrusive.min.js.gz",
+        "Legacy.Maliev.Intranet.dll", "Legacy.Maliev.Intranet.deps.json", "Legacy.Maliev.Intranet.runtimeconfig.json",
+        "wwwroot/css/ibm-plex-sans-thai.css", "wwwroot/css/site.css", "wwwroot/js/compat-shell.js",
+        "wwwroot/fonts/ibm-plex-sans-thai/IBMPlexSansThai-Regular.woff2",
+        "wwwroot/fonts/ibm-plex-sans-thai/IBMPlexSansThai-SemiBold.woff2",
+        "wwwroot/fonts/ibm-plex-sans-thai/LICENSE.txt",
     ];
 
     public static TheoryData<string, bool> BrokenAssets
@@ -39,8 +42,8 @@ public sealed class PackagedIntranetAssetGateTests
             ProcessResult result = await RunGate(image, "MALIEV-Co-Ltd/Legacy.Maliev.Intranet");
             Assert.Equal(0, result.ExitCode);
             using JsonDocument receipt = JsonDocument.Parse(result.Output);
-            Assert.Equal("accepted", receipt.RootElement.GetProperty("status").GetString());
-            Assert.Equal(7, receipt.RootElement.GetProperty("assetCount").GetInt32());
+            Assert.Equal("source-image-artifacts-verified", receipt.RootElement.GetProperty("status").GetString());
+            Assert.Equal(9, receipt.RootElement.GetProperty("files").GetArrayLength());
             Assert.Equal("", (await Native("docker", ["ps", "--all", "--quiet", "--filter", $"ancestor={image}"])).Output.Trim());
         });
     }
@@ -79,11 +82,33 @@ public sealed class PackagedIntranetAssetGateTests
     [Fact]
     public async Task IntranetBff_DoesNotAcquireTheCompatibilityApplicationAssetRequirement()
     {
-        ProcessResult result = await RunGate("sha256:" + new string('0', 64), "MALIEV-Co-Ltd/Legacy.Maliev.Intranet",
-            "Legacy.Maliev.Intranet.Bff/Dockerfile");
-        Assert.Equal(0, result.ExitCode);
-        using JsonDocument receipt = JsonDocument.Parse(result.Output);
-        Assert.Equal("not-applicable", receipt.RootElement.GetProperty("status").GetString());
+        await WithImage(null, false, async image =>
+        {
+            ProcessResult result = await RunGate(image, "MALIEV-Co-Ltd/Legacy.Maliev.Intranet",
+                "Legacy.Maliev.Intranet.Bff/Dockerfile");
+            Assert.Equal(0, result.ExitCode);
+            using JsonDocument receipt = JsonDocument.Parse(result.Output);
+            Assert.Equal("bff", receipt.RootElement.GetProperty("role").GetString());
+            Assert.Equal(3, receipt.RootElement.GetProperty("files").GetArrayLength());
+        }, bff: true);
+    }
+
+    [Theory]
+    [InlineData("Legacy.Maliev.Intranet.Bff.dll", false)]
+    [InlineData("Legacy.Maliev.Intranet.Bff.dll", true)]
+    [InlineData("Legacy.Maliev.Intranet.Bff.deps.json", false)]
+    [InlineData("Legacy.Maliev.Intranet.Bff.deps.json", true)]
+    [InlineData("Legacy.Maliev.Intranet.Bff.runtimeconfig.json", false)]
+    [InlineData("Legacy.Maliev.Intranet.Bff.runtimeconfig.json", true)]
+    public async Task MissingOrEmptyBffArtifact_RejectsTheActualImage(string artifact, bool empty)
+    {
+        await WithImage(artifact, empty, async image =>
+        {
+            ProcessResult result = await RunGate(image, "MALIEV-Co-Ltd/Legacy.Maliev.Intranet",
+                "Legacy.Maliev.Intranet.Bff/Dockerfile");
+            Assert.NotEqual(0, result.ExitCode);
+            Assert.Equal("", (await Native("docker", ["ps", "--all", "--quiet", "--filter", $"ancestor={image}"])).Output.Trim());
+        }, bff: true);
     }
 
     [Fact]
@@ -100,7 +125,7 @@ public sealed class PackagedIntranetAssetGateTests
     {
         YamlMappingNode[] steps = PublisherSteps();
         int build = Array.FindIndex(steps, step => Scalar(step, "name") == "Build image once for scanning and publication");
-        int gate = Array.FindIndex(steps, step => Scalar(step, "name") == "Verify packaged Intranet assets");
+        int gate = Array.FindIndex(steps, step => Scalar(step, "name") == "Verify packaged Intranet assets and source revision");
         int publish = Array.FindIndex(steps, step => Scalar(step, "id") == "publish");
         Assert.True(build >= 0 && gate > build && publish > gate);
         Assert.False(steps[gate].Children.ContainsKey(new YamlScalarNode("continue-on-error")));
@@ -112,34 +137,74 @@ public sealed class PackagedIntranetAssetGateTests
         Assert.Equal("${{ inputs.dockerfile }}", Scalar(environment, "SOURCE_DOCKERFILE"));
     }
 
-    private static async Task WithImage(string? brokenAsset, bool empty, Func<string, Task> acceptance)
+    [Theory]
+    [InlineData("test_intranet_publisher_binding.py", 15)]
+    [InlineData("test_intranet_publisher_linux_limits.py", 3)]
+    public async Task PublisherSourceControls_RunThroughActualEmbeddedScript(string script, int expectedTests)
+    {
+        string root = RepositoryContractTests.FindRepositoryRoot();
+        ProcessStartInfo start = new(OperatingSystem.IsWindows() ? "python" : "python3")
+        {
+            WorkingDirectory = root,
+        };
+        start.ArgumentList.Add("-B");
+        start.ArgumentList.Add("-W");
+        start.ArgumentList.Add("error");
+        start.ArgumentList.Add(Path.Combine(root, "tests", script));
+        OwnedTestProcess.Result result = await OwnedTestProcess.RunAsync(start,
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(result.ExitCode == 0, result.Error);
+        Assert.Contains($"Ran {expectedTests} tests", result.Error, StringComparison.Ordinal);
+        Assert.Contains("OK", result.Error, StringComparison.Ordinal);
+        Assert.Equal("", result.Output);
+    }
+
+    private static async Task WithImage(string? brokenAsset, bool empty, Func<string, Task> acceptance, bool bff = false)
     {
         // Observe the missing pipeline behavior before allocating a disposable Docker fixture.
-        Assert.Single(PublisherSteps(), step => Scalar(step, "name") == "Verify packaged Intranet assets");
+        Assert.Single(PublisherSteps(), step => Scalar(step, "name") == "Verify packaged Intranet assets and source revision");
         string directory = Path.Combine(Path.GetTempPath(), "workflows-packaged-assets-" + Guid.NewGuid().ToString("N"));
-        string image = "legacy-workflows-asset-test:" + Guid.NewGuid().ToString("N");
+        string image = "local/workflows-fixture-" + Guid.NewGuid().ToString("N")
+            + "/legacy-maliev-intranet-" + (bff ? "bff" : "compatibility") + ":" + new string('a', 40);
+        string owner = Guid.NewGuid().ToString("N");
+        string? imageId = null;
+        string? createdIdentity = null;
         bool built = false;
         Directory.CreateDirectory(Path.Combine(directory, "assets"));
         try
         {
-            foreach (string asset in Assets)
+            string assembly = bff ? "Legacy.Maliev.Intranet.Bff" : "Legacy.Maliev.Intranet";
+            string[] required = bff ? [assembly + ".dll", assembly + ".deps.json", assembly + ".runtimeconfig.json"] : Assets;
+            foreach (string asset in required)
             {
                 if (asset == brokenAsset && !empty)
                 {
                     continue;
                 }
 
-                await File.WriteAllBytesAsync(Path.Combine(directory, "assets", asset),
-                    asset == brokenAsset ? [] : [0x1f, 0x8b, 0x01], TestContext.Current.CancellationToken);
+                string path = Path.Combine(directory, "assets", asset);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                string content = asset.EndsWith(".deps.json", StringComparison.Ordinal)
+                    ? JsonSerializer.Serialize(new { libraries = new Dictionary<string, object> { [assembly + "/1.0.0"] = new { } } })
+                    : asset.EndsWith(".runtimeconfig.json", StringComparison.Ordinal)
+                        ? "{\"runtimeOptions\":{\"tfm\":\"net10.0\"}}" : "synthetic current artifact";
+                await File.WriteAllTextAsync(path, asset == brokenAsset ? "" : content,
+                    TestContext.Current.CancellationToken);
             }
 
             // No base-image pull, registry, credentials, network, executable or application startup.
             await File.WriteAllTextAsync(Path.Combine(directory, "Dockerfile"),
-                "FROM scratch\nCOPY assets /app/wwwroot/dist/\nENTRYPOINT [\"/application-must-not-start\"]\n",
+                "FROM scratch\nLABEL org.opencontainers.image.revision=" + new string('a', 40)
+                + "\nLABEL maliev.fixture.owner=" + owner
+                + "\nCOPY assets /app/\nENTRYPOINT [\"/application-must-not-start\"]\n",
                 TestContext.Current.CancellationToken);
             ProcessResult build = await Native("docker", ["build", "--network", "none", "--quiet", "--tag", image, directory]);
             Assert.True(build.ExitCode == 0, $"Disposable scratch-image build failed: {build.Error}");
             built = true;
+            imageId = (await Native("docker", ["image", "inspect", "--format", "{{.Id}}", image])).Output.Trim();
+            Assert.StartsWith("sha256:", imageId, StringComparison.Ordinal);
+            Assert.Equal(71, imageId.Length);
+            createdIdentity = (await Native("docker", ["image", "inspect", "--format", "{{.Created}}", imageId])).Output.Trim();
             await acceptance(image);
         }
         finally
@@ -147,8 +212,14 @@ public sealed class PackagedIntranetAssetGateTests
             Directory.Delete(directory, recursive: true);
             if (built)
             {
-                ProcessResult removal = await Native("docker", ["image", "rm", "--force", image]);
+                Assert.NotNull(imageId);
+                Assert.NotNull(createdIdentity);
+                Assert.Equal(imageId, (await Native("docker", ["image", "inspect", "--format", "{{.Id}}", image])).Output.Trim());
+                Assert.Equal(createdIdentity, (await Native("docker", ["image", "inspect", "--format", "{{.Created}}", imageId])).Output.Trim());
+                Assert.Equal(owner, (await Native("docker", ["image", "inspect", "--format", "{{index .Config.Labels \"maliev.fixture.owner\"}}", imageId])).Output.Trim());
+                ProcessResult removal = await Native("docker", ["image", "rm", imageId]);
                 Assert.True(removal.ExitCode == 0, "Owned disposable image cleanup failed.");
+                Assert.Equal("", (await Native("docker", ["image", "ls", "--quiet", "--no-trunc", "--filter", $"label=maliev.fixture.owner={owner}"])).Output.Trim());
             }
         }
     }
@@ -156,13 +227,15 @@ public sealed class PackagedIntranetAssetGateTests
     private static async Task<ProcessResult> RunGate(string image, string repository,
         string dockerfile = "Legacy.Maliev.Intranet/Dockerfile")
     {
-        YamlMappingNode gate = Assert.Single(PublisherSteps(), step => Scalar(step, "name") == "Verify packaged Intranet assets");
+        YamlMappingNode gate = Assert.Single(PublisherSteps(), step => Scalar(step, "name") == "Verify packaged Intranet assets and source revision");
         return await Native(OperatingSystem.IsWindows() ? "python" : "python3", ["-B", "-"],
             Scalar(gate, "run"), new Dictionary<string, string>
             {
                 ["BUILT_IMAGE"] = image,
                 ["CALLER_REPOSITORY"] = repository,
                 ["SOURCE_DOCKERFILE"] = dockerfile,
+                ["SOURCE_REVISION"] = new string('a', 40),
+                ["GITHUB_OUTPUT"] = OperatingSystem.IsWindows() ? "NUL" : "/dev/null",
             });
     }
 
@@ -190,17 +263,9 @@ public sealed class PackagedIntranetAssetGateTests
             }
         }
 
-        using Process process = Process.Start(start) ?? throw new InvalidOperationException("Fixture process did not start.");
-        Task<string> output = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
-        Task<string> error = process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
-        if (input is not null)
-        {
-            await process.StandardInput.WriteAsync(input);
-            process.StandardInput.Close();
-        }
-
-        await process.WaitForExitAsync(TestContext.Current.CancellationToken);
-        return new ProcessResult(process.ExitCode, await output, await error);
+        OwnedTestProcess.Result result = await OwnedTestProcess.RunAsync(start, input,
+            cancellationToken: TestContext.Current.CancellationToken);
+        return new ProcessResult(result.ExitCode, result.Output, result.Error);
     }
 
     private static YamlMappingNode[] PublisherSteps()

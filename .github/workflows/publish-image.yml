@@ -313,81 +313,296 @@ jobs:
           tags: ${{ inputs.image }}:${{ github.sha }}
           labels: org.opencontainers.image.revision=${{ github.sha }}
 
-      - name: Verify packaged Intranet assets
+      - name: Verify packaged Intranet assets and source revision
+        id: intranet-artifacts
         shell: python
         env:
           CALLER_REPOSITORY: ${{ github.repository }}
           SOURCE_DOCKERFILE: ${{ inputs.dockerfile }}
           BUILT_IMAGE: ${{ env.COMMIT_TAG }}
+          SOURCE_REVISION: ${{ github.sha }}
         run: |
+          """Current two-image Intranet publish output contract; no build or container worker."""
+          import hashlib
           import json
-          import os
+          from pathlib import Path
+
+          ROLE_ARTIFACTS = {
+              'compatibility': ('Legacy.Maliev.Intranet', (
+                  'wwwroot/css/ibm-plex-sans-thai.css', 'wwwroot/css/site.css',
+                  'wwwroot/js/compat-shell.js',
+                  'wwwroot/fonts/ibm-plex-sans-thai/IBMPlexSansThai-Regular.woff2',
+                  'wwwroot/fonts/ibm-plex-sans-thai/IBMPlexSansThai-SemiBold.woff2',
+                  'wwwroot/fonts/ibm-plex-sans-thai/LICENSE.txt',
+              )),
+              'bff': ('Legacy.Maliev.Intranet.Bff', ()),
+          }
+
+
+          class ArtifactRejected(ValueError):
+              def __init__(self):
+                  super().__init__('Current Intranet artifact contract rejected.')
+
+
+          def verify_publish_tree(role, publish_root):
+              """Inspect a supplied publish tree, without pretending it is a built image.
+
+              The caller must bind that tree to the OCI image digest/revision separately.
+              The standalone WASM Client is absent from the current two-image build graph;
+              no guessed boot-manifest or fingerprinted .wasm filename is admitted here.
+              """
+              if role not in ROLE_ARTIFACTS:
+                  raise ArtifactRejected()
+              root = Path(publish_root).resolve(strict=True)
+              assembly, assets = ROLE_ARTIFACTS[role]
+              required = (assembly + '.dll', assembly + '.deps.json', assembly + '.runtimeconfig.json') + assets
+              evidence = []
+              for relative in required:
+                  path = root / relative
+                  if path.is_symlink() or not path.is_file():
+                      raise ArtifactRejected()
+                  resolved = path.resolve(strict=True)
+                  if not resolved.is_relative_to(root) or not 0 < path.stat().st_size <= 128 * 1024 * 1024:
+                      raise ArtifactRejected()
+                  fingerprint=hashlib.sha256()
+                  with path.open('rb') as stream:
+                      for chunk in iter(lambda:stream.read(1024*1024),b''):
+                          fingerprint.update(chunk)
+                  evidence.append(dict(path=relative, bytes=path.stat().st_size, sha256=fingerprint.hexdigest()))
+              invalid = False
+              try:
+                  if any((root/(assembly+suffix)).stat().st_size>4*1024*1024 for suffix in ('.deps.json','.runtimeconfig.json')):
+                      raise ValueError()
+                  deps = json.loads((root / (assembly + '.deps.json')).read_text(encoding='utf-8'))
+                  runtime = json.loads((root / (assembly + '.runtimeconfig.json')).read_text(encoding='utf-8'))
+                  libraries = deps['libraries']
+                  if type(libraries) is not dict or not any(name.split('/')[0] == assembly for name in libraries):
+                      invalid = True
+                  if type(runtime.get('runtimeOptions')) is not dict or runtime['runtimeOptions'].get('tfm')!='net10.0':
+                      invalid = True
+              except Exception:
+                  invalid = True
+              if invalid:
+                  raise ArtifactRejected()
+              return dict(role=role, assembly=assembly, files=evidence, sourceContractVerified=True,
+                          builtImageAccepted=False, sourceCompletion=False, runtimeAccepted=False)
+
+          """Source-only adapter for the existing publisher's Docker stdout interface.
+
+          Embedded after the exact artifact contract in the reusable workflow. Tests
+          provide a Docker state model; importing this file never invokes Docker.
+          """
+          import datetime
+          import json
           import re
-          import subprocess
-          import sys
           import tarfile
           import tempfile
           import uuid
+          import shutil
+          from contextlib import contextmanager
+          from pathlib import Path
+          try:
+              import resource
+          except ImportError:
+              resource=None
 
+          ARCHIVE_LIMIT=512*1024**2
+
+
+          class ImageRecoveryRequired(ValueError):
+              def __init__(self,receipt):
+                  super().__init__('Intranet image cleanup ownership or absence unverified.')
+                  self.recovery_receipt=receipt
+
+
+          @contextmanager
+          def export_disk_guard(directory):
+              # docker export --output writes from the CLI, which inherits this limit.
+              # The check is admission evidence; it is not a filesystem reservation.
+              if resource is None or shutil.disk_usage(directory).free < 2*ARCHIVE_LIMIT+64*1024**2:
+                  raise ValueError('Intranet archive disk admission unavailable.')
+              previous=resource.getrlimit(resource.RLIMIT_FSIZE)
+              if previous[1]!=resource.RLIM_INFINITY and previous[1]<ARCHIVE_LIMIT:
+                  raise ValueError('Intranet archive write limit unavailable.')
+              applied=(min(previous[0],ARCHIVE_LIMIT) if previous[0]!=resource.RLIM_INFINITY else ARCHIVE_LIMIT,previous[1])
+              resource.setrlimit(resource.RLIMIT_FSIZE,applied)
+              try:
+                  if resource.getrlimit(resource.RLIMIT_FSIZE)!=applied:
+                      raise ValueError('Intranet archive write-limit readback rejected.')
+                  yield
+              finally:
+                  resource.setrlimit(resource.RLIMIT_FSIZE,previous)
+
+
+          def inspect_intranet_image(repository, dockerfile, image, revision, native):
+              if repository != 'MALIEV-Co-Ltd/Legacy.Maliev.Intranet':
+                  return {'status':'not-applicable'}
+              roles={'Legacy.Maliev.Intranet/Dockerfile':'compatibility',
+                     'Legacy.Maliev.Intranet.Bff/Dockerfile':'bff'}
+              if dockerfile not in roles or not re.fullmatch('[0-9a-f]{40}',revision):
+                  raise ValueError('Intranet image contract rejected.')
+              role=roles[dockerfile]
+              suffix='/legacy-maliev-intranet-'+role+':'+revision
+              if not image.endswith(suffix) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/:-]{1,511}',image):
+                  raise ValueError('Intranet image contract rejected.')
+              image_id=native(['image','inspect','--format','{{.Id}}',image])
+              if not re.fullmatch('sha256:[0-9a-f]{64}',image_id):
+                  raise ValueError('Intranet image contract rejected.')
+              def image_fence():
+                  if native(['image','inspect','--format','{{.Id}}',image]) != image_id:
+                      raise ValueError('Intranet image contract rejected.')
+                  label=native(['image','inspect','--format','{{index .Config.Labels "org.opencontainers.image.revision"}}',image_id])
+                  if label != revision:
+                      raise ValueError('Intranet image contract rejected.')
+                  volumes=json.loads(native(['image','inspect','--format','{{json .Config.Volumes}}',image_id]))
+                  if volumes is not None and volumes!={}:
+                      raise ValueError('Intranet image volume ownership unavailable.')
+              image_fence()
+              nonce=uuid.uuid4().hex
+              name='legacy-intranet-artifact-'+nonce
+              label_key='maliev.codex.artifact-owner'
+              create_start=datetime.datetime.now(datetime.timezone.utc)
+              expiry=(create_start+datetime.timedelta(minutes=10)).isoformat()
+              container=None
+              created_identity=None
+              create_attempted=False
+              def owned_record(reference):
+                  records=json.loads(native(['container','inspect',reference]))
+                  if type(records) is not list or len(records)!=1:
+                      raise ValueError('Intranet image ownership rejected.')
+                  item=records[0]
+                  created=item.get('Created','')
+                  # Docker RFC3339 Created can have nanoseconds; ISO parsing truncates
+                  # precision to microseconds without broad time-equality guesses.
+                  timestamp=datetime.datetime.fromisoformat(created.replace('Z','+00:00'))
+                  now=datetime.datetime.now(datetime.timezone.utc)
+                  labels=item.get('Config',{}).get('Labels',{})
+                  if (not re.fullmatch('[0-9a-f]{64}',item.get('Id','')) or item.get('Name')!='/'+name
+                      or item.get('Image')!=image_id or labels.get(label_key)!=nonce
+                      or labels.get('maliev.codex.artifact-expiry')!=expiry
+                      or timestamp.tzinfo is None or not create_start<=timestamp<=now
+                      or item.get('Mounts')!=[] or item.get('State',{}).get('Running') is not False
+                      or item.get('State',{}).get('Status')!='created'
+                      or item.get('State',{}).get('StartedAt')!='0001-01-01T00:00:00Z'):
+                      raise ValueError('Intranet image ownership rejected.')
+                  return item
+              def container_fence():
+                  item=owned_record(container)
+                  if item['Id']!=container or item['Created']!=created_identity:
+                      raise ValueError('Intranet image ownership rejected.')
+              try:
+                  create_attempted=True
+                  returned=native(['create','--name',name,'--network','none','--read-only','--cap-drop','ALL',
+                                   '--security-opt','no-new-privileges','--memory','64m','--cpus','0.25',
+                                   '--label',label_key+'='+nonce,'--label','maliev.codex.artifact-expiry='+expiry,
+                                   '--entrypoint','/maliev-never-started',image_id])
+                  if not re.fullmatch('[0-9a-f]{64}',returned):
+                      raise ValueError('Intranet image creation receipt rejected.')
+                  container=returned
+                  created_identity=owned_record(container)['Created']
+                  container_fence()
+                  assembly,assets=ROLE_ARTIFACTS[role]
+                  required={assembly+'.dll',assembly+'.deps.json',assembly+'.runtimeconfig.json',*assets}
+                  with tempfile.TemporaryDirectory(prefix='legacy-intranet-artifact-') as temporary:
+                      root=Path(temporary);archive=root/'filesystem.tar';publish=root/'publish';publish.mkdir()
+                      with export_disk_guard(root):
+                          native(['container','export','--output',str(archive),container])
+                      if not archive.is_file() or archive.stat().st_size>512*1024**2:
+                          raise ValueError('Intranet image archive rejected.')
+                      seen=set();found=set();selected_bytes=0
+                      with tarfile.open(archive,mode='r|') as filesystem:
+                          for index,member in enumerate(filesystem):
+                              if index>=100000:
+                                  raise ValueError('Intranet image archive rejected.')
+                              path=member.name.removeprefix('./')
+                              if not path.startswith('app/'):
+                                  continue
+                              if path in seen:
+                                  raise ValueError('Intranet image archive rejected.')
+                              seen.add(path)
+                              relative=path[4:]
+                              if relative not in required:
+                                  continue
+                              bound=4*1024**2 if relative.endswith('.json') else 128*1024**2
+                              if not member.isfile() or not 0<member.size<=bound:
+                                  raise ValueError('Intranet image archive rejected.')
+                              selected_bytes+=member.size
+                              if selected_bytes>ARCHIVE_LIMIT:
+                                  raise ValueError('Intranet selected file write bound exceeded.')
+                              target=publish/relative;target.parent.mkdir(parents=True,exist_ok=True)
+                              with filesystem.extractfile(member) as source,target.open('xb') as output:
+                                  remaining=member.size
+                                  while remaining:
+                                      chunk=source.read(min(1024**2,remaining))
+                                      if not chunk:
+                                          raise ValueError('Intranet image archive rejected.')
+                                      output.write(chunk);remaining-=len(chunk)
+                              found.add(relative)
+                      if found!=required:
+                          raise ValueError('Intranet image artifact corpus rejected.')
+                      result=verify_publish_tree(role,publish)
+                      image_fence();container_fence()
+                      return dict(status='source-image-artifacts-verified',role=role,imageId=image_id,
+                                  sourceRevision=revision,files=result['files'],runtimeAccepted=False)
+              finally:
+                  if create_attempted:
+                      try:
+                          if container is None or created_identity is None:
+                              # A timeout/malformed stdout may follow successful creation.
+                              # Recover only by the exact generated name plus independent
+                              # owner/image/Created evidence; never delete by name alone.
+                              matches=native(['container','ls','--all','--no-trunc','--quiet','--filter','name=^/'+name+'$'])
+                              if matches:
+                                  item=owned_record(name)
+                                  if matches!=item['Id']:
+                                      raise ValueError('Intranet recovery identity rejected.')
+                                  if container is not None and container!=item['Id']:
+                                      raise ValueError('Intranet recovery identity rejected.')
+                                  container=item['Id'];created_identity=item['Created']
+                              else:
+                                  # An interrupted create may still be running on the
+                                  # daemon; one empty listing cannot close that lease.
+                                  raise ValueError('Intranet creation completion unavailable.')
+                          if container is not None:
+                              container_fence()
+                              native(['container','rm',container])
+                              remaining=native(['container','ls','--all','--no-trunc','--quiet','--filter','id='+container])
+                              if remaining:
+                                  raise ValueError('Intranet image cleanup incomplete.')
+                      except Exception:
+                          raise ImageRecoveryRequired(dict(ownerNonce=nonce,name=name,containerId=container,
+                              imageId=image_id,creationStartedUtc=create_start.isoformat(),createdIdentity=created_identity,
+                              expiryUtc=expiry,expiryIsAutomaticCleanup=False,cleanupVerified=False,
+                              createMayBeInFlight=container is None,
+                              purpose='never-started Intranet image inspection',persistentData=None,
+                              expectedPersistentData=False)) from None
+
+          import os, subprocess, sys
           def native(arguments):
               result = subprocess.run(["docker", *arguments], capture_output=True, timeout=120)
               if result.returncode != 0 or len(result.stdout) > 65536:
                   raise ValueError("Image inspection unavailable")
               return result.stdout.decode("ascii").strip()
 
-          def inspect():
-              if os.environ.get("CALLER_REPOSITORY") != "MALIEV-Co-Ltd/Legacy.Maliev.Intranet":
-                  return {"status": "not-applicable"}
-              dockerfile = os.environ.get("SOURCE_DOCKERFILE")
-              if dockerfile == "Legacy.Maliev.Intranet.Bff/Dockerfile":
-                  return {"status": "not-applicable"}
-              if dockerfile != "Legacy.Maliev.Intranet/Dockerfile":
-                  raise ValueError("Unreviewed Intranet artifact identity")
-              image = os.environ.get("BUILT_IMAGE", "")
-              if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]{1,511}", image):
-                  raise ValueError("Invalid local image identity")
-              image_id = native(["image", "inspect", "--format", "{{.Id}}", image])
-              if not re.fullmatch(r"sha256:[0-9a-f]{64}", image_id):
-                  raise ValueError("Invalid immutable image identity")
-              assets = {
-                  "app/wwwroot/dist/" + name for name in (
-                      "vendor.min.css.gz", "app.min.css.gz", "vendor.min.js.gz", "app.min.js.gz",
-                      "jquery.min.js.gz", "jquery.validate.min.js.gz", "jquery.validate.unobtrusive.min.js.gz")
-              }
-              container = "legacy-packaged-assets-check-" + uuid.uuid4().hex
-              try:
-                  native(["create", "--name", container, "--network", "none", "--read-only",
-                          "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
-                          "--entrypoint", "/maliev-never-started", image_id])
-                  with tempfile.TemporaryDirectory(prefix="legacy-packaged-assets-") as temporary:
-                      archive = os.path.join(temporary, "filesystem.tar")
-                      native(["container", "export", "--output", archive, container])
-                      if os.path.getsize(archive) > 4 * 1024 ** 3:
-                          raise ValueError("Image inspection bound exceeded")
-                      found = set()
-                      with tarfile.open(archive, mode="r|") as filesystem:
-                          for index, member in enumerate(filesystem):
-                              if index >= 100000:
-                                  raise ValueError("Image entry bound exceeded")
-                              name = member.name.removeprefix("./")
-                              if name not in assets:
-                                  continue
-                              if name in found or not member.isfile() or member.size < 1:
-                                  raise ValueError("Packaged asset is missing or empty")
-                              found.add(name)
-                      if found != assets:
-                          raise ValueError("Packaged asset corpus incomplete")
-                  return {"status": "accepted", "assetCount": len(found), "imageId": image_id}
-              finally:
-                  # This unique name was generated here; never remove caller or sibling containers.
-                  native(["container", "rm", "--force", container])
 
-          try:
-              receipt = inspect()
-          except Exception:
-              print("[packaged-assets] FAILED: image inspection incomplete; details redacted", file=sys.stderr)
-              sys.exit(2)
-          print(json.dumps(receipt, sort_keys=True))
+          if __name__ == '__main__':
+              try:
+                  receipt=inspect_intranet_image(os.environ.get('CALLER_REPOSITORY',''),os.environ.get('SOURCE_DOCKERFILE',''),
+                      os.environ.get('BUILT_IMAGE',''),os.environ.get('SOURCE_REVISION',''),native)
+                  if receipt['status'] != 'not-applicable':
+                      with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as output:
+                          output.write('imageId='+receipt['imageId']+'\n')
+                  print(json.dumps(receipt,sort_keys=True))
+              except Exception as failure:
+                  if isinstance(failure,ImageRecoveryRequired):
+                      recovery=json.dumps(failure.recovery_receipt,sort_keys=True)
+                      print('[intranet-image-recovery] '+recovery,file=sys.stderr)
+                      summary=os.environ.get('GITHUB_STEP_SUMMARY')
+                      if summary:
+                          with open(summary,'a',encoding='utf-8') as output:
+                              output.write('Intranet inspection requires ownership recovery. Expiry is not automatic cleanup.\n\n```json\n'+recovery+'\n```\n')
+                  print('[intranet-image-artifacts] FAILED: image contract or ownership incomplete; details redacted',file=sys.stderr)
+                  sys.exit(2)
 
       - name: Verify packaged Web assets and source revision
         shell: python
@@ -520,7 +735,7 @@ jobs:
       - name: Scan the built image before publication
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ${{ env.COMMIT_TAG }}
+          image-ref: ${{ steps.intranet-artifacts.outputs.imageId || env.COMMIT_TAG }}
           format: table
           exit-code: "1"
           ignore-unfixed: true
@@ -534,8 +749,17 @@ jobs:
         shell: bash
         env:
           IMAGE: ${{ inputs.image }}
+          CALLER_REPOSITORY: ${{ github.repository }}
+          VERIFIED_INTRANET_IMAGE_ID: ${{ steps.intranet-artifacts.outputs.imageId }}
         run: |
           set -euo pipefail
+          if [[ "$CALLER_REPOSITORY" == "MALIEV-Co-Ltd/Legacy.Maliev.Intranet" ]]; then
+            if [[ ! "$VERIFIED_INTRANET_IMAGE_ID" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+              echo "Intranet built-image verification unavailable" >&2
+              exit 1
+            fi
+            test "$(docker image inspect --format '{{.Id}}' "$COMMIT_TAG")" = "$VERIFIED_INTRANET_IMAGE_ID"
+          fi
           docker push "$COMMIT_TAG"
           DIGEST="$(docker buildx imagetools inspect "$COMMIT_TAG" --format '{{json .Manifest.Digest}}' | tr -d '"')"
           if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
