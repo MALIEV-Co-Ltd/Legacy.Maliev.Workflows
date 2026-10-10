@@ -55,6 +55,31 @@ def bounded(value):
     return copy.deepcopy(value)
 
 
+def decode_green_metadata(observation):
+    """Decode the selected receipt field; never fetch a resource or default a field."""
+    if type(observation) is str:
+        rejected = False
+        try:
+            require(len(observation) <= 16384 and len(observation.encode("utf-8")) <= 16384)
+            def unique(pairs):
+                result = {}
+                for key, value in pairs:
+                    require(key not in result)
+                    result[key] = value
+                return result
+            def reject_constant(_):
+                raise MetadataRejected()
+            observation = json.loads(observation, object_pairs_hook=unique, parse_constant=reject_constant)
+        except (ValueError, UnicodeError, RecursionError):
+            rejected = True
+        # Raise outside the parser handler so raw JSON is not retained in exception context.
+        if rejected:
+            raise MetadataRejected()
+    observation = bounded(observation)
+    require(type(observation) is dict and set(observation) == {"containerNames", "unsafeFields", "environment", "containerMetadata", "podMetadata"})
+    return observation
+
+
 def contract_shape(application, contract):
     contract = bounded(contract)
     require(type(contract) is dict and set(contract) == {"source_sha", "target_application", "artifact", "container", "namespace"})

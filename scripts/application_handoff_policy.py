@@ -70,6 +70,7 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
             green_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(green_module)
             MetadataRejected = green_module.MetadataRejected
+            decode_green_metadata = green_module.decode_green_metadata
             plan_green_metadata = green_module.plan_green_metadata
             verify_green_metadata = green_module.verify_green_metadata
             green_arguments = green_module.contract_shape(application, green_contract)
@@ -141,11 +142,12 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         service_shape(service, step)
         if green_arguments is not None and require_healthy:
             require("greenMetadata" in deployment, step)
-            if green_metadata_baseline is not None and not canonical_started:
-                try:
+            try:
+                deployment["greenMetadata"] = decode_green_metadata(deployment["greenMetadata"])
+                if green_metadata_baseline is not None and not canonical_started:
                     verify_green_metadata(green_metadata_baseline, deployment["greenMetadata"])
-                except MetadataRejected:
-                    raise HandoffFailure(step) from None
+            except MetadataRejected:
+                raise HandoffFailure(step) from None
         if startup_arguments is not None and require_healthy:
             require("startupProbe" in deployment, step)
             if startup_plan is not None:
