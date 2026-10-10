@@ -947,13 +947,9 @@ public sealed class RepositoryContractTests
                     UseShellExecute = false,
                 };
 
-                using Process process = Process.Start(startInfo)!;
-                process.StandardInput.Write(script);
-                process.StandardInput.Close();
-                string standardOutput = process.StandardOutput.ReadToEnd();
-                string standardError = process.StandardError.ReadToEnd();
-                process.WaitForExit();
-                return new ProcessResult(process.ExitCode, standardOutput + standardError);
+                OwnedTestProcess.Result result = OwnedTestProcess.RunAsync(startInfo, script,
+                    cancellationToken: TestContext.Current.CancellationToken).GetAwaiter().GetResult();
+                return new ProcessResult(result.ExitCode, result.Output + result.Error);
             }
             finally
             {
@@ -1227,11 +1223,9 @@ public sealed class RepositoryContractTests
                 startInfo.ArgumentList.Add(argument);
             }
 
-            using Process process = Process.Start(startInfo)!;
-            string standardOutput = process.StandardOutput.ReadToEnd();
-            string standardError = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-            return new ProcessResult(process.ExitCode, standardOutput + standardError);
+            OwnedTestProcess.Result result = OwnedTestProcess.RunAsync(startInfo,
+                cancellationToken: TestContext.Current.CancellationToken).GetAwaiter().GetResult();
+            return new ProcessResult(result.ExitCode, result.Output + result.Error);
         }
     }
 }
