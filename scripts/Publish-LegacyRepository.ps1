@@ -19,10 +19,58 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$script:NativeCommandOwnershipSource = Join-Path $PSScriptRoot 'OwnedNativeCommandProcess.cs'
 
 function Stop-Publication {
     param([string]$Message)
     throw [System.InvalidOperationException]::new($Message)
+}
+
+function Complete-RedactedProcessCleanup {
+    param($Process, $Identity, [bool]$StartAttempted, [Nullable[bool]]$StartResult,
+        [Threading.Tasks.Task[]]$Reads, $ReadCancellation, [object[]]$Readers,
+        [object[]]$Streams, [object[]]$Buffers, $Capture)
+    $unstarted = -not $StartAttempted -or ($null -ne $StartResult -and -not $StartResult)
+    $startUncertain = $StartAttempted -and $null -eq $StartResult
+    $state = @{ Exited = $unstarted; ReadsSettled = $false; StdoutClosed = $unstarted; StderrClosed = $unstarted; CtsClosed = $false; IdentityClosed = $null -eq $Identity; ProcessClosed = $false; CleanupFailed = $false }
+    $actions = @(
+        {
+            if (-not $unstarted -and -not $Process.HasExited) {
+                if ($null -eq $Identity) { throw 'Native child identity unavailable.' }
+                $Identity.Graceful()
+                if (-not $Process.WaitForExit(2000) -and -not $Process.HasExited) { $Identity.Escalate() }
+                if (-not $Process.WaitForExit(10000)) { throw 'Native child remains live.' }
+            }
+        },
+        { $ReadCancellation.Cancel() },
+        {
+            $actualReads = @($Reads | Where-Object { $null -ne $_ })
+            if ($actualReads.Count) {
+                try { [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]$actualReads).WaitAsync([TimeSpan]::FromSeconds(5)).GetAwaiter().GetResult() }
+                catch [OperationCanceledException] { if (-not $ReadCancellation.IsCancellationRequested) { throw } }
+            }
+        },
+        { $state.ReadsSettled = @($Reads | Where-Object { $null -ne $_ -and -not $_.IsCompleted }).Count -eq 0 },
+        { if ($state.ReadsSettled) { if ($null -ne $Readers[0]) { $Readers[0].Dispose() }; $state.StdoutClosed = $true } },
+        { if ($state.ReadsSettled) { if ($null -ne $Readers[1]) { $Readers[1].Dispose() }; $state.StderrClosed = $true } },
+        { $state.Exited = $unstarted -or $Process.HasExited },
+        { if ($state.ReadsSettled) { $ReadCancellation.Dispose(); $state.CtsClosed = $true } },
+        { if ($state.Exited -and $state.ReadsSettled) { if ($null -ne $Identity) { $Identity.Dispose() }; $state.IdentityClosed = $true } },
+        { if (-not $startUncertain -and $state.Exited -and $state.ReadsSettled -and $state.CtsClosed -and $state.StdoutClosed -and $state.StderrClosed -and $state.IdentityClosed) { $Process.Dispose(); $state.ProcessClosed = $true } },
+        { $Capture.Dispose() }
+    )
+    foreach ($action in $actions) {
+        try { & $action | Out-Null } catch { $state.CleanupFailed = $true }
+    }
+    if (-not ($state.Exited -and $state.ReadsSettled -and $state.CtsClosed -and $state.StdoutClosed -and $state.StderrClosed -and $state.IdentityClosed -and $state.ProcessClosed)) {
+        if ($null -eq (Get-Variable NativeCommandUnresolvedCustody -Scope Script -ErrorAction SilentlyContinue)) {
+            $script:NativeCommandUnresolvedCustody = [Collections.Generic.List[object]]::new()
+        }
+        # Unknown start result never proves absence. Keep actual owners privately until settlement.
+        $script:NativeCommandUnresolvedCustody.Add(@{ Process = $Process; Identity = $Identity; StartAttempted = $StartAttempted; StartResult = $StartResult; ReaderTasks = $Reads; Cancellation = $ReadCancellation; Readers = $Readers; Streams = $Streams; Buffers = $Buffers; State = $state; AttentionExpiresUtc = [DateTime]::UtcNow.AddSeconds(30); ExpiryMeansSettled = $false })
+        $state.CleanupFailed = $true
+    }
+    return $state
 }
 
 function Invoke-RedactedProcess {
@@ -31,9 +79,27 @@ function Invoke-RedactedProcess {
         [string[]]$Arguments,
         [string]$FailureMessage,
         [switch]$ReturnOutput,
-        [switch]$AllowFailure
+        [switch]$AllowFailure,
+        [ValidateRange(1, 3600)][int]$TimeoutSeconds = 900
     )
-
+    $failure = $null
+    $exitCode = $null
+    $process = [System.Diagnostics.Process]::new()
+    $identity = $null
+    $startAttempted = $false
+    $startResult = $null
+    $readCancellation = [Threading.CancellationTokenSource]::new()
+    $reads = [Threading.Tasks.Task[]]::new(2)
+    $readers = [object[]]::new(2)
+    $streams = [object[]]::new(2)
+    $buffers = @([byte[]]::new(4096), [byte[]]::new(4096))
+    $capture = [IO.MemoryStream]::new()
+    $output = $null
+    $clock = [Diagnostics.Stopwatch]::new()
+    try {
+    if (-not ('Legacy.Maliev.Workflows.NativeCommands.OwnedHostProcessIdentity' -as [type])) {
+        Add-Type -Path $script:NativeCommandOwnershipSource -ErrorAction Stop
+    }
     $commandInfo = Get-Command $Command -ErrorAction Stop | Select-Object -First 1
     $processArguments = @($Arguments)
     if ($commandInfo.CommandType -eq [System.Management.Automation.CommandTypes]::ExternalScript) {
@@ -48,14 +114,59 @@ function Invoke-RedactedProcess {
     $startInfo.RedirectStandardError = $true
     foreach ($argument in $processArguments) { [void]$startInfo.ArgumentList.Add($argument) }
 
-    $process = [System.Diagnostics.Process]::Start($startInfo)
-    $stdout = $process.StandardOutput.ReadToEndAsync()
-    $stderr = $process.StandardError.ReadToEndAsync()
-    $process.WaitForExit()
-    $output = $stdout.GetAwaiter().GetResult() + $stderr.GetAwaiter().GetResult()
-    if ($process.ExitCode -ne 0) {
+    $process.StartInfo = $startInfo
+    $clock.Start()
+    $startAttempted = $true
+    $startResult = $process.Start()
+    $readers[0] = $process.StandardOutput; $readers[1] = $process.StandardError
+    while (-not $process.HasExited -and $null -eq $identity) {
+        try { $identity = [Legacy.Maliev.Workflows.NativeCommands.OwnedHostProcessIdentity]::Capture($process) }
+        catch {
+            # The executable may not be observable during OS loader startup.
+            # Retry only within the original deadline; no cached identity or PID fallback.
+            if ($process.HasExited) { break }
+            if ($clock.Elapsed.TotalSeconds -ge [Math]::Min(2, $TimeoutSeconds)) { throw }
+            Start-Sleep -Milliseconds 10
+        }
+    }
+    $streams[0] = $readers[0].BaseStream; $streams[1] = $readers[1].BaseStream
+    $reads[0] = $streams[0].ReadAsync($buffers[0], 0, 4096, $readCancellation.Token)
+    $reads[1] = $streams[1].ReadAsync($buffers[1], 0, 4096, $readCancellation.Token)
+    $eof = @($false, $false); $bytes = 0; $exitedAt = $null
+    while ($true) {
+        if ($clock.Elapsed.TotalSeconds -ge $TimeoutSeconds) { throw 'Native command deadline exceeded.' }
+        if ($process.HasExited -and $null -eq $exitedAt) { $exitedAt = $clock.Elapsed.TotalSeconds; $exitCode = $process.ExitCode }
+        for ($index = 0; $index -lt 2; $index++) {
+            if (-not $eof[$index] -and $reads[$index].IsCompleted) {
+                $count = $reads[$index].GetAwaiter().GetResult()
+                if ($count -eq 0) { $eof[$index] = $true; continue }
+                $bytes += $count
+                if ($bytes -gt 1048576) { throw 'Native command output bound exceeded.' }
+                if ($index -eq 0) { $capture.Write($buffers[0], 0, $count) }
+                # stderr is drained into a bounded scratch buffer and discarded.
+                $reads[$index] = $streams[$index].ReadAsync($buffers[$index], 0, 4096, $readCancellation.Token)
+            }
+        }
+        if ($process.HasExited -and $eof[0] -and $eof[1]) { $exitCode = $process.ExitCode; break }
+        if ($null -ne $exitedAt -and $clock.Elapsed.TotalSeconds - $exitedAt -ge 5) { throw 'Native command pipe settlement exceeded.' }
+        Start-Sleep -Milliseconds 10
+    }
+    $output = [Text.UTF8Encoding]::new($false, $true).GetString($capture.ToArray())
+    } catch {
+        # Do not attach raw diagnostics, command paths, argv or underlying exceptions.
+        $failure = [System.InvalidOperationException]::new($FailureMessage)
+    } finally {
+        $state = Complete-RedactedProcessCleanup $process $identity $startAttempted $startResult $reads $readCancellation $readers $streams $buffers $capture
+    }
+    if ($state.CleanupFailed -and $null -eq $failure) { $failure = [System.InvalidOperationException]::new($FailureMessage) }
+    if ($null -eq $failure -and $exitCode -ne 0) {
         if ($AllowFailure) { return $null }
-        Stop-Publication $FailureMessage
+        $failure = [System.InvalidOperationException]::new($FailureMessage)
+    }
+    if ($null -ne $failure) {
+        if ($null -ne $exitCode) { $failure.Data['ExitCode'] = $exitCode }
+        $failure.Data['Step'] = $FailureMessage
+        throw $failure
     }
     if ($ReturnOutput) { return $output.Trim() }
 }

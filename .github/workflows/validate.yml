@@ -30,6 +30,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Verify native JSON stdout and private stderr
+        shell: pwsh
+        timeout-minutes: 1
+        run: ./tests/RedactedNativeOutputScenarios.ps1
       - name: Compile sealed transport controls
         run: |
           python3 -B -W error - <<'PY'
