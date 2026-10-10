@@ -6,7 +6,7 @@ import uuid
 import importlib.util
 from pathlib import Path
 
-STEPS = frozenset({"SNAPSHOT", "VERIFY_SOURCE", "VERIFY_IMAGE", "RESERVE_CAPACITY", "RECHECK_CAPACITY", "CREATE_GREEN", "VERIFY_GREEN", "READ_CURRENT", "ROUTE_GREEN", "GREEN_HEALTH", "MUTATE_CANONICAL", "VERIFY_CANONICAL", "ROUTE_CANONICAL", "CANONICAL_HEALTH", "DRAIN_GREEN", "FINAL_HEALTH", "RELEASE_CAPACITY", "ROLLBACK_SELECTOR", "VERIFY_FALLBACK", "FALLBACK_SELECTOR"})
+STEPS = frozenset({"SNAPSHOT", "VERIFY_SOURCE", "VERIFY_IMAGE", "RESERVE_CAPACITY", "RECHECK_CAPACITY", "CREATE_GREEN", "VERIFY_GREEN", "BEFORE_FIRST_SELECTOR", "READ_CURRENT", "ROUTE_GREEN", "GREEN_HEALTH", "MUTATE_CANONICAL", "VERIFY_CANONICAL", "ROUTE_CANONICAL", "CANONICAL_HEALTH", "DRAIN_GREEN", "FINAL_HEALTH", "RELEASE_CAPACITY", "ROLLBACK_SELECTOR", "VERIFY_FALLBACK", "FALLBACK_SELECTOR"})
 ROLLOUT = dict(minReadySeconds=90, drainSeconds=60, terminationGracePeriodSeconds=90, maxSurge=1, maxUnavailable=0)
 
 
@@ -218,6 +218,16 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         seconds = receipt.get("observedSeconds")
         require(type(seconds) is int and 180 <= seconds <= 3600, step)
 
+    def observe_before_first_selector():
+        # Source health gate targets prepared green while public routing is still
+        # canonical. No green process-route proof or 180-second window applies yet.
+        step = "BEFORE_FIRST_SELECTOR"
+        receipt = invoke(step, minimumSeconds=0, deploymentUid=green["uid"])
+        require(receipt.get("imageDigest") == image_digest and receipt.get("deploymentUid") == green["uid"]
+                and receipt.get("continuousPublicHealthy") is True and receipt.get("endpointsVerified") is True, step)
+        seconds = receipt.get("observedSeconds")
+        require(type(seconds) is int and 0 <= seconds <= 3600, step)
+
     try:
         baseline, original_service = current("SNAPSHOT", expected_selector="original")
         if startup_arguments is not None:
@@ -254,6 +264,7 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
             except MetadataRejected:
                 raise HandoffFailure("CREATE_GREEN") from None
         prove("VERIFY_GREEN", green)
+        observe_before_first_selector()
         _, service = current(expected_selector="original", expected_image=baseline["imageDigest"])
         route("ROUTE_GREEN", service, "green")
         observe("GREEN_HEALTH")
