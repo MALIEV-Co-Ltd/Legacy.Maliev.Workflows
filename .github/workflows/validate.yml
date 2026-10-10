@@ -34,7 +34,7 @@ jobs:
         run: |
           python3 -B -W error - <<'PY'
           from pathlib import Path
-          for name in ('scripts/run-hosted-static.py', 'scripts/test-hosted-static.py'):
+          for name in ('scripts/run-hosted-static.py', 'scripts/test-hosted-static.py', 'scripts/test-hosted-native-profile.py'):
               compile(Path(name).read_bytes(), name, 'exec')
           PY
       - name: Observe Linux executable trust metadata without starting executables
@@ -75,7 +75,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 -B -W error scripts/test-hosted-static.py -v
+        run: |
+          python3 -B -W error scripts/test-hosted-static.py -v
+          python3 -B -W error scripts/test-hosted-native-profile.py -v
 
   service-wrapper-contracts:
     name: offline Service wrapper contracts

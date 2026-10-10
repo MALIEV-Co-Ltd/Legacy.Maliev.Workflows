@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "repository": "MALIEV-Co-Ltd/Legacy.Maliev.Workflows",
+  "baseSha": "82cc4539b5b45c57457d4779c482bf1ab332900c",
+  "candidateSha": "ea4f8cabac2e77b67b202c11303a9377908b10327e4bfc24a84a99cad55cb224",
+  "worktree": "/tmp/maliev-workflows-qualification/worktree",
+  "outputsRoot": "/tmp/maliev-workflows-qualification/outputs",
+  "kitGitBlob": "e1b76a98ee05338bde55c273299ddeb1cc46211d",
+  "kitSha256": "952f428b745fc19b5180903ef8c8f7f18e9ccde4cf4b9212b376c0b8f1310040",
+  "kitBytes": 67789,
+  "entries": {
+    "outputs/hosted_linux_entry.py": {
+      "bytes": 10749,
+      "sha256": "6ea511841f4dff8089ec5ed236e65aab3af4ad49f66cfd4733ecfc4e5663401f"
+    },
+    "outputs/hosted_linux_sdk_bootstrap.py": {
+      "bytes": 4691,
+      "sha256": "b11cf3cbffd08175da89e9bd998505c4e714db3b9cdd630ec0f329b34450b228"
+    },
+    "outputs/hosted_native_program_core.py": {
+      "bytes": 16770,
+      "sha256": "769629122b94f528bfe088b9c76657b00fe13121328cdd7e14048255e6b52ef2"
+    },
+    "outputs/native-component-profile.json": {
+      "bytes": 2646,
+      "sha256": "ea4f8cabac2e77b67b202c11303a9377908b10327e4bfc24a84a99cad55cb224"
+    },
+    "outputs/native_program_readback.py": {
+      "bytes": 10162,
+      "sha256": "d3db0519dab8e923d71ba034e12a990286c76b067407cab3afe06eb957cfdd40"
+    },
+    "outputs/sdk-files.json": {
+      "bytes": 750,
+      "sha256": "43ba9b0e17be8af29ab2818ce3073e357171527e1928bf7e6bbaa449765c0ddc"
+    },
+    "outputs/workflows_cleanup_supervisor_v1.py": {
+      "bytes": 5008,
+      "sha256": "6e9ea49359abb4e2610e746b1f43bfb72624544754f5e54c41b4301ec01bc007"
+    },
+    "outputs/workflows_linux_owned_scope_v1.py": {
+      "bytes": 12407,
+      "sha256": "f4a15c1fca820cceafe2e4d70e1a363f46b46e7708c7c868edbc6051abdea971"
+    },
+    "outputs/workflows_linux_runtime.py": {
+      "bytes": 37674,
+      "sha256": "0ca29425d978cffb2907f3e6407e9fab57f37d11fe01d253995f45f71e3049d7"
+    },
+    "outputs/workflows_linux_trust.py": {
+      "bytes": 4627,
+      "sha256": "a53ffd82dbd0d1e3300e0e123d05f0bfbc470bbce19ec98a30430f5903477e6d"
+    },
+    "outputs/workflows_native_admission_v3.py": {
+      "bytes": 9620,
+      "sha256": "b4bdec9cade0ae4f51c0c46c94873b67b1b9fb23fe62313a60db53e474027c44"
+    },
+    "outputs/workflows_native_elf_admission_v1.py": {
+      "bytes": 5509,
+      "sha256": "47b0f712534481de8d4693c397712b3f7b5347dc916cc73c95745b32cb8e4ce7"
+    },
+    "outputs/workflows_private_docker_proxy_v1.py": {
+      "bytes": 21302,
+      "sha256": "745a66883baa8e2a427ccc034102630a24c336f96840eca1f343a57487172300"
+    },
+    "outputs/workflows_snapshot_census_v3.py": {
+      "bytes": 2745,
+      "sha256": "250d018cd18591b0374a023ce2911c154cc0d037d566adf7e62f0636adba95de"
+    },
+    "worktree/tools/native-program-child/ABI.md": {
+      "bytes": 8140,
+      "sha256": "e21a4481935e193419a73f7ebd417522a39522987296633dc3326aa92e300b93"
+    },
+    "worktree/tools/native-program-child/Makefile": {
+      "bytes": 642,
+      "sha256": "70c90293b83f9c854abe00f178fe81052a21cd6039ca2bc62b3a33c60cccd843"
+    },
+    "worktree/tools/native-program-child/program_child.c": {
+      "bytes": 27394,
+      "sha256": "3b4843dee60f415aa67ddd2e626a3174b957c20cc0abc62157f5d6ac81334a8b"
+    },
+    "worktree/tools/native-program-child/program_child.h": {
+      "bytes": 1809,
+      "sha256": "eaa93f26ab4a766aab948ec00d92c1dfb98f2ea4f377ed61c1198ca49c913fef"
+    },
+    "worktree/tools/native-program-child/source_checks.py": {
+      "bytes": 5894,
+      "sha256": "cf36e23585398649d673f96fd6c42daaf87c8e3c4623e06f5f262259fe17f6e9"
+    },
+    "worktree/tools/native-program-child/test_program_child.c": {
+      "bytes": 23572,
+      "sha256": "a1efdf28b96c30a86fa6d4274c3beff5d22743727f095ecb706b7daca95e636a"
+    }
+  },
+  "initialMemoryFloorMiB": 5120,
+  "runtimeMemoryFloorMiB": 4096,
+  "sdkVersion": "10.0.401",
+  "sharedNativeDeadlineSeconds": 600,
+  "nativePhases": [
+    "restore",
+    "build",
+    "discovery",
+    "focused",
+    "suite",
+    "format",
+    "audit"
+  ],
+  "coreSha256": "769629122b94f528bfe088b9c76657b00fe13121328cdd7e14048255e6b52ef2",
+  "qualifiedProviderSha256": "0ca29425d978cffb2907f3e6407e9fab57f37d11fe01d253995f45f71e3049d7",
+  "protectedWorkflowNotPublished": true,
+  "unconstrainedPackageResolution": false,
+  "acceptedPackages": 22,
+  "sdkInstallRoot": "D:/codex-temp/2026-10-09/workflows-hosted-sdk-10.0.401",
+  "sdkBootstrapSha256": "2399672f7cd4b312fe20993084dd588bab56496c94c3d6c1785b31520aa00373",
+  "sdkArchive": {
+    "url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.401/dotnet-sdk-10.0.401-win-x64.zip",
+    "bytes": 300608304,
+    "sha512": "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430"
+  },
+  "historicalBuildOrTestsReplayed": false,
+  "providerPlatform": "linux",
+  "linuxHelpers": {
+    "hosted_linux_entry.py": "6ea511841f4dff8089ec5ed236e65aab3af4ad49f66cfd4733ecfc4e5663401f",
+    "hosted_linux_sdk_bootstrap.py": "b11cf3cbffd08175da89e9bd998505c4e714db3b9cdd630ec0f329b34450b228",
+    "hosted_native_program_core.py": "769629122b94f528bfe088b9c76657b00fe13121328cdd7e14048255e6b52ef2",
+    "native_program_readback.py": "d3db0519dab8e923d71ba034e12a990286c76b067407cab3afe06eb957cfdd40",
+    "workflows_cleanup_supervisor_v1.py": "6e9ea49359abb4e2610e746b1f43bfb72624544754f5e54c41b4301ec01bc007",
+    "workflows_linux_owned_scope_v1.py": "f4a15c1fca820cceafe2e4d70e1a363f46b46e7708c7c868edbc6051abdea971",
+    "workflows_linux_runtime.py": "0ca29425d978cffb2907f3e6407e9fab57f37d11fe01d253995f45f71e3049d7",
+    "workflows_linux_trust.py": "a53ffd82dbd0d1e3300e0e123d05f0bfbc470bbce19ec98a30430f5903477e6d",
+    "workflows_native_admission_v3.py": "b4bdec9cade0ae4f51c0c46c94873b67b1b9fb23fe62313a60db53e474027c44",
+    "workflows_native_elf_admission_v1.py": "47b0f712534481de8d4693c397712b3f7b5347dc916cc73c95745b32cb8e4ce7",
+    "workflows_private_docker_proxy_v1.py": "745a66883baa8e2a427ccc034102630a24c336f96840eca1f343a57487172300",
+    "workflows_snapshot_census_v3.py": "250d018cd18591b0374a023ce2911c154cc0d037d566adf7e62f0636adba95de"
+  },
+  "linuxSdkProvider": {
+    "url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.401/dotnet-sdk-10.0.401-linux-x64.tar.gz",
+    "bytes": 240059572,
+    "sha512": "51c8b999af9e8dd9998c9edc5944e19a90788862068acd38694e098889054ce8c23d4f0c5cccfa16bf187d044562359e5ee69a9f8ad0bbe913ba90311fbce25b",
+    "files": {
+      "sdk/10.0.401/NuGet.ProjectModel.dll": {
+        "bytes": 622416,
+        "sha256": "81fcd659ea2388c5647c809f5aa71958330673b41a9a0caffc1d956e2e354633"
+      },
+      "sdk/10.0.401/.version": {
+        "bytes": 98,
+        "sha256": "496179aced13abd185f027a1ce8519cc57aa194a5538c51226c0c12e63a4a5ba"
+      },
+      "sdk/10.0.401/dotnet.dll": {
+        "bytes": 3525416,
+        "sha256": "bf8844d3d50869c1c05ff4aaf1908a81ca657106bed52be1388a8323690f5049"
+      },
+      "sdk/10.0.401/NuGet.Packaging.dll": {
+        "bytes": 1719080,
+        "sha256": "d1347085c89142139ec26c860a7635207cebd5af5a6bf1908a067b69233d73d2"
+      },
+      "dotnet": {
+        "bytes": 71808,
+        "sha256": "01d89e0a0191052bfea616cd4ce624c8faf13b05bbddf7f64499c23e2a9d9269"
+      }
+    },
+    "sdkExecuted": false
+  }
+}

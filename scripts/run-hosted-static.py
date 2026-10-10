@@ -179,11 +179,19 @@ def validate_sdk_cleanup(root,owner,validated_permit):
     if root.resolve()!=root.absolute() or root.resolve()!=Path(SDK_ROOT) or root.is_symlink() or owner!={'owner':OWNER,'leaseId':validated_permit['leaseId'],'expiresUtc':validated_permit['expiresUtc'],'persistentData':False}:
         raise ValueError('Exact task-owned SDK cleanup identity required')
 
+def selected_policy_path(trusted):
+    profile=os.environ.get('HOSTED_STATIC_PROFILE','inventory')
+    names={'inventory':'hosted-static-policy.json','auth-program-child-c-component-v1':'hosted-native-program-policy.json'}
+    if profile not in names or (profile != 'inventory' and sys.platform != 'linux'):
+        raise ValueError('Fixed hosted profile refused')
+    return Path(trusted)/names[profile]
+
+
 def main():
     if sys.platform == 'linux':
         import types
         trusted=Path(__file__).resolve().parent
-        policy=json.loads((trusted/'hosted-static-policy.json').read_bytes(),object_pairs_hook=unique)
+        policy=json.loads(selected_policy_path(trusted).read_bytes(),object_pairs_hook=unique)
         if policy.get('providerPlatform') != 'linux': raise ValueError('Linux platform binding required')
         validate_permit(os.environ['ROOT_STATIC_PERMIT'].encode(),policy)
         entries=verified_entries(fetch(policy),policy)
@@ -192,7 +200,7 @@ def main():
         return entry.main(sys.modules[__name__], entries)
     if sys.platform!='win32': raise ValueError('Qualified Windows provider required')
     trusted=Path(__file__).resolve().parent
-    policy=json.loads((trusted/'hosted-static-policy.json').read_bytes(),object_pairs_hook=unique)
+    policy=json.loads(selected_policy_path(trusted).read_bytes(),object_pairs_hook=unique)
     permit_raw=os.environ['ROOT_STATIC_PERMIT'].encode('utf-8')
     validated_permit=validate_permit(permit_raw,policy)
     context=json.loads(os.environ['TRUSTED_WORKFLOW_CONTEXT'],object_pairs_hook=unique)
