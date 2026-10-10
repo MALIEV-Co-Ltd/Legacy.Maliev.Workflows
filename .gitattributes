@@ -4,3 +4,11 @@
 /scripts/intranet_native_handoff.py text eol=lf
 /scripts/intranet_deployment_binding.py text eol=lf
 /scripts/Invoke-IntranetOwnedNative.ps1 text eol=lf
+
+/scripts/fdm_validation_guards.py text eol=lf
+/scripts/Assert-FdmValidationSource.ps1 text eol=lf
+/scripts/Assert-FdmValidationAdmission.ps1 text eol=lf
+/scripts/Assert-FdmValidationTrx.ps1 text eol=lf
+/tests/test_fdm_validation_guards.py text eol=lf
+/tests/fixtures/fdm-coverage/Test-WebFxRawCoverage.ps1 text eol=lf
+/tests/fixtures/fdm-coverage/web-fx-generated-inclusive.runsettings text eol=lf
