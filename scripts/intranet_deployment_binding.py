@@ -7,7 +7,7 @@ import re
 import tempfile
 from pathlib import Path
 
-NATIVE_PIN='8c6685b02b2aceb3644d7f1f3550a6a3aa2652ee3ef4f8df7f42ab458c49103f'
+NATIVE_PIN='d9b1238fc1419d37eb3194ade226dd38fe9b1c2fef9fda4bb3aa8edc0689651f'
 native_path=Path(__file__).resolve().with_name('intranet_native_handoff.py')
 if hashlib.sha256(native_path.read_bytes()).hexdigest()!=NATIVE_PIN:
     raise RuntimeError('Intranet native producer pin rejected.')

@@ -54,6 +54,9 @@ class FakeTools:
             self.service["selectorUid"] = request.get("targetDeploymentUid", GREEN if request["selector"] == "green" else UID)
             self.service["resourceVersion"] = str(int(self.service["resourceVersion"]) + 1)
             receipt = copy.deepcopy(self.service)
+        elif step == "BEFORE_FIRST_SELECTOR":
+            assert self.service["selector"] == "original"
+            receipt = dict(imageDigest=self.green["imageDigest"], deploymentUid=self.green["uid"], continuousPublicHealthy=True, endpointsVerified=True, observedSeconds=0)
         elif step in ("GREEN_HEALTH", "CANONICAL_HEALTH", "FINAL_HEALTH"):
             assert self.service["selector"] == ("green" if step == "GREEN_HEALTH" else "original")
             receipt = dict(imageDigest=DIGEST, publicHealthy=True, endpointsVerified=True, observedSeconds=180, processRouteVerified=True, deploymentUid=self.service["selectorUid"])
@@ -101,7 +104,7 @@ class PolicyTests(unittest.TestCase):
         self.assertTrue(all(s["originalReady"] == 1 and s["originalAvailable"] == 1 for s in tools.states))
 
     def test_each_nonzero_failure_propagates(self):
-        phases = ["SNAPSHOT", "VERIFY_SOURCE", "VERIFY_IMAGE", "RESERVE_CAPACITY", "CREATE_GREEN", "VERIFY_GREEN", "ROUTE_GREEN", "GREEN_HEALTH", "RECHECK_CAPACITY", "MUTATE_CANONICAL", "VERIFY_CANONICAL", "ROUTE_CANONICAL", "CANONICAL_HEALTH", "DRAIN_GREEN", "FINAL_HEALTH", "RELEASE_CAPACITY"]
+        phases = ["SNAPSHOT", "VERIFY_SOURCE", "VERIFY_IMAGE", "RESERVE_CAPACITY", "CREATE_GREEN", "VERIFY_GREEN", "BEFORE_FIRST_SELECTOR", "ROUTE_GREEN", "GREEN_HEALTH", "RECHECK_CAPACITY", "MUTATE_CANONICAL", "VERIFY_CANONICAL", "ROUTE_CANONICAL", "CANONICAL_HEALTH", "DRAIN_GREEN", "FINAL_HEALTH", "RELEASE_CAPACITY"]
         for phase in phases:
             with self.subTest(phase=phase):
                 tools = FakeTools(fail=phase)
@@ -385,6 +388,73 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(4, tools.reserved)
         self.assertNotIn("DRAIN_GREEN", tools.events)
 
+
+    def test_preselector_nonzero_blocks_first_selector(self):
+        tools = FakeTools(fail="BEFORE_FIRST_SELECTOR")
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(tools)
+        self.assertEqual("BEFORE_FIRST_SELECTOR", caught.exception.step)
+        self.assertEqual(73, caught.exception.exit_code)
+        self.assertNotIn("ROUTE_GREEN", tools.events)
+        self.assertNotIn("MUTATE_CANONICAL", tools.events)
+        self.assertEqual(OLD, tools.deployment["imageDigest"])
+
+    def test_preselector_invalid_proof_blocks_first_selector(self):
+        faults = [("continuousPublicHealthy", None), ("continuousPublicHealthy", False),
+                  ("continuousPublicHealthy", 1), ("endpointsVerified", None),
+                  ("endpointsVerified", False), ("deploymentUid", UID),
+                  ("imageDigest", OLD), ("observedSeconds", None),
+                  ("observedSeconds", True), ("observedSeconds", -1),
+                  ("observedSeconds", 3601), ("observedSeconds", "0")]
+        for field, value in faults:
+            with self.subTest(field=field, value=value):
+                def fault(step, receipt, tools):
+                    if step == "BEFORE_FIRST_SELECTOR":
+                        if value is None:
+                            receipt.pop(field, None)
+                        else:
+                            receipt[field] = value
+                tools = FakeTools(mutate=fault)
+                with self.assertRaises(Exception) as caught:
+                    self.run_policy(tools)
+                self.assertEqual("BEFORE_FIRST_SELECTOR", caught.exception.step)
+                self.assertNotIn("ROUTE_GREEN", tools.events)
+                self.assertNotIn("MUTATE_CANONICAL", tools.events)
+
+    def test_preselector_zero_seconds_and_unrouted_green_allowed(self):
+        tools = FakeTools()
+        self.run_policy(tools)
+        index = tools.events.index("BEFORE_FIRST_SELECTOR")
+        self.assertEqual("VERIFY_GREEN", tools.events[index - 1])
+        self.assertEqual(["READ_CURRENT", "ROUTE_GREEN"], tools.events[index + 1:index + 3])
+        request = tools.requests[index][1]
+        self.assertEqual(0, request["minimumSeconds"])
+        self.assertEqual(GREEN, request["deploymentUid"])
+        self.assertEqual("original", tools.states[index]["selector"])
+        for step, request in tools.requests:
+            if step in ("GREEN_HEALTH", "CANONICAL_HEALTH", "FINAL_HEALTH"):
+                self.assertEqual(180, request["minimumSeconds"])
+
+    def test_preselector_observer_service_change_is_freshly_read(self):
+        def fault(step, receipt, tools):
+            if step == "BEFORE_FIRST_SELECTOR":
+                tools.service["resourceVersion"] = "9"
+        tools = FakeTools(mutate=fault)
+        self.run_policy(tools)
+        self.assertIn("BEFORE_FIRST_SELECTOR", tools.events)
+        route = next(request for step, request in tools.requests if step == "ROUTE_GREEN")
+        self.assertEqual("9", route["service"]["resourceVersion"])
+
+    def test_preselector_observer_selector_race_blocks_first_selector(self):
+        def fault(step, receipt, tools):
+            if step == "BEFORE_FIRST_SELECTOR":
+                tools.service.update(selector="green", selectorUid=GREEN, resourceVersion="9")
+        tools = FakeTools(mutate=fault)
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(tools)
+        self.assertEqual("READ_CURRENT", caught.exception.step)
+        self.assertNotIn("ROUTE_GREEN", tools.events)
+        self.assertNotIn("MUTATE_CANONICAL", tools.events)
 
 if __name__ == "__main__":
     unittest.main()
