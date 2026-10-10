@@ -26,10 +26,49 @@ The producer retains actual Cobertura bytes, original `coverage.runsettings`,
 existing Release/net10.0 production DLL/PDB bytes and a relative-path/hash source
 candidate inventory. It never copies source text, a whole checkout, private Git,
 application settings, environment dumps, arbitrary logs or test assemblies.
-TRX is retained only when it exists: outcomes/counters/opaque result IDs are
-copied into an explicitly labeled `outcome-only-trx/v1` derivative. Test arguments,
-output, failure details and machine paths are omitted. The manifest records both
-original and retained hashes; this is not an unchanged raw TRX claim.
+TRX is retained only when it exists. Inputs with neither roster section retain
+the existing `outcome-only-trx/v1` derivative; they provide no test-roster proof.
+Inputs with both `TestDefinitions` and `TestEntries` use the explicit
+`privacy-safe-test-roster-trx/v2` schema and manifest transform marker. A partial,
+duplicate, nested or inconsistent roster fails preparation before staging.
+
+Version 2 retains definition/entry/result IDs and static class/method identifiers.
+Each definition execution joins exactly to one entry and result. The original
+definition name must equal the result test name ordinally, including theory case
+identity, before both are replaced by a domain-separated SHA256 display hash.
+Method identifiers use a bounded ASCII CLR identifier grammar; parameterized
+method labels, paths and unsupported identity formats refuse rather than enter
+the artifact. Counters retain their existing allowlist, with total and available
+passed/failed/not-executed counts checked against the actual result rows.
+
+Test arguments, raw display names, output, failure details, adapter/storage paths
+and machine metadata are omitted. Hashed display identities permit equality
+comparison; they are not anonymization against guesses of known case values.
+Existing file/total limits, source checks, binary/coverage handling and refusal
+behavior remain required. The manifest records original and retained hashes;
+neither derivative is an unchanged raw TRX claim. A new export cannot reconstruct
+definitions or case identities omitted by an earlier outcome-only export.
+
+The version 2 XML is unnamespaced, as the version 1 derivative is. Its allowlisted
+shape is:
+
+| Element | Retained attributes |
+| --- | --- |
+| `TestRun` | `evidenceSchema="privacy-safe-test-roster-trx/v2"` |
+| `TestDefinitions/UnitTest` | `id`, `displayNameSha256` |
+| `TestDefinitions/UnitTest/Execution` | `id` |
+| `TestDefinitions/UnitTest/TestMethod` | `className`, `name` |
+| `TestEntries/TestEntry` | `testId`, `executionId`, optional `testListId` |
+| `Results/UnitTestResult` | `outcome`, `testId`, `executionId`, `displayNameSha256` |
+| `ResultSummary/Counters` | Existing numeric counter allowlist |
+
+Each display hash is lowercase SHA256 of the UTF-8 bytes of
+`trx-display/v1`, one zero byte, then the exact parsed display name. Each test ID
+and execution ID is unique within its roster; all three sets join exactly. A
+consumer must require this schema marker and validate those joins before claiming
+a roster. The original/retained artifact hashes bind this derivative to the
+captured input; they do not supply missing baseline test evidence or certify
+compiled membership.
 
 Missing required coverage/binaries/source candidates produces an explicit partial
 manifest and a failing preparation step, while `always()` still preserves that

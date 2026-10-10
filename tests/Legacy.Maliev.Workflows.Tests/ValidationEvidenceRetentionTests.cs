@@ -35,8 +35,10 @@ public sealed class ValidationEvidenceRetentionTests
         Assert.Equal("${{ steps.prepare.outputs.artifact-path }}", ((YamlScalarNode)options.Children[new YamlScalarNode("path")]).Value);
     }
 
-    [Fact]
-    public async Task ActualEvidenceProducer_EnforcesPathsPrivacyAvailabilityAndByteRetention()
+    [Theory]
+    [InlineData("test_preserve_validation_evidence.py", 15)]
+    [InlineData("test_trx_roster_identity.py", 17)]
+    public async Task ActualEvidenceProducer_EnforcesPathsPrivacyAvailabilityAndByteRetention(string controls, int expectedTests)
     {
         string root = RepositoryContractTests.FindRepositoryRoot();
         ProcessStartInfo start = new(OperatingSystem.IsWindows() ? "python" : "python3")
@@ -49,7 +51,7 @@ public sealed class ValidationEvidenceRetentionTests
         };
         start.Environment["PYTHON"] = start.FileName;
         start.ArgumentList.Add("-B");
-        start.ArgumentList.Add(Path.Combine(root, "tests", "test_preserve_validation_evidence.py"));
+        start.ArgumentList.Add(Path.Combine(root, "tests", controls));
         using Process process = Process.Start(start) ?? throw new InvalidOperationException("Retention controls did not start.");
         Task<string> output = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
         Task<string> error = process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
@@ -67,7 +69,7 @@ public sealed class ValidationEvidenceRetentionTests
 
         string diagnostics = await error;
         Assert.Equal(0, process.ExitCode);
-        Assert.Contains("Ran 15 tests", diagnostics, StringComparison.Ordinal);
+        Assert.Contains($"Ran {expectedTests} tests", diagnostics, StringComparison.Ordinal);
         Assert.Contains("OK", diagnostics, StringComparison.Ordinal);
         Assert.DoesNotContain("skipped", diagnostics, StringComparison.Ordinal);
         Assert.Equal("", await output);

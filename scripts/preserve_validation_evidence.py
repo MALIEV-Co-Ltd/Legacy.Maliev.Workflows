@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 MAX_FILE = 32 * 1024 * 1024
 MAX_TOTAL = 128 * 1024 * 1024
 MAX_FILES = 2048
+TRX_ROSTER_SCHEMA = 'privacy-safe-test-roster-trx/v2'
 
 
 class EvidenceFailure(ValueError):
@@ -74,22 +75,101 @@ def coverage_bytes(data):
     return data
 
 
+def trx_id(value):
+    require(isinstance(value, str) and re.fullmatch(r'[A-Za-z0-9._-]{1,128}', value))
+    return value
+
+
+def trx_display_hash(value):
+    require(isinstance(value, str) and 0 < len(value.encode('utf-8')) <= 16384)
+    return digest(b'trx-display/v1\0' + value.encode('utf-8'))
+
+
+def trx_roster(original, result_nodes):
+    """Admit only complete, exact case joins; never retain display values or paths."""
+    tag = lambda node: node.tag.rsplit('}', 1)[-1]
+    sections = {name: [node for node in original if tag(node) == name]
+                for name in ('TestDefinitions', 'TestEntries', 'Results')}
+    roster_sections = [node for node in original.iter() if tag(node) in ('TestDefinitions', 'TestEntries')]
+    if not roster_sections:
+        return None
+    require(len(roster_sections) == 2)
+    require(all(len(nodes) == 1 for nodes in sections.values()))
+    definitions = list(sections['TestDefinitions'][0])
+    entries = list(sections['TestEntries'][0])
+    direct_results = list(sections['Results'][0])
+    require(definitions and len(definitions) == len(entries) == len(direct_results) == len(result_nodes))
+    require(all(tag(node) == 'UnitTestResult' for node in direct_results))
+    admitted = {}
+    executions = set()
+    class_pattern = r'[A-Za-z_][A-Za-z0-9_]*(?:`[0-9]+)?(?:[.+][A-Za-z_][A-Za-z0-9_]*(?:`[0-9]+)?)*'
+    method_pattern = r'[A-Za-z_][A-Za-z0-9_]*(?:`[0-9]+)?'
+    for node in definitions:
+        require(tag(node) == 'UnitTest')
+        test_id = trx_id(node.get('id'))
+        display = node.get('name')
+        display_hash = trx_display_hash(display)
+        methods = [child for child in node if tag(child) == 'TestMethod']
+        execution = [child for child in node if tag(child) == 'Execution']
+        require(len(methods) == len(execution) == 1)
+        execution_id = trx_id(execution[0].get('id'))
+        class_name, method_name = methods[0].get('className'), methods[0].get('name')
+        require(isinstance(class_name, str) and len(class_name) <= 512 and re.fullmatch(class_pattern, class_name))
+        require(isinstance(method_name, str) and len(method_name) <= 512 and re.fullmatch(method_pattern, method_name))
+        require(test_id not in admitted and execution_id not in executions)
+        admitted[test_id] = dict(executionId=execution_id, display=display, displayHash=display_hash,
+                                 className=class_name, methodName=method_name)
+        executions.add(execution_id)
+    entry_rows = {}
+    for node in entries:
+        require(tag(node) == 'TestEntry')
+        test_id, execution_id = trx_id(node.get('testId')), trx_id(node.get('executionId'))
+        require(test_id in admitted and test_id not in entry_rows and admitted[test_id]['executionId'] == execution_id)
+        attributes = dict(testId=test_id, executionId=execution_id)
+        if node.get('testListId') is not None:
+            attributes['testListId'] = trx_id(node.get('testListId'))
+        entry_rows[test_id] = attributes
+    seen = set()
+    for node in result_nodes:
+        test_id, execution_id = trx_id(node.get('testId')), trx_id(node.get('executionId'))
+        require(test_id in admitted and test_id not in seen and admitted[test_id]['executionId'] == execution_id)
+        # IDs and static methods alone cannot disambiguate swapped theory cases.
+        # Compare parsed display values ordinally before retaining only their hash.
+        require(node.get('testName') == admitted[test_id]['display'])
+        seen.add(test_id)
+    require(seen == set(entry_rows) == set(admitted))
+    return admitted, entry_rows
+
+
 def outcome_trx(data):
+    require(len(data) <= MAX_FILE)
     original = parse_xml(data)
     tag = lambda node: node.tag.rsplit('}', 1)[-1]
     require(tag(original) == 'TestRun')
     result = ET.Element('TestRun')
+    result_nodes = [node for node in original.iter() if tag(node) == 'UnitTestResult']
+    roster = trx_roster(original, result_nodes)
+    if roster is not None:
+        result.set('evidenceSchema', TRX_ROSTER_SCHEMA)
+        definitions = ET.SubElement(result, 'TestDefinitions')
+        entries = ET.SubElement(result, 'TestEntries')
+        admitted, entry_rows = roster
+        for test_id, row in admitted.items():
+            definition = ET.SubElement(definitions, 'UnitTest', dict(id=test_id, displayNameSha256=row['displayHash']))
+            ET.SubElement(definition, 'Execution', dict(id=row['executionId']))
+            ET.SubElement(definition, 'TestMethod', dict(className=row['className'], name=row['methodName']))
+            ET.SubElement(entries, 'TestEntry', entry_rows[test_id])
     results = ET.SubElement(result, 'Results')
     found = 0
-    for node in original.iter():
-        if tag(node) != 'UnitTestResult':
-            continue
+    for node in result_nodes:
         require(node.get('outcome') in ('Passed','Failed','NotExecuted','Inconclusive','Timeout','Aborted','Error','Warning','NotRunnable','Completed','InProgress','Pending'))
         attributes = {'outcome': node.get('outcome')}
         for key in ('testId','executionId'):
             if node.get(key) is not None:
                 require(re.fullmatch(r'[A-Za-z0-9._-]{1,128}', node.get(key)))
                 attributes[key] = node.get(key)
+        if roster is not None:
+            attributes['displayNameSha256'] = admitted[node.get('testId')]['displayHash']
         ET.SubElement(results, 'UnitTestResult', attributes)
         found += 1
     counters = [node for node in original.iter() if tag(node) == 'Counters']
@@ -98,8 +178,15 @@ def outcome_trx(data):
     allowed_counters = {'total','executed','passed','failed','error','timeout','aborted','inconclusive','passedButRunAborted','notRunnable','notExecuted','disconnected','warning','completed','inProgress','pending'}
     require(set(counters[0].attrib) <= allowed_counters)
     require(all(re.fullmatch(r'[0-9]{1,12}', value) for value in counters[0].attrib.values()))
+    if roster is not None:
+        require(counters[0].get('total') is not None and int(counters[0].get('total')) == found)
+        for outcome, counter in (('Passed', 'passed'), ('Failed', 'failed'), ('NotExecuted', 'notExecuted')):
+            if counters[0].get(counter) is not None:
+                require(int(counters[0].get(counter)) == sum(node.get('outcome') == outcome for node in result_nodes))
     ET.SubElement(summary, 'Counters', dict(counters[0].attrib))
-    return ET.tostring(result, encoding='utf-8', xml_declaration=True)
+    retained = ET.tostring(result, encoding='utf-8', xml_declaration=True)
+    require(len(retained) <= MAX_FILE)
+    return retained
 
 
 def source_head(workspace):
@@ -141,7 +228,9 @@ def prepare(*, workspace, runner_temp, repository, source_revision, results_dire
             name = relative_name(path.relative_to(workspace).as_posix())
             data = read_owned(workspace, path)
             if path.suffix == '.trx':
-                retain(name, outcome_trx(data), digest(data), 'outcome-only-trx/v1')
+                retained = outcome_trx(data)
+                transform = ET.fromstring(retained).get('evidenceSchema', 'outcome-only-trx/v1')
+                retain(name, retained, digest(data), transform)
                 trx_available = True
             else:
                 retain(name, coverage_bytes(data), digest(data), 'verbatim')
