@@ -1,0 +1,6 @@
+# Byte-pinned native producer modules must match their committed LF bytes.
+/scripts/application_handoff_policy.py text eol=lf
+/scripts/green_metadata.py text eol=lf
+/scripts/intranet_native_handoff.py text eol=lf
+/scripts/intranet_deployment_binding.py text eol=lf
+/scripts/Invoke-IntranetOwnedNative.ps1 text eol=lf
