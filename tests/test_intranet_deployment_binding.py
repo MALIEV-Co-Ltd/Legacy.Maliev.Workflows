@@ -206,10 +206,11 @@ class DeploymentTests(unittest.TestCase):
                                 receipt['runId']=target['metadata']['labels']['maliev.com/observability-handoff']
                                 adapter=m.NativeDeploymentBinding(role,state.repository,state,owner,SCRIPTS)
                                 receipt['greenMetadataPlan']=adapter.actual_plan(step,target['metadata']['name'],request)
-                        elif step=='BEFORE_FIRST_SELECTOR':
+                        elif step in ('BEFORE_FIRST_SELECTOR','BEFORE_CANONICAL_SELECTOR'):
                             target=next(obj for obj in state.deployments.values() if obj['metadata']['uid']==request['deploymentUid'])
                             self.assertNotEqual(target['metadata']['name'],state.service['spec']['selector']['app.kubernetes.io/name'])
                             receipt=dict(imageDigest=target['spec']['template']['spec']['containers'][0]['image'].rsplit('@',1)[1],deploymentUid=target['metadata']['uid'],continuousPublicHealthy=True,endpointsVerified=True,observedSeconds=0)
+                            if step=='BEFORE_CANONICAL_SELECTOR':receipt['processRouteVerified']=True
                         elif step in ('GREEN_HEALTH','CANONICAL_HEALTH','FINAL_HEALTH'):
                             selected=state.service['spec']['selector']['app.kubernetes.io/name'];target=state.deployments[selected]
                             receipt=dict(imageDigest=target['spec']['template']['spec']['containers'][0]['image'].rsplit('@',1)[1],deploymentUid=target['metadata']['uid'],publicHealthy=True,endpointsVerified=True,processRouteVerified=True,observedSeconds=180)

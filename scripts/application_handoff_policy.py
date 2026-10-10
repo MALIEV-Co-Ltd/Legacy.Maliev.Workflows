@@ -6,7 +6,7 @@ import uuid
 import importlib.util
 from pathlib import Path
 
-STEPS = frozenset({"SNAPSHOT", "VERIFY_SOURCE", "VERIFY_IMAGE", "RESERVE_CAPACITY", "RECHECK_CAPACITY", "CREATE_GREEN", "VERIFY_GREEN", "BEFORE_FIRST_SELECTOR", "READ_CURRENT", "ROUTE_GREEN", "GREEN_HEALTH", "MUTATE_CANONICAL", "VERIFY_CANONICAL", "ROUTE_CANONICAL", "CANONICAL_HEALTH", "DRAIN_GREEN", "FINAL_HEALTH", "RELEASE_CAPACITY", "ROLLBACK_SELECTOR", "VERIFY_FALLBACK", "FALLBACK_SELECTOR"})
+STEPS = frozenset({"SNAPSHOT", "VERIFY_SOURCE", "VERIFY_IMAGE", "RESERVE_CAPACITY", "RECHECK_CAPACITY", "CREATE_GREEN", "VERIFY_GREEN", "BEFORE_FIRST_SELECTOR", "READ_CURRENT", "ROUTE_GREEN", "GREEN_HEALTH", "MUTATE_CANONICAL", "VERIFY_CANONICAL", "BEFORE_CANONICAL_SELECTOR", "ROUTE_CANONICAL", "CANONICAL_HEALTH", "DRAIN_GREEN", "FINAL_HEALTH", "RELEASE_CAPACITY", "ROLLBACK_SELECTOR", "VERIFY_FALLBACK", "FALLBACK_SELECTOR"})
 ROLLOUT = dict(minReadySeconds=90, drainSeconds=60, terminationGracePeriodSeconds=90, maxSurge=1, maxUnavailable=0)
 
 
@@ -228,6 +228,17 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
         seconds = receipt.get("observedSeconds")
         require(type(seconds) is int and 0 <= seconds <= 3600, step)
 
+    def observe_before_canonical_selector():
+        # The source requires canonical identity and process-route proof before
+        # restoring its selector, while the public Service still selects green.
+        step = "BEFORE_CANONICAL_SELECTOR"
+        receipt = invoke(step, minimumSeconds=0, deploymentUid=baseline["uid"])
+        require(receipt.get("imageDigest") == image_digest and receipt.get("deploymentUid") == baseline["uid"]
+                and receipt.get("continuousPublicHealthy") is True and receipt.get("endpointsVerified") is True
+                and receipt.get("processRouteVerified") is True, step)
+        seconds = receipt.get("observedSeconds")
+        require(type(seconds) is int and 0 <= seconds <= 3600, step)
+
     try:
         baseline, original_service = current("SNAPSHOT", expected_selector="original")
         if startup_arguments is not None:
@@ -280,6 +291,7 @@ def run_handoff(application, source_commit, image_digest, tool, *, require_read_
                 "expectedCanonicalMetadata": green_metadata_baseline, "expectedCanonicalReplicas": baseline["replicas"],
                 "expectedGreenReplicas": baseline["replicas"]} if green_metadata_plan else {}))
         prove("VERIFY_CANONICAL", baseline)
+        observe_before_canonical_selector()
         _, service = current(expected_selector="green", expected_image=image_digest)
         route("ROUTE_CANONICAL", service, "original")
         observe("CANONICAL_HEALTH")
