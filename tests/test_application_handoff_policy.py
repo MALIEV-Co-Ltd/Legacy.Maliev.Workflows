@@ -57,6 +57,9 @@ class FakeTools:
         elif step == "BEFORE_FIRST_SELECTOR":
             assert self.service["selector"] == "original"
             receipt = dict(imageDigest=self.green["imageDigest"], deploymentUid=self.green["uid"], continuousPublicHealthy=True, endpointsVerified=True, observedSeconds=0)
+        elif step == "BEFORE_CANONICAL_SELECTOR":
+            assert self.service["selector"] == "green"
+            receipt = dict(imageDigest=self.deployment["imageDigest"], deploymentUid=self.deployment["uid"], continuousPublicHealthy=True, endpointsVerified=True, processRouteVerified=True, observedSeconds=0)
         elif step in ("GREEN_HEALTH", "CANONICAL_HEALTH", "FINAL_HEALTH"):
             assert self.service["selector"] == ("green" if step == "GREEN_HEALTH" else "original")
             receipt = dict(imageDigest=DIGEST, publicHealthy=True, endpointsVerified=True, observedSeconds=180, processRouteVerified=True, deploymentUid=self.service["selectorUid"])
@@ -455,6 +458,78 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual("READ_CURRENT", caught.exception.step)
         self.assertNotIn("ROUTE_GREEN", tools.events)
         self.assertNotIn("MUTATE_CANONICAL", tools.events)
+
+    def test_precanonical_nonzero_blocks_canonical_selector(self):
+        tools = FakeTools(fail="BEFORE_CANONICAL_SELECTOR")
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(tools)
+        self.assertEqual("BEFORE_CANONICAL_SELECTOR", caught.exception.step)
+        self.assertEqual(73, caught.exception.exit_code)
+        self.assertNotIn("ROUTE_CANONICAL", tools.events)
+        self.assertNotIn("DRAIN_GREEN", tools.events)
+        self.assertEqual(DIGEST, tools.deployment["imageDigest"])
+        self.assertTrue(caught.exception.canonical_mutation_started)
+        self.assertEqual("green", tools.service["selector"])
+        self.assertEqual(GREEN, tools.green["uid"])
+        self.assertFalse(caught.exception.fallback_blocked)
+
+    def test_precanonical_invalid_proof_blocks_canonical_selector(self):
+        faults = [("continuousPublicHealthy", None), ("continuousPublicHealthy", False),
+                  ("continuousPublicHealthy", 1), ("endpointsVerified", None),
+                  ("endpointsVerified", False), ("deploymentUid", GREEN),
+                  ("imageDigest", OLD), ("observedSeconds", None),
+                  ("observedSeconds", True), ("observedSeconds", -1),
+                  ("observedSeconds", 3601), ("observedSeconds", "0"), ("processRouteVerified", None),
+                  ("processRouteVerified", False), ("processRouteVerified", 1)]
+        for field, value in faults:
+            with self.subTest(field=field, value=value):
+                def fault(step, receipt, tools):
+                    if step == "BEFORE_CANONICAL_SELECTOR":
+                        if value is None:
+                            receipt.pop(field, None)
+                        else:
+                            receipt[field] = value
+                tools = FakeTools(mutate=fault)
+                with self.assertRaises(Exception) as caught:
+                    self.run_policy(tools)
+                self.assertEqual("BEFORE_CANONICAL_SELECTOR", caught.exception.step)
+                self.assertNotIn("ROUTE_CANONICAL", tools.events)
+                self.assertNotIn("DRAIN_GREEN", tools.events)
+
+    def test_precanonical_zero_seconds_and_process_route_proven(self):
+        tools = FakeTools()
+        self.run_policy(tools)
+        index = tools.events.index("BEFORE_CANONICAL_SELECTOR")
+        self.assertEqual("VERIFY_CANONICAL", tools.events[index - 1])
+        self.assertEqual(["READ_CURRENT", "ROUTE_CANONICAL"], tools.events[index + 1:index + 3])
+        request = tools.requests[index][1]
+        self.assertEqual(0, request["minimumSeconds"])
+        self.assertEqual(UID, request["deploymentUid"])
+        self.assertEqual("green", tools.states[index]["selector"])
+        for step, request in tools.requests:
+            if step in ("GREEN_HEALTH", "CANONICAL_HEALTH", "FINAL_HEALTH"):
+                self.assertEqual(180, request["minimumSeconds"])
+
+    def test_precanonical_observer_service_change_is_freshly_read(self):
+        def fault(step, receipt, tools):
+            if step == "BEFORE_CANONICAL_SELECTOR":
+                tools.service["resourceVersion"] = "9"
+        tools = FakeTools(mutate=fault)
+        self.run_policy(tools)
+        self.assertIn("BEFORE_CANONICAL_SELECTOR", tools.events)
+        route = next(request for step, request in tools.requests if step == "ROUTE_CANONICAL")
+        self.assertEqual("9", route["service"]["resourceVersion"])
+
+    def test_precanonical_observer_selector_race_blocks_canonical_selector(self):
+        def fault(step, receipt, tools):
+            if step == "BEFORE_CANONICAL_SELECTOR":
+                tools.service.update(selector="original", selectorUid=UID, resourceVersion="9")
+        tools = FakeTools(mutate=fault)
+        with self.assertRaises(Exception) as caught:
+            self.run_policy(tools)
+        self.assertEqual("READ_CURRENT", caught.exception.step)
+        self.assertNotIn("ROUTE_CANONICAL", tools.events)
+        self.assertNotIn("DRAIN_GREEN", tools.events)
 
 if __name__ == "__main__":
     unittest.main()
