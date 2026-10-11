@@ -8,3 +8,18 @@ coverage/
 *.py[cod]
 *.user
 *.suo
+
+# Source-parity local worktrees, diagnostics and generated private artifacts
+.worktrees/
+.codex-runtime/
+.superpowers/
+**/.impeccable/critique/
+*.trx
+# Owned synthetic source fixtures must remain addable before they are tracked.
+!/tests/fixtures/**/*.trx
+*.dmp
+**/.backups/*_done.marker
+**/maliev-website*.json
+**/*service-account-key*.json
+*.yaml.tmp
+*.yaml.backup
