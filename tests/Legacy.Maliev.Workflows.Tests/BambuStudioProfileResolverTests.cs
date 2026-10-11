@@ -1,8 +1,8 @@
+using Legacy.Maliev.AdditiveBenchmark;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Legacy.Maliev.AdditiveBenchmark;
 using Xunit;
 
 namespace Legacy.Maliev.Workflows.Tests;

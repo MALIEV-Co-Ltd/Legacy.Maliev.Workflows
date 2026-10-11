@@ -1,5 +1,5 @@
-using System.Text.Json.Nodes;
 using Legacy.Maliev.AdditiveBenchmark;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace Legacy.Maliev.Workflows.Tests;
