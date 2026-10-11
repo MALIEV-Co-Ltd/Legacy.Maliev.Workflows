@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
-using YamlDotNet.RepresentationModel;
 using Xunit;
+using YamlDotNet.RepresentationModel;
 
 namespace Legacy.Maliev.Workflows.Tests;
 

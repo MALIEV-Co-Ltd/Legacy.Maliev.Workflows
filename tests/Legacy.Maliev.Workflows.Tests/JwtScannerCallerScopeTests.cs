@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using YamlDotNet.RepresentationModel;
 using Xunit;
+using YamlDotNet.RepresentationModel;
 
 namespace Legacy.Maliev.Workflows.Tests;
 

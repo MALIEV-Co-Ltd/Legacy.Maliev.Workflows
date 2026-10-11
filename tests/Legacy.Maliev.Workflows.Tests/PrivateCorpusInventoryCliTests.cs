@@ -1,6 +1,6 @@
+using Legacy.Maliev.AdditiveBenchmark;
 using System.Diagnostics;
 using System.Text.Json;
-using Legacy.Maliev.AdditiveBenchmark;
 using Xunit;
 
 namespace Legacy.Maliev.Workflows.Tests;

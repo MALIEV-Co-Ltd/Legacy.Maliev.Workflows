@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using YamlDotNet.RepresentationModel;
 using Xunit;
+using YamlDotNet.RepresentationModel;
 
 namespace Legacy.Maliev.Workflows.Tests;
 
