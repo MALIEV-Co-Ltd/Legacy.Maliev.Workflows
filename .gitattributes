@@ -14,3 +14,5 @@
 /tests/fixtures/fdm-coverage/web-fx-generated-inclusive.runsettings text eol=lf
 /scripts/retain_workflows_test_evidence.py text eol=lf
 /tests/test_retain_workflows_test_evidence.py text eol=lf
+/scripts/fdm_source_parity_contract.py text eol=lf
+/tests/test_fdm_source_parity_contract.py text eol=lf
