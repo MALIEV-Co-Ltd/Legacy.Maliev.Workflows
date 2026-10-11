@@ -16,3 +16,9 @@
 /tests/test_retain_workflows_test_evidence.py text eol=lf
 /scripts/fdm_source_parity_contract.py text eol=lf
 /tests/test_fdm_source_parity_contract.py text eol=lf
+
+scripts/fdm_journal_evidence.py text eol=lf
+tests/test_fdm_journal_evidence.py text eol=lf
+scripts/retain_fdm_journal_focused.py text eol=lf
+tests/test_focused_retention.py text eol=lf
+tests/fixtures/journal-focused-native-shape.trx text eol=lf

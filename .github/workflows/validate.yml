@@ -11,7 +11,7 @@ permissions:
 jobs:
   validate:
     name: validate
-    needs: [service-wrapper-contracts, sealed-transport-controls]
+    needs: [service-wrapper-contracts, sealed-transport-controls, journal-focused]
     uses: ./.github/workflows/dotnet-validate.yml
     with:
       solution: Legacy.Maliev.Workflows.slnx
@@ -147,6 +147,94 @@ jobs:
 
       - name: Test analytics receipts and producer proof verifier
         run: python3 -B -W error -m unittest discover -s tools/analytics/tests -p 'test_*.py' -v
+
+  journal-focused:
+    name: journal focused actual source controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    env:
+      EXPECTED_SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
+      MSBUILDDISABLENODEREUSE: '1'
+    steps:
+      - name: Check out exact journal source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.EXPECTED_SOURCE_HEAD }}
+          persist-credentials: false
+      - name: Verify exact clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_HEAD"
+          test -z "$(git status --porcelain)"
+      - name: Set up existing ordinary validation SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.x
+      - name: Admit focused runner resources before Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import pathlib,re
+          memory=pathlib.Path('/proc/meminfo').read_text()
+          value=re.search(r'^MemAvailable:\s+(\d+) kB$',memory,re.M)
+          assert value and int(value.group(1))>=3145728
+          active=[]
+          for path in pathlib.Path('/proc').iterdir():
+              if path.name.isdigit():
+                  try:
+                      if (path/'comm').read_text().strip() in ('dotnet','MSBuild','testhost'):active.append(path.name)
+                  except FileNotFoundError:pass
+          assert not active
+          PY
+      - name: Build Release before focused execution
+        shell: bash
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          dotnet build Legacy.Maliev.Workflows.slnx -c Release --disable-build-servers -warnaserror -p:UseSharedCompilation=false -nodeReuse:false
+      - name: Admit focused runner resources before test
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import pathlib,re
+          memory=pathlib.Path('/proc/meminfo').read_text()
+          value=re.search(r'^MemAvailable:\s+(\d+) kB$',memory,re.M)
+          assert value and int(value.group(1))>=3145728
+          active=[]
+          for path in pathlib.Path('/proc').iterdir():
+              if path.name.isdigit():
+                  try:
+                      if (path/'comm').read_text().strip() in ('dotnet','MSBuild','testhost'):active.append(path.name)
+                  except FileNotFoundError:pass
+          assert not active
+          PY
+      - name: Run actual journal focused Fact and twenty Python controls
+        shell: bash
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          python3 -B tests/test_focused_retention.py
+          dotnet test tests/Legacy.Maliev.Workflows.Tests/Legacy.Maliev.Workflows.Tests.csproj -c Release --no-build --no-restore --disable-build-servers --filter 'FullyQualifiedName~FdmJournalEvidenceTests' --logger 'trx;LogFileName=journal-focused.trx' --results-directory TestResults/journal-focused/raw
+      - name: Prepare focused privacy-safe original roster
+        if: always()
+        shell: bash
+        run: python3 -B scripts/retain_fdm_journal_focused.py
+      - name: Retain focused complete or explicitly unavailable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: workflows-journal-focused-${{ env.EXPECTED_SOURCE_HEAD }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/journal-focused/retained/
+          retention-days: 14
+          if-no-files-found: error
+          include-hidden-files: false
 
   raw-head-evidence:
     name: privacy-safe actual head validation evidence
