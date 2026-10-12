@@ -16,12 +16,18 @@ ACTION = 'actions/dotnet-validate/action.yml'
 DISABLED_GUARD = "      if: ${{ inputs.normal-custody-mode == 'disabled' }}\n"
 
 
+def action_guard(name):
+    if name == 'Verify formatting':
+        return DISABLED_GUARD
+    return "      if: ${{ inputs.normal-custody-mode == 'disabled' && inputs.validation-mode == 'full' }}\n"
+
+
 def original_step(relative, name, step):
     conditions = re.findall(r'(?m)^\s+if:[^\n]*\n', step)
     if relative == ACTION:
-        if conditions != [DISABLED_GUARD]:
-            raise ValueError('Only the exact single disabled-profile guard is admitted')
-        step = step.replace(DISABLED_GUARD, '', 1)
+        if conditions != [action_guard(name)]:
+            raise ValueError('Only the exact single phase-specific mode guard is admitted')
+        step = step.replace(action_guard(name), '', 1)
         # Audit was formerly EOF. The appended opt-in step introduces precisely
         # one separator newline; retain every byte of its frozen original body.
         if name == 'Audit vulnerable packages':
@@ -90,9 +96,9 @@ class ValidationOrderTests(unittest.TestCase):
                     self.assertEqual(FROZEN_STEP_HASHES[relative][name],hashlib.sha256(frozen.encode()).hexdigest())
                     self.assertNotIn('continue-on-error',selected[name])
                     if relative == ACTION:
-                        for mutation in (selected[name].replace(DISABLED_GUARD,"      if: always()\n",1),
-                                         selected[name].replace(DISABLED_GUARD,'',1),
-                                         selected[name].replace(DISABLED_GUARD,DISABLED_GUARD*2,1)):
+                        for mutation in (selected[name].replace(action_guard(name),"      if: always()\n",1),
+                                         selected[name].replace(action_guard(name),'',1),
+                                         selected[name].replace(action_guard(name),action_guard(name)*2,1)):
                             with self.assertRaises(ValueError): original_step(relative,name,mutation)
                     else:
                         self.assertNotRegex(selected[name],r'(?m)^\s+if:')
