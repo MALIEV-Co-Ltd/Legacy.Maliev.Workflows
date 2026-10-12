@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Xunit;
 using YamlDotNet.RepresentationModel;
@@ -40,5 +41,35 @@ public sealed class NormalValidationCustodyContractTests
         Assert.Contains("original_deadline-RESERVE", helper, StringComparison.Ordinal);
         Assert.Contains("/usr/bin/python3 -I -S -B", File.ReadAllText(Path.Combine(root,
             "actions/dotnet-validate/action.yml")), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task QualificationContracts_RequireAllPureCasesWithoutGrantingExecution()
+    {
+        string root = RepositoryContractTests.FindRepositoryRoot();
+        ProcessStartInfo start = new(OperatingSystem.IsWindows() ? "python" : "python3")
+        {
+            WorkingDirectory = root,
+        };
+        start.ArgumentList.Add("-B");
+        start.ArgumentList.Add("-W");
+        start.ArgumentList.Add("error");
+        start.ArgumentList.Add("tests/test_normal_validation_qualification.py");
+        start.ArgumentList.Add("-v");
+        var result = await OwnedTestProcess.RunAsync(start, timeout: TimeSpan.FromSeconds(30),
+            outputLimitCharacters: 256 * 1024, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(0, result.ExitCode);
+        Assert.Equal("", result.Output);
+        string source = File.ReadAllText(Path.Combine(root, "tests/test_normal_validation_qualification.py"));
+        string[] expected = Regex.Matches(source, @"(?m)^    def (test_[A-Za-z0-9_]+)\(")
+            .Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal).ToArray();
+        Assert.Equal(12, expected.Length);
+        string[] actual = Regex.Matches(result.Error,
+            @"(?m)^(test_[A-Za-z0-9_]+) \(__main__\.QualificationControls\.\1\) \.\.\. ok\r?$")
+            .Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal).ToArray();
+        Assert.Equal(expected, actual);
+        Assert.Matches(@"(?m)^Ran 12 tests in [0-9.]+s\r?$", result.Error);
+        Assert.EndsWith("OK", result.Error.TrimEnd(), StringComparison.Ordinal);
+        Assert.DoesNotContain("skipped", result.Error, StringComparison.Ordinal);
     }
 }
