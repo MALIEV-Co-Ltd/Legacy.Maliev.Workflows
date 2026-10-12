@@ -1,0 +1,711 @@
+"""Bounded ordinary-action preparation. Native lifecycle integration is not released.
+
+No allocation occurs on import or in preparation. This source candidate must not
+be installed until the matching consumer lifecycle contract is reviewed.
+"""
+import argparse
+import base64
+import datetime as dt
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import re
+import signal
+import select
+import stat
+import subprocess
+import sys
+import time
+import types
+import urllib.request
+
+REPOSITORY = 'MALIEV-Co-Ltd/Legacy.Maliev.Workflows'
+CALLER = 'MALIEV-Co-Ltd/Legacy.Maliev.NotificationService'
+PHASES = ('restore', 'build', 'format', 'test', 'package-audit')
+FILES = ('actions/dotnet-validate/action.yml', 'scripts/normal_validation_custody.py',
+         'scripts/normal_validation_exec_gate.py', 'scripts/normal_validation_controller.py',
+         'scripts/normal_validation_lifecycle.py')
+JSON_LIMIT = 2 * 1024 * 1024
+SOURCE_LIMIT = 128 * 1024
+TRX_LIMIT = 16 * 1024 * 1024
+LOG_LIMIT = 4 * 1024 * 1024
+RECEIPT_LIMIT = 1024 * 1024
+LIFECYCLE_LIMIT = 65536
+HTTP_SECONDS = 10
+AUTH_SECONDS = 45
+RESERVE = 300
+JOB_SECONDS = 2700
+MODE = 'notification-n62-v1'
+RELEASED_LIFECYCLE = False
+HTTP_WORKER = r'''
+import json,resource,sys,urllib.request
+resource.setrlimit(resource.RLIMIT_AS,(256*1024**2,256*1024**2))
+resource.setrlimit(resource.RLIMIT_CPU,(10,10))
+resource.setrlimit(resource.RLIMIT_NOFILE,(32,32))
+sys.stdout.buffer.write(b'READY\n');sys.stdout.buffer.flush()
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+ def redirect_request(self,*a,**k):raise ValueError('redirect')
+try:
+ raw=sys.stdin.buffer.read(32769)
+ if len(raw)>32768:raise ValueError('request')
+ v=json.loads(raw)
+ request=urllib.request.Request(v['url'],headers=v['headers'])
+ with urllib.request.build_opener(NoRedirect()).open(request,timeout=v['timeout']) as response:
+  if response.status!=200:raise ValueError('status')
+  content=[];size=0
+  while True:
+   chunk=response.read(65536)
+   if not chunk:break
+   size+=len(chunk)
+   if size>2097152:raise ValueError('quota')
+   content.append(chunk)
+ sys.stdout.buffer.write(b''.join(content))
+except BaseException:
+ sys.exit(2)
+'''
+METADATA_QUARANTINE = []
+METADATA_RESOURCES = []
+AUTHENTICATED_BYTES = {}
+
+
+class EvidenceQuota:
+    def __init__(self):
+        self.bytes=self.reads=self.entries=self.names=0
+    def read(self,size):
+        self.reads+=1
+        require(self.reads<=128 and size<=64*1024**2-self.bytes,'Cumulative evidence read quota')
+    def consume(self,size):
+        self.bytes+=size
+        require(self.bytes<=64*1024**2,'Cumulative evidence byte quota')
+    def entry(self,name):
+        self.entries+=1;self.names+=len(os.fsencode(name))
+        require(self.entries<=1024 and self.names<=1024**2,'Cumulative evidence directory entry quota')
+
+
+EVIDENCE_QUOTA = EvidenceQuota()
+
+
+def install_cancellation():
+    def cancel(signum, frame):
+        # The first cancellation enters owned finally handling. Further owner
+        # cancellation cannot interrupt its bounded stop/wait/descriptor cleanup.
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        raise InterruptedError('Owned custody cancellation')
+    signal.signal(signal.SIGTERM, cancel);signal.signal(signal.SIGINT, cancel)
+
+
+def trusted_interpreter():
+    require(os.name == 'posix' and sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode,
+            'Isolated existing system interpreter required')
+    path = Path(sys.executable).resolve(strict=True)
+    require(path.parent == Path('/usr/bin') and re.fullmatch(r'python3\.[0-9]+', path.name),
+            'Existing system interpreter route unavailable')
+    for part in (path, *path.parents):
+        info = part.stat()
+        require(info.st_uid == 0 and not info.st_mode & 0o022, 'System interpreter path writable by caller')
+    return path
+
+
+def require(value, message):
+    if not value:
+        raise ValueError(message)
+
+
+def unique(pairs):
+    result = {}
+    for key, value in pairs:
+        require(key not in result, 'Duplicate JSON key')
+        result[key] = value
+    return result
+
+
+def parse(raw, limit=JSON_LIMIT):
+    require(type(raw) is bytes and 0 < len(raw) <= limit, 'JSON byte quota')
+    return json.loads(raw.decode('utf-8', errors='strict'), object_pairs_hook=unique,
+                      parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
+
+
+def keys(value, names):
+    require(type(value) is dict and set(value) == set(names), 'Exact typed object keys required')
+
+
+def integer(value, minimum=1):
+    require(type(value) is int and value >= minimum, 'Strict integer required')
+
+
+def number(value):
+    require(type(value) in (int, float) and math.isfinite(value) and value >= 0,
+            'Finite numeric value required')
+
+
+def hex_string(value, length):
+    require(type(value) is str and re.fullmatch('[0-9a-f]{'+str(length)+'}', value),
+            'Exact hexadecimal identity required')
+
+
+def no_links(path):
+    path = Path(path).absolute()
+    for part in (path, *path.parents):
+        observed = part.lstat()
+        require(not stat.S_ISLNK(observed.st_mode) and
+                not getattr(observed, 'st_file_attributes', 0) & 0x400,
+                'Linked or reparse path refused')
+    return path
+
+
+def stable_read(path, limit, quota=None):
+    path = no_links(path)
+    flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_BINARY', 0)
+    descriptor = os.open(path, flags)
+    try:
+        first = os.fstat(descriptor)
+        require(stat.S_ISREG(first.st_mode) and first.st_nlink==1 and 0 < first.st_size <= limit, 'Regular file quota')
+        if quota is not None:quota.read(first.st_size)
+        with os.fdopen(descriptor, 'rb', closefd=False) as stream:
+            chunks=[];size=0
+            while True:
+                chunk=stream.read(min(65536,limit-size+1))
+                if not chunk:break
+                size+=len(chunk)
+                if quota is not None:quota.consume(len(chunk))
+                require(size<=limit,'Cumulative per-file read quota')
+                chunks.append(chunk)
+            raw=b''.join(chunks)
+        last = os.fstat(descriptor)
+        observed = path.lstat()
+        identity = lambda x: (x.st_dev, x.st_ino, x.st_size,x.st_nlink)
+        # Hosted producer is Linux: timestamps remain byte-exact there. Windows
+        # source controls account for handle/path NTFS timestamp quantization;
+        # this never relaxes a Linux runtime custody admission.
+        tolerance = 2_000_000 if os.name == 'nt' else 0
+        timestamps = all(abs(getattr(first, key)-getattr(x, key)) <= tolerance
+                         for x in (last, observed) for key in ('st_mtime_ns','st_ctime_ns'))
+        require(identity(first) == identity(last) == identity(observed) and timestamps and len(raw) == first.st_size,
+                'File identity changed during bounded read')
+        return raw
+    finally:
+        os.close(descriptor)
+
+
+def inside(root, path, exists=True):
+    root = no_links(root).resolve(strict=True)
+    path = Path(path)
+    require(path.is_absolute() and '..' not in path.parts, 'Absolute contained path required')
+    if exists:
+        path = no_links(path).resolve(strict=True)
+    else:
+        require(not path.exists(), 'Exclusive new path required')
+        parent = no_links(path.parent).resolve(strict=True)
+        path = parent/path.name
+    require(path != root and path.is_relative_to(root), 'Path outside caller root')
+    return path
+
+
+class DenyRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError('Metadata redirect refused')
+
+
+def owned_http(url, headers, deadline):
+    """Absolute parent deadline includes TLS, headers, every body chunk and exit.
+
+    This fixed isolated stdlib worker never executes downloaded source. It emits
+    at most 2MiB and fixed zero-byte failure diagnostics. Ownership remains with
+    the retained Popen handle and exact kernel pidfd, not a process-name search.
+    """
+    require(os.name == 'posix' and hasattr(os, 'pidfd_open') and hasattr(signal, 'pidfd_send_signal'),
+            'Finite metadata worker kernel custody unavailable')
+    remaining = deadline-time.monotonic(); require(remaining > 5, 'Metadata absolute deadline exhausted')
+    native_deadline = deadline-5  # Stop/wait/descriptor cleanup is inside the SAME operation deadline.
+    payload = json.dumps({'url':url,'headers':headers,'timeout':min(HTTP_SECONDS,remaining)}).encode()
+    require(len(payload) <= 32768, 'Metadata request quota')
+    started=time.monotonic()
+    process = subprocess.Popen([str(trusted_interpreter()),'-I','-S','-B','-c',HTTP_WORKER],
+                               stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                               env={'PATH':'/usr/bin:/bin','LANG':'C.UTF-8'})
+    descriptor = None
+    row={'purpose':'immutable-source-or-original-job-metadata','pid':process.pid,'startedMono':started,
+         'absoluteDeadlineMono':deadline,'exitVerified':False,'descriptorClosed':False,'persistentData':False,
+         'memoryLimitBytes':256*1024**2,'cpuLimitSeconds':10,'outputLimitBytes':JSON_LIMIT}
+    METADATA_RESOURCES.append(row)
+    try:
+        descriptor = os.pidfd_open(process.pid)
+        observed=Path(f'/proc/{process.pid}')
+        stat_fields=(observed/'stat').read_text();fields=stat_fields[stat_fields.rfind(')')+2:].split()
+        row['birthTicks']=int(fields[19]);row['executable']=str((observed/'exe').resolve(strict=True))
+        row['boot']=Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+        require(row['birthTicks']>0 and row['executable']==str(trusted_interpreter()),'Original metadata worker identity unavailable')
+        ready=select.select([process.stdout],[],[],max(.001,native_deadline-time.monotonic()))[0]
+        require(ready and os.read(process.stdout.fileno(),6)==b'READY\n','Metadata worker finite cap readiness missing')
+        with (observed/'limits').open() as stream:limits=stream.read(16385)
+        require(len(limits)<=16384 and re.search(r'^Max address space\s+268435456\s+268435456\s+bytes$',limits,re.MULTILINE)
+                and re.search(r'^Max cpu time\s+10\s+10\s+seconds$',limits,re.MULTILINE),
+                'Actual metadata worker kernel caps unverified')
+        row['kernelCapsObserved']=True
+        stdout, stderr = process.communicate(input=payload, timeout=max(.001,native_deadline-time.monotonic()))
+        require(process.returncode == 0 and len(stdout) <= JSON_LIMIT and len(stderr) == 0,
+                'Immutable metadata worker unavailable')
+        require(time.monotonic() <= deadline, 'Metadata absolute deadline exhausted')
+        poll = select.poll();poll.register(descriptor,select.POLLIN)
+        require(bool(poll.poll(0)), 'Metadata worker exit unverified')
+        row.update(exitVerified=True,observedExitedAtMono=time.monotonic(),exitCode=process.returncode)
+        return parse(stdout)
+    finally:
+        if process.poll() is None:
+            if descriptor is not None:
+                signal.pidfd_send_signal(descriptor, signal.SIGKILL)
+            else:
+                # Retained direct-child Popen handle remains unreaped; no PID reuse.
+                process.kill()
+        try:
+            process.wait(timeout=max(.001,deadline-time.monotonic()))
+        except BaseException:
+            METADATA_QUARANTINE.append((process,descriptor))
+            raise RuntimeError('Owned metadata exit unverified; admission withheld')
+        else:
+            row.update(exitVerified=True,observedExitedAtMono=time.monotonic(),exitCode=process.returncode)
+            for stream in (process.stdin,process.stdout,process.stderr):
+                if stream is not None:stream.close()
+            if descriptor is not None:os.close(descriptor)
+            row['descriptorClosed']=True
+
+
+def public_get(endpoint, deadline):
+    require(type(endpoint) is str and re.fullmatch(r'(?:git/commits/[0-9a-f]{40}|git/trees/[0-9a-f]{40}\?recursive=1|git/blobs/[0-9a-f]{40})', endpoint),
+            'Fixed public metadata endpoint required')
+    remaining = deadline-time.monotonic()
+    require(remaining > 0, 'Source authentication deadline exhausted')
+    return owned_http('https://api.github.com/repos/'+REPOSITORY+'/'+endpoint,
+                      {'Accept':'application/vnd.github+json','User-Agent':'maliev-normal-custody-source-v1'},deadline)
+
+
+def context(env):
+    require(env.get('NORMAL_CUSTODY_ACTION_REPOSITORY') == REPOSITORY,
+            'Runner remote action repository mismatch')
+    producer = env.get('NORMAL_CUSTODY_ACTION_REF')
+    hex_string(producer, 40)
+    path = no_links(env.get('NORMAL_CUSTODY_ACTION_PATH', '')).resolve(strict=True)
+    require(path == no_links(env.get('GITHUB_ACTION_PATH', '')).resolve(strict=True),
+            'Runner action physical path mismatch')
+    require(path.name == 'dotnet-validate' and path.parent.name == 'actions', 'Remote action package shape')
+    require(env.get('GITHUB_REPOSITORY') == CALLER, 'Notification-only custody profile')
+    return producer, path.parent.parent
+
+
+def authenticate(env, get=public_get, now=time.monotonic, absolute_deadline=None):
+    producer, root = context(env)
+    deadline = now()+AUTH_SECONDS
+    if absolute_deadline is not None:
+        number(absolute_deadline);deadline=min(deadline,absolute_deadline)
+    commit = get('git/commits/'+producer, deadline)
+    require(commit.get('sha') == producer and type(commit.get('tree')) is dict,
+            'Immutable producer commit mismatch')
+    tree_sha = commit['tree'].get('sha'); hex_string(tree_sha, 40)
+    tree = get('git/trees/'+tree_sha+'?recursive=1', deadline)
+    require(tree.get('sha') == tree_sha and tree.get('truncated') is False and type(tree.get('tree')) is list,
+            'Complete immutable producer tree required')
+    require(len(tree['tree']) <= 10000, 'Tree entry quota')
+    entries = {}
+    for entry in tree['tree']:
+        require(type(entry) is dict and type(entry.get('path')) is str, 'Typed tree path required')
+        require(entry['path'] not in entries, 'Duplicate immutable tree path')
+        entries[entry['path']] = entry
+    pins = []
+    frozen = {}
+    for name in FILES:
+        entry = entries.get(name)
+        require(type(entry) is dict and entry.get('mode') == '100644' and entry.get('type') == 'blob',
+                'Required producer source blob unavailable')
+        hex_string(entry.get('sha'), 40)
+        blob = get('git/blobs/'+entry['sha'], deadline)
+        require(blob.get('sha') == entry['sha'] and blob.get('encoding') == 'base64', 'Git blob metadata mismatch')
+        integer(blob.get('size'))
+        require(blob['size'] <= SOURCE_LIMIT and type(blob.get('content')) is str and
+                len(blob['content']) <= 2*SOURCE_LIMIT, 'Source blob quota')
+        raw = base64.b64decode(blob['content'].replace('\n', ''), validate=True)
+        require(len(raw) == blob['size'] and hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest() == entry['sha'],
+                'Git source object identity mismatch')
+        require(stable_read(root/name, SOURCE_LIMIT) == raw, 'Executing producer byte mismatch')
+        frozen[name]=raw
+        pins.append({'path':name, 'blob':entry['sha'], 'sha256':hashlib.sha256(raw).hexdigest(), 'bytes':len(raw)})
+    require(now() <= deadline, 'Source authentication deadline exhausted')
+    AUTHENTICATED_BYTES.clear();AUTHENTICATED_BYTES.update(frozen)
+    return {'producer':producer, 'pins':pins}
+
+
+def load_authenticated_modules(package):
+    """Compile the exact authenticated bytes, never re-open/import caller files."""
+    names=('normal_validation_custody','normal_validation_lifecycle','normal_validation_controller')
+    loaded={};frozen=dict(AUTHENTICATED_BYTES);metadata=list(METADATA_RESOURCES)
+    require(set(frozen)==set(FILES),'Complete authenticated execution bytes required')
+    for name in names:
+        filename=package/'scripts'/(name+'.py');raw=frozen['scripts/'+name+'.py']
+        module=types.ModuleType(name);module.__file__=str(filename)
+        sys.modules[name]=module
+        exec(compile(raw,str(filename),'exec'),module.__dict__)
+        loaded[name]=module
+    loaded['normal_validation_custody'].AUTHENTICATED_BYTES.update(frozen)
+    loaded['normal_validation_custody'].METADATA_RESOURCES.extend(metadata)
+    loaded['normal_validation_custody'].EVIDENCE_QUOTA=EVIDENCE_QUOTA
+    return loaded['normal_validation_custody']
+
+
+def budget(record, env, wall, mono, boot):
+    keys(record, ('schema','run','attempt','job','head','runner','startedUtc','sampleWall','sampleMono','boot','deadlineMono','reserve'))
+    require(record['schema'] == 'n62-job-deadline-v1', 'Existing original job clock required')
+    for field in ('run','attempt','job'):
+        integer(record[field])
+    for field in ('sampleWall','sampleMono','deadlineMono'):
+        number(record[field])
+    require(type(record['reserve']) is int and record['reserve'] == RESERVE, 'Unchanged cleanup reserve required')
+    hex_string(record['head'], 40)
+    require(type(boot) is str and re.fullmatch('[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', boot), 'Kernel boot identity')
+    require(record['run'] == int(env['GITHUB_RUN_ID']) and record['attempt'] == int(env['GITHUB_RUN_ATTEMPT']) and
+            record['head'] == env['GITHUB_SHA'] and record['runner'] == env['RUNNER_NAME'] and record['boot'] == boot,
+            'Original caller clock association mismatch')
+    require(type(record['startedUtc']) is str, 'Original API start time required')
+    start = dt.datetime.fromisoformat(record['startedUtc'].replace('Z', '+00:00'))
+    require(start.utcoffset() == dt.timedelta(0), 'UTC API start time required')
+    expected = record['sampleMono']+JOB_SECONDS-(record['sampleWall']-start.timestamp())
+    require(0 <= record['sampleWall']-start.timestamp() < JOB_SECONDS and
+            abs(expected-record['deadlineMono']) <= .001 and mono >= record['sampleMono'] and
+            abs(wall-record['sampleWall']-(mono-record['sampleMono'])) <= 2,
+            'Original 45-minute deadline or actual clock changed')
+    require(record['deadlineMono']-mono > RESERVE, 'Original native budget exhausted')
+    return record['deadlineMono']
+
+
+def request(raw, mode):
+    require(mode in ('disabled', MODE), 'Unknown custody opt-in mode')
+    if mode == 'disabled':
+        require(raw == b'', 'Disabled custody requires empty request')
+        return None
+    value = parse(raw, 16384)
+    keys(value, ('schema','profile','deadlineRecord','resultRoot'))
+    require(value['schema'] == 'normal-validation-custody-request-v1' and value['profile'] == MODE,
+            'Exact Notification opt-in request required')
+    require(all(type(value[k]) is str and value[k] for k in value), 'Request string fields required')
+    return value
+
+
+def native_arguments(phase, solution, results):
+    require(phase in PHASES and type(solution) is str and solution and '\x00' not in solution,
+            'Known phase and actual solution required')
+    vectors = {'restore':['restore',solution], 'build':['build',solution,'--configuration','Release','--no-restore'],
+               'format':['format',solution,'--verify-no-changes','--no-restore'],
+               'test':['test',solution,'--configuration','Release','--no-build','--no-restore','--logger',
+                       'trx;LogFileName=normal-validation.trx','--results-directory',str(results)],
+               'package-audit':['list',solution,'package','--vulnerable','--include-transitive','--no-restore']}
+    return ['dotnet', *vectors[phase]]
+
+
+def native_environment(env, dependency_mode):
+    require(dependency_mode in ('true','false'), 'Exact local dependency mode required')
+    result = dict(env)
+    for key in tuple(result):
+        if key.startswith('NORMAL_CUSTODY_'):
+            del result[key]  # Producer-only added context/API token is not native baseline.
+    if dependency_mode == 'true':
+        result['GITHUB_ACTIONS'] = 'false'
+    return result  # Never log or serialize inherited environment/credentials.
+
+
+def artifact(root, path, quota=None, maximum=None):
+    path = inside(root, Path(path).absolute())
+    limit=TRX_LIMIT if path.suffix=='.trx' else LOG_LIMIT if path.suffix=='.log' else RECEIPT_LIMIT
+    if maximum is not None:
+        integer(maximum);limit=min(limit,maximum)
+    raw = stable_read(path, limit, EVIDENCE_QUOTA if quota is None else quota)
+    return {'path':path.relative_to(Path(root).resolve()).as_posix(), 'sha256':hashlib.sha256(raw).hexdigest()}
+
+
+def discover_trx(root, expected=None, quota=None):
+    root = no_links(root).resolve(strict=True)
+    expected=root/'normal-validation.trx' if expected is None else Path(expected)
+    quota=EVIDENCE_QUOTA if quota is None else quota
+    found = [];pending=[(root,0)]
+    while pending:
+        current,depth=pending.pop();require(depth<=16,'TRX directory depth quota')
+        before=no_links(current).lstat()
+        with os.scandir(current) as entries:
+            for entry in entries:
+                quota.entry(entry.name)
+                path=no_links(Path(entry.path))
+                if entry.is_dir(follow_symlinks=False):pending.append((path,depth+1))
+                elif entry.is_file(follow_symlinks=False) and path.suffix=='.trx':
+                    found.append(path);require(len(found)<=1,'Additional TRX refused')
+        after=no_links(current).lstat()
+        require((before.st_dev,before.st_ino,before.st_mtime_ns)==(after.st_dev,after.st_ino,after.st_mtime_ns),'TRX directory identity changed')
+    require(len(found) == 1 and found[0] == expected,
+            'Exactly one concrete current-run original normal TRX required')
+    stable_read(found[0], TRX_LIMIT,quota)
+    return found[0]
+
+
+def write_exclusive(path, value, maximum=RECEIPT_LIMIT):
+    raw = json.dumps(value, separators=(',', ':'), allow_nan=False).encode()
+    integer(maximum)
+    require(len(raw) <= min(RECEIPT_LIMIT,maximum), 'Receipt byte quota')
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0), 0o600)
+    try:
+        with os.fdopen(descriptor, 'wb', closefd=False) as stream:
+            stream.write(raw); stream.flush(); os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def job_metadata(env, deadline):
+    # Uses existing caller token only; no permission request, scope change or retry.
+    run, attempt = env['GITHUB_RUN_ID'], env['GITHUB_RUN_ATTEMPT']
+    require(re.fullmatch('[1-9][0-9]{0,18}', run) and re.fullmatch('[1-9][0-9]{0,8}', attempt), 'Typed current job URL')
+    headers = {'Accept':'application/vnd.github+json', 'User-Agent':'maliev-normal-custody-v1'}
+    if env.get('NORMAL_CUSTODY_JOB_API_TOKEN'):
+        headers['Authorization'] = 'Bearer '+env['NORMAL_CUSTODY_JOB_API_TOKEN']
+    remaining = deadline-time.monotonic(); require(remaining > 0, 'Original job API deadline exhausted')
+    endpoint = f'https://api.github.com/repos/{CALLER}/actions/runs/{run}/attempts/{attempt}/jobs?per_page=100'
+    value=owned_http(endpoint,headers,deadline)
+    integer(value.get('total_count'), 0)
+    require(value['total_count'] <= 100 and type(value.get('jobs')) is list and
+            len(value['jobs']) == value['total_count'], 'Complete current job API required')
+    return value
+
+
+def admit_record(record, env, api, wall, mono, boot):
+    deadline = budget(record, env, wall, mono, boot)
+    require(env.get('GITHUB_REPOSITORY') == CALLER and env.get('GITHUB_ACTIONS') == 'true', 'Existing Notification hosted route required')
+    jobs = [j for j in api['jobs'] if type(j) is dict and j.get('id') == record['job']]
+    require(len(jobs) == 1, 'Original API job identity missing or ambiguous')
+    job = jobs[0]
+    for key in ('id','run_id','run_attempt'):
+        integer(job.get(key))
+    require(job['run_id'] == record['run'] and job['run_attempt'] == record['attempt'] and
+            job.get('head_sha') == record['head'] and job.get('runner_name') == record['runner'] and
+            job.get('started_at') == record['startedUtc'] and job.get('status') == 'in_progress' and
+            job.get('name') == 'validate / validate', 'Original API job association changed')
+    # The 45-minute Notification-only recipe is reviewed caller source policy,
+    # not an API timeout field or a widened default reusable job.
+    return deadline
+
+
+class Budget:
+    def __init__(self, record, env):
+        self.record = record; self.env = env; self.cleanup = False
+        self.deadline = budget(record, env, time.time(), time.monotonic(),
+                               Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+
+    def remaining(self, maximum=None):
+        # Recheck original clock/boot and identity even in cleanup. Budget
+        # validation below deliberately omits the native reserve only here.
+        now = time.monotonic()
+        require(Path('/proc/sys/kernel/random/boot_id').read_text().strip() == self.record['boot'], 'Job kernel boot changed')
+        require(now >= self.record['sampleMono'] and abs(time.time()-self.record['sampleWall']-
+                (now-self.record['sampleMono'])) <= 2, 'Job clock association changed')
+        available = self.deadline-now-(0 if self.cleanup else RESERVE)
+        if available <= 0:
+            raise TimeoutError('Original job budget exhausted')
+        return available if maximum is None else min(maximum, available)
+
+
+def physical_admission():
+    require(os.name == 'posix' and Path('/sys/fs/cgroup/cgroup.controllers').is_file(), 'Actual Linux cgroup-v2 required')
+    with Path('/proc/meminfo').open() as stream:
+        text = stream.read(65537)
+    require(len(text) <= 65536, 'Physical memory metadata quota')
+    found = re.findall(r'^MemAvailable:\s+([0-9]+) kB$', text, re.MULTILINE)
+    require(len(found) == 1 and int(found[0]) >= 3145728, 'Existing physical memory floor unavailable')
+    # Observe without stopping any foreign process. No duplicate native worker
+    # is launched to bypass unavailable identity/admission.
+    entries = list(Path('/proc').iterdir()); require(len(entries) <= 100000, 'Process metadata quota')
+    for process in entries:
+        if process.name.isdigit():
+            try:
+                executable = (process/'exe').resolve(strict=True)
+            except FileNotFoundError:
+                continue
+            except PermissionError:
+                raise RuntimeError('Process identity unavailable; native admission withheld')
+            require(executable.name != 'dotnet', 'Existing native SDK job; preserve owner')
+
+
+def original_deadline_path(value,env):
+    # Preserve the existing first-job-clock file outside the workspace. Never
+    # relocate, rewrite or restart its sample/deadline to fit producer routing.
+    path=Path(value['deadlineRecord'])
+    require(path.is_absolute() and '..' not in path.parts,'Absolute original deadline path required')
+    expected=no_links(env['RUNNER_TEMP']).resolve(strict=True)/'n62-deadline.json'
+    require(path==expected,'Existing original RUNNER_TEMP deadline required')
+    return no_links(path)
+
+
+def proposed_result_root(value,record,workspace):
+    root=Path(value['resultRoot'])
+    require(root.is_absolute() and '..' not in root.parts,'Absolute proposed result root required')
+    match=re.fullmatch(f'normal-{record["run"]}-{record["attempt"]}-{record["job"]}-([0-9a-f]{{32}})',root.name)
+    require(root.parent==workspace/'runner-results' and match,'Exact current-run exclusive result root required')
+    require(not root.exists() and not root.is_symlink(),'Exclusive new result root required')
+    if root.parent.exists():
+        require(stat.S_ISDIR(no_links(root.parent).lstat().st_mode),'Results parent must be a directory')
+    else:no_links(workspace)
+    return root,match[1]
+
+
+def create_result_root(root,workspace):
+    # Called only after original clock/API/source/physical/controller admission.
+    # Open directories without following links and retain their handles while
+    # creating the exact child. Existing safe parents belong to other runs too.
+    require(root.parent==workspace/'runner-results','Exact admitted results parent')
+    flags=os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW
+    workspace_fd=os.open(no_links(workspace),flags);parent_fd=None;root_fd=None
+    try:
+        try:os.mkdir('runner-results',0o700,dir_fd=workspace_fd)
+        except FileExistsError:pass
+        parent_fd=os.open('runner-results',flags,dir_fd=workspace_fd)
+        observed=no_links(root.parent).lstat();held=os.fstat(parent_fd)
+        require((observed.st_dev,observed.st_ino)==(held.st_dev,held.st_ino),'Results parent identity changed')
+        os.mkdir(root.name,0o700,dir_fd=parent_fd)
+        root_fd=os.open(root.name,flags,dir_fd=parent_fd)
+        os.mkdir('normal-trx',0o700,dir_fd=root_fd)
+        observed=no_links(root).lstat();held=os.fstat(root_fd)
+        require((observed.st_dev,observed.st_ino)==(held.st_dev,held.st_ino),'Exclusive result root identity changed')
+    finally:
+        for fd in (root_fd,parent_fd,workspace_fd):
+            if fd is not None:os.close(fd)
+
+
+def admission(request_value, env):
+    workspace = no_links(env['GITHUB_WORKSPACE']).resolve(strict=True)
+    clock_path = original_deadline_path(request_value,env)
+    raw = stable_read(clock_path, 16384,EVIDENCE_QUOTA); record = parse(raw, 16384)
+    now = time.monotonic()
+    native_deadline = budget(record, env, time.time(), now, Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+    api = job_metadata(env, min(now+AUTH_SECONDS, native_deadline-RESERVE))
+    admit_record(record, env, api, time.time(), time.monotonic(), Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+    root,nonce=proposed_result_root(request_value,record,workspace)
+    require(not clock_path.is_relative_to(root),'Original deadline must remain outside new result root')
+    return record, root, nonce, hashlib.sha256(raw).hexdigest()
+
+
+def header(state):
+    record = state['record']
+    return {'schema':'normal-validation-custody-v1','version':1,'producer':state['source']['producer'],
+            **{k:record[k] for k in ('run','attempt','job','head','boot')}, 'resourceRun':state['resourceRun'],
+            'jobStartedUtc':record['startedUtc'],'jobDeadlineMono':record['deadlineMono'],
+            'cleanupReserveSeconds':RESERVE,'terminal':'PASS'}
+
+
+def stage_wire(raw, shared, root):
+    require(raw.get('exitCode') == 0 and type(raw.get('exitCode')) is int and
+            all(raw.get(k) is True for k in ('scopeAbsent','nativeExitVerified','unitTerminal','wrapperExitVerified','wrapperPidfdExited')),
+            'Actual owned terminal proof incomplete')
+    helper, sdk = raw['helper'], raw['native']; terminal = raw['terminalBeforeStop']
+    members = []
+    for member, role, observed in ((sdk,'sdk',terminal['observedAtMono']),
+                                   (raw['wrapper'],'wrapper',raw['wrapperExitedAtMono'])):
+        members.append({k:member[k] for k in ('pid','birthTicks','executable','executableSha256')}
+                       | {'role':role,'exitVerified':True,'observedExitedAtMono':observed})
+    removal_time = max(raw['removalObservedAtMono'], raw['wrapperExitedAtMono'])
+    controller = {'kind':'systemd-user-cgroup-v2','unit':raw['unit'],'invocation':raw['invocation'],
+                  'scope':raw['scope'],'namespace':raw['namespace'],'unitTerminal':True}
+    lifecycle = {'schema':'normal-stage-lifecycle-v1', **{k:shared[k] for k in
+                 ('producer','run','attempt','job','head','boot','resourceRun')}, 'phase':raw['stage'],
+                 'preExec':{'observedAtMono':raw['preExecObservedAtMono'],'scope':raw['scope'],'namespace':raw['namespace'],
+                            'manager':raw['managerPreExec'],'helper':helper,'sdk':sdk},
+                 'terminal':{'observedAtMono':terminal['observedAtMono'],'nativePidfdExited':True,
+                             'manager':terminal['manager'],'scopeObservation':terminal['scopeObservation']},
+                 'removal':{'observedAtMono':removal_time,'unit':raw['unit'],'invocation':raw['invocation'],
+                            'unitTerminal':True,'scopeAbsent':True,'wrapperPidfdExited':True}}
+    lifecycle_path = root/('lifecycle-'+raw['stage']+'.json')
+    write_exclusive(lifecycle_path, lifecycle, maximum=LIFECYCLE_LIMIT)
+    command = {'phase':raw['stage'],'startedMono':raw['startedMono'],'nativeDeadlineMono':raw['expiryMono'],
+               'observedAtMono':time.monotonic(),'exitCode':0,'exitVerified':True,'scopeAbsent':True,
+               'controller':controller,'members':members,'lifecycle':artifact(root,lifecycle_path,maximum=LIFECYCLE_LIMIT)}
+    from normal_validation_lifecycle import verify
+    verify(lifecycle, shared, command, controller)
+    return command
+
+
+def run_all(state, env, solution, dependency_mode):
+    from normal_validation_controller import Controller
+    root = no_links(state['resultRoot']).resolve(strict=True); shared = header(state)
+    clock = Budget(state['record'], env)
+    controller = Controller(clock, root, state['resourceRun'], state['cwd'])
+    commands, logs, units, invocations = [], [], set(), set()
+    for phase in PHASES:
+        authenticate(env, absolute_deadline=clock.deadline-RESERVE)
+        clock.remaining(); physical_admission(); controller.preflight()
+        started = time.monotonic()
+        if commands:
+            require(started >= commands[-1]['observedAtMono'], 'Previous phase terminal not settled')
+        native = native_environment(env, dependency_mode); native['N62_RUN_ID'] = state['resourceRun']
+        raw = controller.run(native_arguments(phase, solution, root/'normal-trx'), native, phase)
+        require(raw['unit'] not in units and raw['invocation'] not in invocations, 'Stage custody replay')
+        units.add(raw['unit']); invocations.add(raw['invocation'])
+        command = stage_wire(raw, shared, root); commands.append(command)
+        logs.append({'phase':phase, **artifact(root, root/(phase+'.log'))})
+        write_exclusive(root/('verified-'+phase+'.json'), command)
+    trx = discover_trx(root,root/'normal-trx/normal-validation.trx')
+    result = shared | {'commands':commands,'artifacts':{'normalTrx':artifact(root,trx),'stageLogs':logs}}
+    write_exclusive(root/'metadata-control-resources.json',METADATA_RESOURCES)
+    write_exclusive(root/'normal-validation-custody.json', result)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('operation', choices=('prepare','run-all'))
+    parser.add_argument('--mode', required=True)
+    parser.add_argument('--request', default='')
+    parser.add_argument('--solution', required=True)
+    parser.add_argument('--working-directory', default='.')
+    parser.add_argument('--dependency-mode', default='false')
+    args = parser.parse_args()
+    if args.mode == 'disabled':
+        request(args.request.encode(), args.mode)
+        return
+    trusted_interpreter()
+    require(args.request, 'Custody request path missing')
+    value = request(stable_read(args.request, 16384,EVIDENCE_QUOTA), args.mode)
+    clock_path=original_deadline_path(value,os.environ)
+    initial_record=parse(stable_read(clock_path,16384,EVIDENCE_QUOTA),16384)
+    original_deadline=budget(initial_record,os.environ,time.time(),time.monotonic(),
+                             Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+    source = authenticate(os.environ, absolute_deadline=original_deadline-RESERVE)
+    # Source implementation is present, but no runtime role or qualification is
+    # inferred from provider-free controls or reviewed consumer source.
+    require(RELEASED_LIFECYCLE, 'Actual producer source review and kernel qualification unavailable')
+    if args.operation == 'prepare':
+        record, root, resource_run, clock_hash = admission(value, os.environ)
+        physical_admission()
+        from normal_validation_controller import Controller
+        Controller(Budget(record, os.environ), root, resource_run,
+                   Path(os.environ['GITHUB_WORKSPACE'])/args.working_directory).preflight()
+        create_result_root(root,no_links(os.environ['GITHUB_WORKSPACE']).resolve(strict=True))
+        cwd = no_links(Path(os.environ['GITHUB_WORKSPACE'])/args.working_directory).resolve(strict=True)
+        require(cwd.is_relative_to(Path(os.environ['GITHUB_WORKSPACE']).resolve()), 'Original caller CWD escapes workspace')
+        write_exclusive(root/'prepared.json', {'record':record,'clockSha256':clock_hash,'source':source,
+                        'resultRoot':str(root),'resourceRun':resource_run,'cwd':str(cwd),
+                        'solution':args.solution,'dependencyMode':args.dependency_mode})
+        write_exclusive(root/'metadata-prepare-resources.json',METADATA_RESOURCES)
+    else:
+        root = inside(Path(os.environ['GITHUB_WORKSPACE']), Path(value['resultRoot']))
+        state = parse(stable_read(root/'prepared.json', RECEIPT_LIMIT,EVIDENCE_QUOTA))
+        keys(state,('record','clockSha256','source','resultRoot','resourceRun','cwd','solution','dependencyMode'))
+        expected_cwd=no_links(Path(os.environ['GITHUB_WORKSPACE'])/args.working_directory).resolve(strict=True)
+        require(state['source'] == source and state['solution'] == args.solution and
+                state['dependencyMode'] == args.dependency_mode and state['resultRoot'] == str(root) and
+                state['cwd']==str(expected_cwd) and expected_cwd.is_relative_to(Path(os.environ['GITHUB_WORKSPACE']).resolve()) and
+                root.name==f'normal-{state["record"]["run"]}-{state["record"]["attempt"]}-{state["record"]["job"]}-{state["resourceRun"]}',
+                'Prepared immutable source/caller state mismatch')
+        clock_raw = stable_read(clock_path, 16384,EVIDENCE_QUOTA)
+        require(hashlib.sha256(clock_raw).hexdigest() == state['clockSha256'], 'Original clock record changed')
+        clock = Budget(state['record'], os.environ)
+        admit_record(state['record'], os.environ, job_metadata(os.environ, min(time.monotonic()+AUTH_SECONDS, clock.deadline-RESERVE)),
+                     time.time(),time.monotonic(),state['record']['boot'])
+        install_cancellation()
+        run_all(state, os.environ, args.solution, args.dependency_mode)
+
+
+if __name__ == '__main__':
+    main()
