@@ -12,6 +12,25 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ('actions/dotnet-validate/action.yml', '.github/workflows/dotnet-validate.yml')
 NAMES = ('Build', 'Verify formatting', 'Test', 'Audit vulnerable packages')
 FROZEN_STEP_HASHES = {'actions/dotnet-validate/action.yml': {'Build': 'bec367edcb13163d0e6b51079b57b2621b63e4c8691fe4857a371e6627054b95', 'Test': '295d7d40a1e9f2ba193ad590b3a7926af7e70545d038735934019444dbb681f4', 'Verify formatting': 'd0964b847b652d47a61f2c337bbb96faf1b4478ffefe026089d25bf445f623e9', 'Audit vulnerable packages': '1ef055126bc37f47d4c61a8391836033f0115164eb486db78c890ec7a1ab09a6'}, '.github/workflows/dotnet-validate.yml': {'Build': '82ab49d47741e396e2d56ffc57ea5efe0361694b8d470a5e548b205031be887b', 'Test': '06100dcac73217924bc684667e52a4a3336b0e3d8d6bdde82d307a52f6b4465a', 'Verify formatting': '4dbb603a004ca71bdfdd783f6be970d274e06bc1048a1a8059185d9c7187ccf5', 'Audit vulnerable packages': '36417eb16f0f8bc47cbbb7e358a44df3a709386522f8860e7ddb08b06b18267a'}}
+ACTION = 'actions/dotnet-validate/action.yml'
+DISABLED_GUARD = "      if: ${{ inputs.normal-custody-mode == 'disabled' }}\n"
+
+
+def original_step(relative, name, step):
+    conditions = re.findall(r'(?m)^\s+if:[^\n]*\n', step)
+    if relative == ACTION:
+        if conditions != [DISABLED_GUARD]:
+            raise ValueError('Only the exact single disabled-profile guard is admitted')
+        step = step.replace(DISABLED_GUARD, '', 1)
+        # Audit was formerly EOF. The appended opt-in step introduces precisely
+        # one separator newline; retain every byte of its frozen original body.
+        if name == 'Audit vulnerable packages':
+            if not step.endswith('\n\n'):
+                raise ValueError('Exact appended-step separator required')
+            step = step[:-1]
+    elif conditions:
+        raise ValueError('Reusable workflow must remain unconditional')
+    return step
 
 
 def steps(source):
@@ -63,10 +82,21 @@ class ValidationOrderTests(unittest.TestCase):
                 source = (ROOT/relative).read_text()
                 selected = steps(source)
                 self.assertEqual(list(NAMES),[name for name in selected if name in NAMES])
+                if relative == ACTION:
+                    mode = source.split('  normal-custody-mode:\n',1)[1].split('  normal-custody-request:\n',1)[0]
+                    self.assertEqual(1,mode.count('    default: disabled\n'))
                 for name in NAMES:
-                    self.assertEqual(FROZEN_STEP_HASHES[relative][name],hashlib.sha256(selected[name].encode()).hexdigest())
+                    frozen = original_step(relative,name,selected[name])
+                    self.assertEqual(FROZEN_STEP_HASHES[relative][name],hashlib.sha256(frozen.encode()).hexdigest())
                     self.assertNotIn('continue-on-error',selected[name])
-                    self.assertNotRegex(selected[name],r'(?m)^\s+if:')
+                    if relative == ACTION:
+                        for mutation in (selected[name].replace(DISABLED_GUARD,"      if: always()\n",1),
+                                         selected[name].replace(DISABLED_GUARD,'',1),
+                                         selected[name].replace(DISABLED_GUARD,DISABLED_GUARD*2,1)):
+                            with self.assertRaises(ValueError): original_step(relative,name,mutation)
+                    else:
+                        self.assertNotRegex(selected[name],r'(?m)^\s+if:')
+                        with self.assertRaises(ValueError): original_step(relative,name,DISABLED_GUARD+selected[name])
                 self.assertLess(source.index('- name: Restore'),source.index('- name: Build'))
 
     def test_actual_build_failure_stops_before_format_and_test(self):
