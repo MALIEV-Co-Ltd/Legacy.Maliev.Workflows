@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Explicit Notification normal custody request; original deadline and exclusive root admission are independently required",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "profile", "deadlineRecord", "resultRoot"],
+  "properties": {
+    "schema": {"const": "normal-validation-custody-request-v1"},
+    "profile": {"const": "notification-n62-v1"},
+    "deadlineRecord": {"type": "string", "minLength": 1},
+    "resultRoot": {"type": "string", "minLength": 1}
+  }
+}
