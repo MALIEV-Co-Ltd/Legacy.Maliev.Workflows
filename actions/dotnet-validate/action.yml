@@ -18,6 +18,11 @@ inputs:
     required: false
     default: 'false'
 
+  validation-mode:
+    description: full runs all validation; format-only checks existing restored sources and never supplies full acceptance.
+    required: false
+    default: full
+
   normal-custody-mode:
     description: Explicit Notification custody profile; disabled preserves ordinary validation.
     required: false
@@ -30,6 +35,24 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Validate validation mode before helpers
+      shell: bash
+      env:
+        VALIDATION_MODE: ${{ inputs.validation-mode }}
+        NORMAL_CUSTODY_MODE: ${{ inputs.normal-custody-mode }}
+        NORMAL_CUSTODY_REQUEST: ${{ inputs.normal-custody-request }}
+      run: |
+        case "$VALIDATION_MODE" in
+          full) ;;
+          format-only)
+            if [[ "$NORMAL_CUSTODY_MODE" != "disabled" || -n "$NORMAL_CUSTODY_REQUEST" ]]; then
+              echo "format-only requires disabled custody and an empty request" >&2
+              exit 2
+            fi
+            ;;
+          *) echo "Unknown validation mode" >&2; exit 2 ;;
+        esac
+
     - name: Validate explicit normal custody source before helpers
       shell: bash
       env:
@@ -781,7 +804,7 @@ runs:
         & $runner -RepositoryPath (Get-Location).Path
 
     - name: Restore
-      if: ${{ inputs.normal-custody-mode == 'disabled' }}
+      if: ${{ inputs.normal-custody-mode == 'disabled' && inputs.validation-mode == 'full' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -791,7 +814,7 @@ runs:
         dotnet restore "${{ inputs.solution }}"
 
     - name: Build
-      if: ${{ inputs.normal-custody-mode == 'disabled' }}
+      if: ${{ inputs.normal-custody-mode == 'disabled' && inputs.validation-mode == 'full' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -811,7 +834,7 @@ runs:
         dotnet format "${{ inputs.solution }}" --verify-no-changes --no-restore
 
     - name: Test
-      if: ${{ inputs.normal-custody-mode == 'disabled' }}
+      if: ${{ inputs.normal-custody-mode == 'disabled' && inputs.validation-mode == 'full' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -821,7 +844,7 @@ runs:
         dotnet test "${{ inputs.solution }}" --configuration Release --no-build --no-restore
 
     - name: Audit vulnerable packages
-      if: ${{ inputs.normal-custody-mode == 'disabled' }}
+      if: ${{ inputs.normal-custody-mode == 'disabled' && inputs.validation-mode == 'full' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |

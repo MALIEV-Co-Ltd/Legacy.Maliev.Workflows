@@ -147,3 +147,7 @@ dotnet test .\Legacy.Maliev.Workflows.slnx
 ```
 
 During initial construction, this contract intentionally remains red until the required workflows, scripts, and Dependabot configuration are implemented in later validated slices.
+
+### Optional formatter preflight
+
+The composite action accepts optional `validation-mode: full` (default) or `format-only`. Full performs the original restore, Release build, formatter, tests and package audit. Format-only runs the same strict formatter command against sources already restored and built by the caller, and retains setup and security scanning. It requires disabled normal custody and an empty custody request. Unknown modes fail before helpers. A preflight cannot replace full validation, coverage or audit acceptance: callers must retain exactly one required full invocation on the same reviewed immutable action SHA, solution, directory, SDK, dependency mode, job/head and original deadline. Place at most one preflight after successful Release build and before expensive browser checks; enforce those conditions in caller contracts. The reusable workflow stays full-only.
