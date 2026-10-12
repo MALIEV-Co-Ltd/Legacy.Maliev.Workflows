@@ -18,7 +18,7 @@ import uuid
 PRODUCER = "84b2516dfd8e4b48387a412767a52cd58b0b598b"
 ISSUER = "019fc21e-50f0-7112-834f-9fb3b35b9dfe"
 OWNER = "01a1009c-83f6-7010-9a59-df89ecbb1b1f"
-SOURCE_PINS = {'actions/dotnet-validate/action.yml': 'c5d82ee453b754a4dd4210a078c195f1f856df594df46ae2c8bf4e3cd2b2f394', 'scripts/normal_validation_custody.py': '03a9a7f0715d624acad1e6317e151cbb10ef931e193c132b91353e2270bf2acb', 'scripts/normal_validation_controller.py': 'aa59e1c2232d2405a98b87b9085692b58e7c0f225cf60009e181ed7873d082b3', 'scripts/normal_validation_exec_gate.py': 'c1771473003b2cc8f411493f4717c4b9e71461ef93b7906da69c22d24341fe03', 'scripts/normal_validation_lifecycle.py': '8c2000ffeeade09de62af69d3f09e4ecb9001bfab2f783244668f4dd98d6424b'}
+SOURCE_PINS = {'actions/dotnet-validate/action.yml': 'fcd91d7752f9b5df625f2eb9361a41b5aef5c1117d4ccf461c44b9eb58000228', 'scripts/normal_validation_custody.py': '03a9a7f0715d624acad1e6317e151cbb10ef931e193c132b91353e2270bf2acb', 'scripts/normal_validation_controller.py': 'aa59e1c2232d2405a98b87b9085692b58e7c0f225cf60009e181ed7873d082b3', 'scripts/normal_validation_exec_gate.py': 'c1771473003b2cc8f411493f4717c4b9e71461ef93b7906da69c22d24341fe03', 'scripts/normal_validation_lifecycle.py': '8c2000ffeeade09de62af69d3f09e4ecb9001bfab2f783244668f4dd98d6424b'}
 RESERVE = 300
 PERMIT_KEYS = {"schema", "issuer", "owner", "kind", "leaseId", "issuedUtc",
                "expiresUtc", "producer", "run", "attempt", "job", "clockSha256"}
