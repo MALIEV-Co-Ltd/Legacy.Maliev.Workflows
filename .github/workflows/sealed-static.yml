@@ -64,7 +64,7 @@ jobs:
           sudo --preserve-env=GH_TOKEN,HOSTED_STATIC_PROFILE,ROOT_STATIC_PERMIT,TRUSTED_WORKFLOW_CONTEXT,MALIEV_WORKFLOWS_UID,MALIEV_WORKFLOWS_GID,GIT_CONFIG_COUNT,GIT_CONFIG_KEY_0,GIT_CONFIG_VALUE_0 python3 -B scripts/run-hosted-static.py
       - name: Retain strict raw evidence and cleanup receipts
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: workflows-static-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
