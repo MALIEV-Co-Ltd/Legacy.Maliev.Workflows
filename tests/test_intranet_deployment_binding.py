@@ -91,6 +91,18 @@ class KubernetesState:
                 if operation['op']=='test':assert parent[key]==operation['value'],'API CAS precondition mismatch'
                 else:parent[key]=operation['value']
             obj['metadata']['resourceVersion']=str(int(obj['metadata']['resourceVersion'])+1)
+            if kind=='deployment' and name==self.name and self.fail and self.fail.startswith('post-'):
+                fault=self.fail.removeprefix('post-');spec=obj['spec'];pod=spec['template']['spec'];container=pod['containers'][0]
+                if fault=='uid':obj['metadata']['uid']=GREEN
+                elif fault=='image':container['image']=self.repository+'@'+OLD
+                elif fault=='replicas':spec['replicas']=1
+                elif fault=='metadata':container['resources']['requests']['cpu']='60m'
+                elif fault=='minimum':spec['minReadySeconds']=0
+                elif fault=='grace':pod['terminationGracePeriodSeconds']=30
+                elif fault=='surge':spec['strategy']['rollingUpdate']['maxSurge']=2
+                elif fault=='unavailable':spec['strategy']['rollingUpdate']['maxUnavailable']=1
+                elif fault=='lifecycle':container['lifecycle']['preStop']['exec']['command'][-1]='sleep 30'
+                else:raise AssertionError('Unknown post-patch drift')
         elif args[:2]==['delete','--raw']:
             self.files.append(args[-1]);options=json.loads(Path(args[-1]).read_text())
             name=args[2].rsplit('/',1)[1]
@@ -172,6 +184,56 @@ class DeploymentTests(unittest.TestCase):
                 before=len(state.calls)
                 with self.assertRaises(Exception):adapter.mutate(request)
                 self.assertFalse(any(args[2:5]==['patch','deployment',state.name] for _,args,_ in state.calls[before:]))
+    def test_source_rollout_admission_preserves_owned_hooks_and_nullable_minimum(self):
+        owned=dict(preStop=dict(exec=dict(command=['/bin/sh','-c','sleep 60'])))
+        for role in m.base.ROLES:
+            for minimum in (None,0):
+                for lifecycle in (None,owned):
+                    with self.subTest(role=role,minimum=minimum,lifecycle=lifecycle):
+                        state,adapter,request=self.setup_state(role)
+                        spec=state.deployments[state.name]['spec']
+                        if minimum is not None:spec['minReadySeconds']=minimum
+                        if lifecycle is not None:spec['template']['spec']['containers'][0]['lifecycle']=copy.deepcopy(lifecycle)
+                        current=adapter.current('SNAPSHOT',request)
+                        self.assertEqual(minimum,current['deployment']['rolloutSettings']['minReadySeconds'])
+                        self.assertEqual(lifecycle,current['deployment']['rolloutSettings']['lifecycle'])
+            for fault in ('strategy','postStart','extra-hook','changed-sleep','malformed','null-hook','empty-hook'):
+                with self.subTest(role=role,fault=fault):
+                    state,adapter,request=self.setup_state(role);owner_calls=[]
+                    spec=state.deployments[state.name]['spec'];container=spec['template']['spec']['containers'][0]
+                    if fault=='strategy':spec['strategy']=dict(type='Recreate')
+                    elif fault=='postStart':container['lifecycle']=dict(postStart=dict(exec=dict(command=['foreign'])))
+                    elif fault=='extra-hook':container['lifecycle']=dict(owned,postStart=dict(exec=dict(command=['foreign'])))
+                    elif fault=='changed-sleep':container['lifecycle']=dict(preStop=dict(exec=dict(command=['/bin/sh','-c','sleep 30'])))
+                    elif fault=='malformed':container['lifecycle']=['foreign']
+                    elif fault=='null-hook':container['lifecycle']=None
+                    else:container['lifecycle']={}
+                    with self.assertRaises(Exception) as caught:
+                        m.run_bound_handoff(role,state.repository,'d'*40,NEW,state,lambda step,request:owner_calls.append(step),SCRIPTS)
+                    self.assertEqual('SNAPSHOT',caught.exception.step)
+                    self.assertEqual([],owner_calls)
+                    self.assertFalse(any(args[2] in ('create','patch','delete') for _,args,_ in state.calls))
+
+    def test_absent_to_explicit_zero_settings_drift_stops_before_patch(self):
+        for role in m.base.ROLES:
+            with self.subTest(role=role):
+                state,adapter,request=self.prepared_state(role)
+                state.deployments[state.name]['spec']['minReadySeconds']=0
+                before=len(state.calls)
+                with self.assertRaises(m.base.NativeBindingRejected):adapter.mutate(request)
+                self.assertFalse(any(args[2:5]==['patch','deployment',state.name] for _,args,_ in state.calls[before:]))
+
+    def test_actual_post_patch_settings_identity_and_metadata_must_match(self):
+        for role in m.base.ROLES:
+            for fault in ('uid','image','replicas','metadata','minimum','grace','surge','unavailable','lifecycle'):
+                with self.subTest(role=role,fault=fault):
+                    state,adapter,request=self.prepared_state(role);state.fail='post-'+fault
+                    with self.assertRaises((m.base.NativeBindingRejected,adapter.metadata.MetadataRejected)) as caught:adapter.mutate(request)
+                    if fault!='metadata':self.assertEqual('MUTATE_CANONICAL',caught.exception.step)
+                    self.assertEqual(NEW,state.created['spec']['template']['spec']['containers'][0]['image'].rsplit('@',1)[1])
+                    self.assertFalse(state.deleted)
+                    self.assertTrue(all(not Path(path).exists() for path in state.files))
+
     def test_actual_canonical_native_cas_exit_preserves_private_output(self):
         state,adapter,request=self.prepared_state();state.fail='canonical-server-cas'
         with self.assertRaises(m.base.NativeBindingRejected) as caught:adapter.mutate(request)
@@ -180,7 +242,7 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(OLD,adapter.image('VERIFY',state.name)[1])
     def test_full_accepted_policy_consumes_real_native_projection_create_mutate(self):
         for role in m.base.ROLES:
-            for failure in (None,'canonical-server-cas','green-process-proof'):
+            for failure in (None,'canonical-server-cas','green-process-proof','post-grace'):
                 with self.subTest(role=role,failure=failure):
                     state=KubernetesState(role);state.fail=failure
                     owner_calls=[];reservation='44444444-4444-4444-4444-444444444444';reserved=0
@@ -223,7 +285,11 @@ class DeploymentTests(unittest.TestCase):
                         return dict(exitCode=0,receipt=receipt)
                     if failure:
                         with self.assertRaises(Exception) as caught:m.run_bound_handoff(role,state.repository,'d'*40,NEW,state,owner,SCRIPTS)
-                        self.assertEqual('MUTATE_CANONICAL' if failure=='canonical-server-cas' else 'VERIFY_GREEN',caught.exception.step)
+                        self.assertEqual('MUTATE_CANONICAL' if failure in ('canonical-server-cas','post-grace') else 'VERIFY_GREEN',caught.exception.step)
+                        if failure=='post-grace':
+                            self.assertNotIn('BEFORE_CANONICAL_SELECTOR',owner_calls)
+                            self.assertNotIn('RELEASE_CAPACITY',owner_calls)
+                            self.assertEqual(state.created['metadata']['name'],state.service['spec']['selector']['app.kubernetes.io/name'])
                         if failure=='canonical-server-cas':self.assertEqual(29,caught.exception.exit_code)
                         self.assertFalse(state.deleted)
                     else:

@@ -33,9 +33,9 @@ class NativeDeploymentBinding(base.NativeSelectorDrain):
         self.metadata=metadata_module(scripts_root)
         self.contract=dict(source_sha='3fd301fe85cd8ca61434569eccb67a369eda47a4',target_application='Legacy.Maliev.Intranet',artifact='maliev-intranet',container=self.container,namespace=self.namespace)
 
-    def integer(self,step,name,field,empty=None):
+    def integer(self,step,name,field,empty=...):
         value=self.field(step,'deployment',name,field)
-        if not value and empty is not None:return empty
+        if not value and empty is not ...:return empty
         require(re.fullmatch(r'0|[1-9][0-9]*',value) and len(value)<=10,step)
         number=int(value);require(number<=2147483647,step)
         return number
@@ -94,9 +94,12 @@ class NativeDeploymentBinding(base.NativeSelectorDrain):
         require(base.UID.fullmatch(uid) and re.fullmatch('[1-9][0-9]*',rv),step)
         image,digest=self.image(step,name)
         metadata=self.selected_metadata(step,name)
-        _,lifecycle=self.optional(step,name,'lifecycle','container','json')
-        rollout=dict(strategy=self.field(step,'deployment',name,'.spec.strategy',structured=True),
-                     minReadySeconds=self.integer(step,name,'.spec.minReadySeconds',0),
+        present,lifecycle=self.optional(step,name,'lifecycle','container','json')
+        require(not present or lifecycle==dict(preStop=dict(exec=dict(command=['/bin/sh','-c','sleep 60']))),step)
+        strategy=self.field(step,'deployment',name,'.spec.strategy',structured=True)
+        require(type(strategy) is dict and strategy.get('type')=='RollingUpdate',step)
+        rollout=dict(strategy=strategy,
+                     minReadySeconds=self.integer(step,name,'.spec.minReadySeconds',None),
                      terminationGracePeriodSeconds=self.integer(step,name,'.spec.template.spec.terminationGracePeriodSeconds'),
                      lifecycle=lifecycle)
         return dict(uid=uid,resourceVersion=rv,image=image,imageDigest=digest,
@@ -183,10 +186,14 @@ class NativeDeploymentBinding(base.NativeSelectorDrain):
                dict(op='add',path='/spec/template/spec/containers/0/lifecycle',value=dict(preStop=dict(exec=dict(command=['/bin/sh','-c','sleep 60'])))),
                dict(op='replace',path='/spec/template/spec/containers/0/image',value=self.image_repository+'@'+request['imageDigest'])]
         self.command(step,['patch','deployment',self.deployment,'--type=json','-p',base.canonical(patch)])
-        after_uid=self.field(step,'deployment',self.deployment,'.metadata.uid')
-        _,after_digest=self.image(step,self.deployment)
-        require(after_uid==current['uid'] and after_digest==request['imageDigest'],step)
-        return dict(uid=after_uid,imageDigest=after_digest)
+        after=self.read_deployment(step,self.deployment)
+        require(after['uid']==current['uid'] and after['imageDigest']==request['imageDigest'] and
+                after['replicas']==current['replicas'],step)
+        self.metadata.verify_green_metadata(request['expectedCanonicalMetadata'],self.metadata.decode_green_metadata(after['greenMetadata']))
+        require(after['rolloutSettings']==dict(strategy=dict(type='RollingUpdate',rollingUpdate=dict(maxSurge=1,maxUnavailable=0)),
+                minReadySeconds=90,terminationGracePeriodSeconds=90,
+                lifecycle=dict(preStop=dict(exec=dict(command=['/bin/sh','-c','sleep 60'])))),step)
+        return dict(uid=after['uid'],imageDigest=after['imageDigest'])
 
 
 def run_bound_handoff(role,image_repository,source_commit,image_digest,native,application_tool,scripts_root):
