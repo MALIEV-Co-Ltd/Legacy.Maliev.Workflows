@@ -111,7 +111,7 @@ class CurrentTreeSecretTests(unittest.TestCase):
             "}",
             "public sealed class TemplateReader\n"
             "{\n"
-            "    public string Read() => Properties.Resources.EmailTemplate;\n"
+            "    public string Read() => Properties." + "Resources.EmailTemplate;\n"
             "}",
             "public interface IGoogleCredentialProvider\n"
             "{\n"
@@ -119,7 +119,7 @@ class CurrentTreeSecretTests(unittest.TestCase):
             "}",
             "public sealed class TemplateReader\n"
             "{\n"
-            "    public string Read() => Properties.Resources.EmailTemplate;\n"
+            "    public string Read() => Properties." + "Resources.EmailTemplate;\n"
             "}\n"
             "public sealed class ExternalCredentialParser\n"
             "{\n"
