@@ -25,10 +25,10 @@ public sealed class HistoricalMeasurementReadbackArchiveTests
         Assert.Equal("05a57edfc7481b888c2051b6d8ebf5d8af66567a55bb567b1c8809cfdb757e14", Hash(body));
         Assert.Contains("not byte-identical", prefix, StringComparison.Ordinal);
         Assert.Contains("must not be executed", prefix, StringComparison.Ordinal);
-        Assert.Equal(1, Regex.Matches(body,
-            Regex.Escape("[OMITTED: historical billing resource identifier]")).Count);
-        Assert.Equal(1, Regex.Matches(body,
-            Regex.Escape("[OMITTED: ambiguous billing/customer/card reference]")).Count);
+        Assert.Single(Regex.Matches(body,
+            Regex.Escape("[OMITTED: historical billing resource identifier]")));
+        Assert.Single(Regex.Matches(body,
+            Regex.Escape("[OMITTED: ambiguous billing/customer/card reference]")));
         Assert.DoesNotMatch(@"billingAccounts/[A-Za-z0-9-]+", body);
         Assert.DoesNotMatch(@"\b\d{4}(?:-\d{4}){3}\b", body);
         Assert.DoesNotContain("-----BEGIN ", body, StringComparison.Ordinal);
