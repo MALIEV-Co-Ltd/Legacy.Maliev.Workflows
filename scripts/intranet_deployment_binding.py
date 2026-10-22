@@ -213,5 +213,22 @@ def run_bound_handoff(role,image_repository,source_commit,image_digest,native,ap
     return policy.run_handoff('Legacy.Maliev.Intranet',source_commit,image_digest,tool,green_contract=adapter.contract)
 
 
-def invoke_public_release(*args,**kwargs):
-    raise base.NativeBindingRejected('ACTIVATION_NOT_APPROVED')
+def invoke_public_release(role=None,image_repository=None,source_commit=None,image_digest=None,*,native=None,application_tool=None):
+    """Dispatch an explicit source handoff through caller-owned boundaries.
+
+    Like the original public release helper's required proof/health callbacks,
+    these dependencies are interfaces, not evidence of their own qualification.
+    No default transport, environment switch, CLI or workflow is installed.
+    The accepted policy validates every receipt and retains both acceptance vetoes.
+    """
+    if all(value is None for value in (role,image_repository,source_commit,image_digest,native,application_tool)):
+        raise base.NativeBindingRejected('ACTIVATION_NOT_APPROVED')
+    require(type(role) is str and role in base.ROLES,'PUBLIC_REQUEST')
+    artifact='legacy-maliev-intranet-compatibility' if role=='compatibility' else 'legacy-maliev-intranet-bff'
+    require(type(image_repository) is str and re.fullmatch(r'[a-z0-9][a-z0-9.-]*(?:/[a-z0-9][a-z0-9._-]*)+',image_repository) and image_repository.endswith('/'+artifact),'PUBLIC_REQUEST')
+    require(type(source_commit) is str and re.fullmatch(r'[0-9a-f]{40}',source_commit),'PUBLIC_REQUEST')
+    require(type(image_digest) is str and re.fullmatch(r'sha256:[0-9a-f]{64}',image_digest),'PUBLIC_REQUEST')
+    require(callable(native) and callable(application_tool),'PUBLIC_BINDING')
+    # Resolve only this reviewed package's siblings; callers cannot substitute a
+    # policy directory or bypass the existing native/policy/metadata byte pins.
+    return run_bound_handoff(role,image_repository,source_commit,image_digest,native,application_tool,Path(__file__).resolve().parent)
