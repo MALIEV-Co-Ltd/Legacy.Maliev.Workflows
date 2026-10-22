@@ -33,9 +33,9 @@ class NativeDeploymentBinding(base.NativeSelectorDrain):
         self.metadata=metadata_module(scripts_root)
         self.contract=dict(source_sha='3fd301fe85cd8ca61434569eccb67a369eda47a4',target_application='Legacy.Maliev.Intranet',artifact='maliev-intranet',container=self.container,namespace=self.namespace)
 
-    def integer(self,step,name,field,empty=None):
+    def integer(self,step,name,field,empty=...):
         value=self.field(step,'deployment',name,field)
-        if not value and empty is not None:return empty
+        if not value and empty is not ...:return empty
         require(re.fullmatch(r'0|[1-9][0-9]*',value) and len(value)<=10,step)
         number=int(value);require(number<=2147483647,step)
         return number
@@ -94,9 +94,12 @@ class NativeDeploymentBinding(base.NativeSelectorDrain):
         require(base.UID.fullmatch(uid) and re.fullmatch('[1-9][0-9]*',rv),step)
         image,digest=self.image(step,name)
         metadata=self.selected_metadata(step,name)
-        _,lifecycle=self.optional(step,name,'lifecycle','container','json')
-        rollout=dict(strategy=self.field(step,'deployment',name,'.spec.strategy',structured=True),
-                     minReadySeconds=self.integer(step,name,'.spec.minReadySeconds',0),
+        present,lifecycle=self.optional(step,name,'lifecycle','container','json')
+        require(not present or lifecycle==dict(preStop=dict(exec=dict(command=['/bin/sh','-c','sleep 60']))),step)
+        strategy=self.field(step,'deployment',name,'.spec.strategy',structured=True)
+        require(type(strategy) is dict and strategy.get('type')=='RollingUpdate',step)
+        rollout=dict(strategy=strategy,
+                     minReadySeconds=self.integer(step,name,'.spec.minReadySeconds',None),
                      terminationGracePeriodSeconds=self.integer(step,name,'.spec.template.spec.terminationGracePeriodSeconds'),
                      lifecycle=lifecycle)
         return dict(uid=uid,resourceVersion=rv,image=image,imageDigest=digest,
@@ -183,10 +186,14 @@ class NativeDeploymentBinding(base.NativeSelectorDrain):
                dict(op='add',path='/spec/template/spec/containers/0/lifecycle',value=dict(preStop=dict(exec=dict(command=['/bin/sh','-c','sleep 60'])))),
                dict(op='replace',path='/spec/template/spec/containers/0/image',value=self.image_repository+'@'+request['imageDigest'])]
         self.command(step,['patch','deployment',self.deployment,'--type=json','-p',base.canonical(patch)])
-        after_uid=self.field(step,'deployment',self.deployment,'.metadata.uid')
-        _,after_digest=self.image(step,self.deployment)
-        require(after_uid==current['uid'] and after_digest==request['imageDigest'],step)
-        return dict(uid=after_uid,imageDigest=after_digest)
+        after=self.read_deployment(step,self.deployment)
+        require(after['uid']==current['uid'] and after['imageDigest']==request['imageDigest'] and
+                after['replicas']==current['replicas'],step)
+        self.metadata.verify_green_metadata(request['expectedCanonicalMetadata'],self.metadata.decode_green_metadata(after['greenMetadata']))
+        require(after['rolloutSettings']==dict(strategy=dict(type='RollingUpdate',rollingUpdate=dict(maxSurge=1,maxUnavailable=0)),
+                minReadySeconds=90,terminationGracePeriodSeconds=90,
+                lifecycle=dict(preStop=dict(exec=dict(command=['/bin/sh','-c','sleep 60'])))),step)
+        return dict(uid=after['uid'],imageDigest=after['imageDigest'])
 
 
 def run_bound_handoff(role,image_repository,source_commit,image_digest,native,application_tool,scripts_root):
@@ -206,5 +213,22 @@ def run_bound_handoff(role,image_repository,source_commit,image_digest,native,ap
     return policy.run_handoff('Legacy.Maliev.Intranet',source_commit,image_digest,tool,green_contract=adapter.contract)
 
 
-def invoke_public_release(*args,**kwargs):
-    raise base.NativeBindingRejected('ACTIVATION_NOT_APPROVED')
+def invoke_public_release(role=None,image_repository=None,source_commit=None,image_digest=None,*,native=None,application_tool=None):
+    """Dispatch an explicit source handoff through caller-owned boundaries.
+
+    Like the original public release helper's required proof/health callbacks,
+    these dependencies are interfaces, not evidence of their own qualification.
+    No default transport, environment switch, CLI or workflow is installed.
+    The accepted policy validates every receipt and retains both acceptance vetoes.
+    """
+    if all(value is None for value in (role,image_repository,source_commit,image_digest,native,application_tool)):
+        raise base.NativeBindingRejected('ACTIVATION_NOT_APPROVED')
+    require(type(role) is str and role in base.ROLES,'PUBLIC_REQUEST')
+    artifact='legacy-maliev-intranet-compatibility' if role=='compatibility' else 'legacy-maliev-intranet-bff'
+    require(type(image_repository) is str and re.fullmatch(r'[a-z0-9][a-z0-9.-]*(?:/[a-z0-9][a-z0-9._-]*)+',image_repository) and image_repository.endswith('/'+artifact),'PUBLIC_REQUEST')
+    require(type(source_commit) is str and re.fullmatch(r'[0-9a-f]{40}',source_commit),'PUBLIC_REQUEST')
+    require(type(image_digest) is str and re.fullmatch(r'sha256:[0-9a-f]{64}',image_digest),'PUBLIC_REQUEST')
+    require(callable(native) and callable(application_tool),'PUBLIC_BINDING')
+    # Resolve only this reviewed package's siblings; callers cannot substitute a
+    # policy directory or bypass the existing native/policy/metadata byte pins.
+    return run_bound_handoff(role,image_repository,source_commit,image_digest,native,application_tool,Path(__file__).resolve().parent)
