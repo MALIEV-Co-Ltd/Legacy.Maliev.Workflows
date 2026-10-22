@@ -15,6 +15,8 @@ public sealed class WorkflowEvidenceRetentionTests
     }
 
     [Theory]
+    [InlineData("actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02")]
+    [InlineData("actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9", "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a")]
     [InlineData("retention-days: 14", "retention-days: 7")]
     [InlineData("path: TestResults/workflows-retained/", "path: TestResults/raw-evidence/")]
     [InlineData("VSTestLogger: trx", "VSTestLogger: console")]
@@ -77,7 +79,7 @@ public sealed class WorkflowEvidenceRetentionTests
             Assert.Contains("test -z \"$(git -C .maliev-evidence-controls status --porcelain)\"", Scalar(prepare, "run"), StringComparison.Ordinal);
             var upload = steps.Children.Cast<YamlMappingNode>().Single(s => Scalar(s, "name") == "Retain complete or explicitly unavailable evidence");
             Assert.Equal("always()", Scalar(upload, "if"));
-            Assert.Equal("actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02", Scalar(upload, "uses"));
+            Assert.Equal("actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9", Scalar(upload, "uses"));
             var options = Mapping(upload, "with");
             Assert.Equal("14", Scalar(options, "retention-days"));
             Assert.Equal("TestResults/workflows-retained/", Scalar(options, "path"));
