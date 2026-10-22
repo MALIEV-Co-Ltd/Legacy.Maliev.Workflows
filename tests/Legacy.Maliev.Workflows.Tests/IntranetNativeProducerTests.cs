@@ -7,7 +7,7 @@ public sealed class IntranetNativeProducerTests
 {
     [Theory]
     [InlineData("test_intranet_native_handoff.py", 10)]
-    [InlineData("test_intranet_deployment_binding.py", 9)]
+    [InlineData("test_intranet_deployment_binding.py", 12)]
     public async Task RepoBoundSourceControls_ConsumePinnedPolicyAndOwnedNativeState(string script, int expectedTests)
     {
         string root = RepositoryContractTests.FindRepositoryRoot();

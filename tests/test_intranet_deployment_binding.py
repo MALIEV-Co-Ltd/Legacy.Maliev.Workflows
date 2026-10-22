@@ -15,7 +15,7 @@ RUN='a'*32;OLD='sha256:'+'b'*64;NEW='sha256:'+'c'*64
 ROLLOUT=dict(minReadySeconds=90,drainSeconds=60,terminationGracePeriodSeconds=90,maxSurge=1,maxUnavailable=0)
 
 class KubernetesState:
-    def __init__(self,role):
+    def __init__(self,role,replicas=2):
         self.role=role;self.name,self.container=m.base.ROLES[role]
         artifact='legacy-maliev-intranet-compatibility' if role=='compatibility' else 'legacy-maliev-intranet-bff'
         self.repository='registry.example.invalid/project/repository/'+artifact
@@ -30,8 +30,8 @@ class KubernetesState:
                 startupProbe=None,ports=[dict(name='http',containerPort=8080)],
                 resources=dict(requests=dict(cpu='50m',memory='96Mi')),securityContext=dict(readOnlyRootFilesystem=True))])
         self.deployments={self.name:dict(metadata=dict(name=self.name,uid=UID,resourceVersion='7',labels={}),
-            spec=dict(replicas=2,strategy=dict(type='RollingUpdate',rollingUpdate=dict(maxSurge=1,maxUnavailable=1)),template=dict(spec=pod)),
-            status=dict(readyReplicas=2,availableReplicas=2))}
+            spec=dict(replicas=replicas,strategy=dict(type='RollingUpdate',rollingUpdate=dict(maxSurge=1,maxUnavailable=1)),template=dict(spec=pod)),
+            status=dict(readyReplicas=replicas,availableReplicas=replicas))}
         self.service=dict(metadata=dict(uid=SERVICE,resourceVersion='9'),spec=dict(type='ClusterIP',selector={'app.kubernetes.io/name':self.name},ports=[dict(name='http',port=80,targetPort='http',protocol='TCP')]))
     def lookup(self,object,path):
         if path=='.spec.template.spec.containers[*].name':return ' '.join(c['name'] for c in object['spec']['template']['spec']['containers'])
@@ -78,7 +78,7 @@ class KubernetesState:
         elif args[0]=='create':
             self.files.append(args[-1]);document=json.loads(Path(args[-1]).read_text())
             self.created=copy.deepcopy(document);name=document['metadata']['name']
-            document['metadata'].update(uid=GREEN,resourceVersion='11');document['status']=dict(readyReplicas=2,availableReplicas=2)
+            document['metadata'].update(uid=GREEN,resourceVersion='11');document['status']=dict(readyReplicas=document['spec']['replicas'],availableReplicas=document['spec']['replicas'])
             self.deployments[name]=document
         elif args[0]=='patch':
             kind,name=args[1:3];patch=json.loads(args[-1])
@@ -240,21 +240,21 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(29,caught.exception.exit_code)
         self.assertNotIn('PRIVATE_PROVIDER_SENTINEL',str(caught.exception))
         self.assertEqual(OLD,adapter.image('VERIFY',state.name)[1])
-    def test_full_accepted_policy_consumes_real_native_projection_create_mutate(self):
-        for role in m.base.ROLES:
-            for failure in (None,'canonical-server-cas','green-process-proof','post-grace'):
-                with self.subTest(role=role,failure=failure):
-                    state=KubernetesState(role);state.fail=failure
-                    owner_calls=[];reservation='44444444-4444-4444-4444-444444444444';reserved=0
+    def test_public_dispatch_consumes_real_native_policy_roles_replicas_and_route_proofs(self):
+        for role,replicas in ((role,count) for role in m.base.ROLES for count in (1,3,10)):
+            for failure in (None,'canonical-server-cas','green-process-proof','post-grace') + tuple(phase+':'+fault for phase in ('GREEN_HEALTH','BEFORE_CANONICAL_SELECTOR','CANONICAL_HEALTH','FINAL_HEALTH') for fault in ('missing','false','string','foreign','short')):
+                with self.subTest(role=role,replicas=replicas,failure=failure):
+                    state=KubernetesState(role,replicas);state.fail=failure
+                    owner_calls=[];owner_requests=[];reservation='44444444-4444-4444-4444-444444444444';reserved=0
                     def owner(step,request):
                         nonlocal reserved
-                        owner_calls.append(step)
+                        owner_calls.append(step);owner_requests.append((step,copy.deepcopy(request)))
                         receipt={}
                         if step=='VERIFY_SOURCE':receipt=dict(sourceCommit=request['sourceCommit'])
                         elif step=='VERIFY_IMAGE':receipt=dict(sourceCommit=request['sourceCommit'],imageDigest=request['imageDigest'],immutable=True)
                         elif step in ('RESERVE_CAPACITY','RECHECK_CAPACITY'):
                             if step=='RESERVE_CAPACITY':reserved=request['additionalSlots']
-                            receipt=dict(availableSlots=3,reservedSlots=reserved,reservationId=reservation)
+                            receipt=dict(availableSlots=replicas+1,reservedSlots=reserved,reservationId=reservation)
                         elif step in ('VERIFY_GREEN','VERIFY_CANONICAL','VERIFY_FALLBACK'):
                             # Test-only runtime observer: identities/settings come from
                             # independently stored native workload state, not request claims.
@@ -271,7 +271,7 @@ class DeploymentTests(unittest.TestCase):
                         elif step in ('BEFORE_FIRST_SELECTOR','BEFORE_CANONICAL_SELECTOR'):
                             target=next(obj for obj in state.deployments.values() if obj['metadata']['uid']==request['deploymentUid'])
                             self.assertNotEqual(target['metadata']['name'],state.service['spec']['selector']['app.kubernetes.io/name'])
-                            receipt=dict(imageDigest=target['spec']['template']['spec']['containers'][0]['image'].rsplit('@',1)[1],deploymentUid=target['metadata']['uid'],continuousPublicHealthy=True,endpointsVerified=True,observedSeconds=0)
+                            receipt=dict(imageDigest=target['spec']['template']['spec']['containers'][0]['image'].rsplit('@',1)[1],deploymentUid=target['metadata']['uid'],continuousPublicHealthy=True,endpointsVerified=True,observedSeconds=0,processRouteVerified=False)
                             if step=='BEFORE_CANONICAL_SELECTOR':receipt['processRouteVerified']=True
                         elif step in ('GREEN_HEALTH','CANONICAL_HEALTH','FINAL_HEALTH'):
                             selected=state.service['spec']['selector']['app.kubernetes.io/name'];target=state.deployments[selected]
@@ -282,23 +282,76 @@ class DeploymentTests(unittest.TestCase):
                         elif step=='RELEASE_CAPACITY':
                             reserved=0;receipt=dict(reservationId=reservation,released=True)
                         else:raise AssertionError('No invented application executor')
+                        if failure and ':' in failure:
+                            phase,fault=failure.split(':')
+                            if step==phase:
+                                if fault=='missing':receipt.pop('processRouteVerified',None)
+                                elif fault=='false':receipt['processRouteVerified']=False
+                                elif fault=='string':receipt['processRouteVerified']='true'
+                                elif fault=='foreign':receipt['deploymentUid']=SERVICE
+                                elif fault=='short':receipt['observedSeconds']=-1 if phase=='BEFORE_CANONICAL_SELECTOR' else 179
                         return dict(exitCode=0,receipt=receipt)
                     if failure:
-                        with self.assertRaises(Exception) as caught:m.run_bound_handoff(role,state.repository,'d'*40,NEW,state,owner,SCRIPTS)
-                        self.assertEqual('MUTATE_CANONICAL' if failure in ('canonical-server-cas','post-grace') else 'VERIFY_GREEN',caught.exception.step)
+                        with self.assertRaises(Exception) as caught:m.invoke_public_release(role,state.repository,'d'*40,NEW,native=state,application_tool=owner)
+                        expected=failure.split(':')[0] if ':' in failure else ('MUTATE_CANONICAL' if failure in ('canonical-server-cas','post-grace') else 'VERIFY_GREEN')
+                        self.assertEqual(expected,caught.exception.step)
                         if failure=='post-grace':
                             self.assertNotIn('BEFORE_CANONICAL_SELECTOR',owner_calls)
                             self.assertNotIn('RELEASE_CAPACITY',owner_calls)
                             self.assertEqual(state.created['metadata']['name'],state.service['spec']['selector']['app.kubernetes.io/name'])
                         if failure=='canonical-server-cas':self.assertEqual(29,caught.exception.exit_code)
-                        self.assertFalse(state.deleted)
+                        self.assertEqual(failure.startswith('FINAL_HEALTH:'),state.deleted)
                     else:
-                        result=m.run_bound_handoff(role,state.repository,'d'*40,NEW,state,owner,SCRIPTS)
-                        self.assertFalse(result['runtimeAccepted'])
+                        result=m.invoke_public_release(role,state.repository,'d'*40,NEW,native=state,application_tool=owner)
+                        self.assertFalse(result['runtimeAccepted']);self.assertFalse(result['consumerAdoptionAccepted'])
+                        self.assertEqual(replicas,state.created['spec']['replicas'])
+                        reservation_request=next(request for step,request in owner_requests if step=='RESERVE_CAPACITY')
+                        self.assertEqual(replicas+1,reservation_request['additionalSlots'])
+                        self.assertEqual(2*replicas+1,reservation_request['peakReplicas'])
                         self.assertTrue(state.deleted);self.assertEqual(0,reserved)
                     # These operations MUST come from real selected native producer code;
                     # the test runtime observer cannot fabricate their receipts.
                     self.assertTrue(all(step not in owner_calls for step in ('SNAPSHOT','READ_CURRENT','CREATE_GREEN','MUTATE_CANONICAL')))
                     self.assertTrue(all(not Path(path).exists() for path in state.files))
+
+    def test_public_no_default_executor_and_missing_boundaries_refuse_before_io(self):
+        with self.assertRaises(m.base.NativeBindingRejected) as caught:m.invoke_public_release()
+        self.assertEqual('ACTIVATION_NOT_APPROVED',caught.exception.step)
+        boundary_calls=[]
+        boundary=lambda *args:boundary_calls.append(args)
+        for native,observer in ((None,None),(boundary,None),(None,boundary),(True,boundary),(boundary,True)):
+            with self.subTest(native_callable=callable(native),observer_callable=callable(observer)):
+                state=KubernetesState('compatibility')
+                with self.assertRaises(m.base.NativeBindingRejected) as caught:
+                    m.invoke_public_release('compatibility',state.repository,'d'*40,NEW,native=native,application_tool=observer)
+                self.assertEqual('PUBLIC_BINDING',caught.exception.step)
+                self.assertEqual([],state.calls)
+                self.assertEqual([],boundary_calls)
+
+    def test_public_invalid_identity_and_arguments_refuse_before_transport(self):
+        state=KubernetesState('compatibility');observer_calls=[]
+        valid=dict(role='compatibility',image_repository=state.repository,source_commit='d'*40,image_digest=NEW,native=state,application_tool=lambda *args:observer_calls.append(args))
+        for field,value in (('role',[]),('role','Compatibility'),('role','foreign'),('image_repository',state.repository+':latest'),
+                            ('image_repository',state.repository.replace('-compatibility','-bff')),('source_commit','D'*40),
+                            ('source_commit','d'*39),('image_digest','sha256:'+'C'*64),('image_digest',True)):
+            with self.subTest(field=field,value=value):
+                with self.assertRaises(m.base.NativeBindingRejected) as caught:m.invoke_public_release(**dict(valid,**{field:value}))
+                self.assertEqual('PUBLIC_REQUEST',caught.exception.step)
+        for unknown in ('approved','scripts_root','namespace'):
+            with self.subTest(unknown=unknown):
+                with self.assertRaises(TypeError):m.invoke_public_release(**dict(valid,**{unknown:True}))
+        self.assertEqual([],state.calls);self.assertEqual([],observer_calls)
+
+    def test_public_unhealthy_or_out_of_range_baseline_rejects_before_mutation(self):
+        for role in m.base.ROLES:
+            for replicas,ready in ((0,0),(11,11),(3,2)):
+                with self.subTest(role=role,replicas=replicas,ready=ready):
+                    state=KubernetesState(role,replicas);owner_calls=[]
+                    state.deployments[state.name]['status']['readyReplicas']=ready
+                    with self.assertRaises(Exception) as caught:
+                        m.invoke_public_release(role,state.repository,'d'*40,NEW,native=state,application_tool=lambda step,request:owner_calls.append(step))
+                    self.assertEqual('SNAPSHOT',caught.exception.step)
+                    self.assertEqual([],owner_calls)
+                    self.assertFalse(any(args[2] in ('create','patch','delete') for _,args,_ in state.calls))
 
 if __name__=='__main__':unittest.main(verbosity=2)
