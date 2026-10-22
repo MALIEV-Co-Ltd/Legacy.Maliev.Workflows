@@ -51,6 +51,28 @@ class GreenMetadataTests(unittest.TestCase):
         self.assertEqual([dict(name="MALIEV_OBSERVABILITY_STANDBY", value="true"), dict(name="MALIEV_OBSERVABILITY_READ_ONLY_STARTUP", value="true")], environment[-2:])
         self.assertNotIn(False, [item.get("value") for item in environment])
 
+    def test_preserved_environment_boolean_flags_are_lowercase_without_input_mutation(self):
+        cases = (
+            ("ASPNETCORE_ENVIRONMENT", True, "true"),
+            ("ASPNETCORE_ENVIRONMENT", False, "false"),
+            ("DOTNET_ENVIRONMENT", True, "true"),
+            ("DOTNET_ENVIRONMENT", False, "false"),
+        )
+        for name, value, expected in cases:
+            with self.subTest(name=name, value=value):
+                metadata = copy.deepcopy(METADATA)
+                metadata["environment"] = [dict(name=name, value=value)]
+                original = copy.deepcopy(metadata)
+                contract = copy.deepcopy(CONTRACT)
+                plan = plan_green_metadata(contract, metadata, DIGEST)
+                environment = plan["pod"]["containers"][0]["env"]
+                self.assertEqual([
+                    dict(name=name, value=expected),
+                    dict(name="MALIEV_OBSERVABILITY_STANDBY", value="true"),
+                ], environment)
+                self.assertEqual(original, metadata)
+                self.assertEqual(CONTRACT, contract)
+
     def test_all_four_configuration_reference_kinds_remain_structurally_exact(self):
         for kind in ("secretKeyRef", "configMapKeyRef", "fieldRef", "resourceFieldRef"):
             metadata = copy.deepcopy(METADATA)
@@ -84,6 +106,68 @@ class GreenMetadataTests(unittest.TestCase):
             metadata = copy.deepcopy(METADATA)
             del metadata["containerMetadata"][field]
             self.reject(metadata)
+
+    def test_original_strict_probe_and_reference_matrix_is_retained(self):
+        modes = (
+            "minimal-http", "startup-http", "tcp", "grpc", "exec", "headers",
+            "missing-readiness", "missing-liveness", "scalar", "missing-action",
+            "unknown-probe", "malformed-http", "unknown-http", "two-actions",
+            "reference-valid", "reference-missing", "reference-scalar", "reference-multiple",
+        )
+        accepted = {"minimal-http", "startup-http", "tcp", "grpc", "reference-valid"}
+        for mode in modes:
+            with self.subTest(mode=mode):
+                metadata = copy.deepcopy(METADATA)
+                probe = dict(httpGet=dict(path="/materials/readiness", port=8080), periodSeconds=10)
+                if mode == "tcp":
+                    probe = dict(tcpSocket=dict(port=8080))
+                elif mode == "grpc":
+                    probe = dict(grpc=dict(port=8080))
+                elif mode == "exec":
+                    probe = dict(exec=dict(command=["fixture-private-command"]))
+                elif mode == "headers":
+                    probe["httpGet"]["httpHeaders"] = [dict(name="fixture-private-header", value="fixture-private-value")]
+                elif mode == "scalar":
+                    probe = "fixture-private-probe-value"
+                elif mode == "missing-action":
+                    probe = dict(periodSeconds=10)
+                elif mode == "unknown-probe":
+                    probe["unexpected"] = "fixture-private-field"
+                elif mode == "malformed-http":
+                    probe = dict(httpGet="fixture-private-http-value")
+                elif mode == "unknown-http":
+                    probe["httpGet"]["unexpected"] = "fixture-private-field"
+                elif mode == "two-actions":
+                    probe["tcpSocket"] = dict(port=8080)
+                container = metadata["containerMetadata"]
+                container["readinessProbe"] = copy.deepcopy(probe)
+                container["livenessProbe"] = copy.deepcopy(probe)
+                if mode == "missing-readiness":
+                    del container["readinessProbe"]
+                elif mode == "missing-liveness":
+                    del container["livenessProbe"]
+                elif mode == "startup-http":
+                    container["startupProbe"] = copy.deepcopy(probe)
+                if mode.startswith("reference-"):
+                    reference = dict(fieldRef=dict(fieldPath="metadata.namespace"))
+                    if mode == "reference-missing":
+                        reference = None
+                    elif mode == "reference-scalar":
+                        reference = "fixture-private-reference"
+                    elif mode == "reference-multiple":
+                        reference["secretKeyRef"] = dict(name="fixture-private-secret", key="fixture-private-key")
+                    metadata["environment"] = [dict(name="SAFE_REFERENCE", valueFrom=reference)]
+                if mode not in accepted:
+                    self.reject(metadata)
+                    continue
+                planned = self.plan(metadata)["pod"]["containers"][0]
+                self.assertEqual(probe, planned["readinessProbe"])
+                self.assertEqual(probe, planned["livenessProbe"])
+                self.assertEqual(mode == "startup-http", "startupProbe" in planned)
+                if mode == "startup-http":
+                    self.assertEqual(probe, planned["startupProbe"])
+                if mode == "reference-valid":
+                    self.assertEqual(metadata["environment"][0], planned["env"][0])
 
     def test_every_unsafe_initial_container_shape_rejects(self):
         for field in ("initContainers", "command", "args", "volumeMounts", "volumes"):

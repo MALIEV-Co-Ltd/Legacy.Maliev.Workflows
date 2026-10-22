@@ -102,6 +102,34 @@ class CurrentTreeSecretTests(unittest.TestCase):
                    "ServiceAccountCredential Account { get; } }"
         self.assertEqual(["credential-holder-contract"], [f.rule for f in self.scanner.scan_text("a.cs", contract)])
 
+    def test_external_credential_providers_and_generic_resource_readers_are_not_holders(self):
+        safe_sources = [
+            "public sealed class GoogleCredentialProvider\n"
+            "{\n"
+            "    public GoogleCredential Get() => GoogleCredential.GetApplicationDefault();\n"
+            "    public GoogleCredential GetFromFile(string path) => GoogleCredential.FromFile(path);\n"
+            "}",
+            "public sealed class TemplateReader\n"
+            "{\n"
+            "    public string Read() => Properties." + "Resources.EmailTemplate;\n"
+            "}",
+            "public interface IGoogleCredentialProvider\n"
+            "{\n"
+            "    GoogleCredential GetCredential();\n"
+            "}",
+            "public sealed class TemplateReader\n"
+            "{\n"
+            "    public string Read() => Properties." + "Resources.EmailTemplate;\n"
+            "}\n"
+            "public sealed class ExternalCredentialParser\n"
+            "{\n"
+            "    public GoogleCredential Parse(Stream input) => GoogleCredential.FromStream(input);\n"
+            "}",
+        ]
+        for source in safe_sources:
+            with self.subTest(source=source):
+                self.assertEqual([], self.scanner.scan_text("fixture.cs", source))
+
     def test_allowlist_requires_exact_content_and_explicit_review(self):
         text = synthetic_password()
         finding = self.scanner.scan_text("candidate.txt", text)[0]
