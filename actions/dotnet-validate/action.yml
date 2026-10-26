@@ -13,6 +13,14 @@ inputs:
     description: .NET SDK version installed for validation.
     required: false
     default: 10.0.x
+  dotnet-setup-mode:
+    description: install preserves vendor setup; qualified-existing reuses an exact private SDK and shared runtime.
+    required: false
+    default: install
+  qualified-runtime-version:
+    description: Exact Core and ASP.NET runtime required only by qualified-existing mode.
+    required: false
+    default: ''
   use-local-maliev-dependencies:
     description: Set to true when sibling MALIEV projects must be resolved from the caller workspace.
     required: false
@@ -745,7 +753,35 @@ runs:
         load_authenticated_modules(package).main()
         PY
 
+    - name: Qualify existing private .NET installation
+      shell: bash
+      env:
+        SDK_SETUP_MODE: ${{ inputs.dotnet-setup-mode }}
+        REQUESTED_SDK: ${{ inputs.dotnet-version }}
+        REQUESTED_RUNTIME: ${{ inputs.qualified-runtime-version }}
+      run: |
+        case "$SDK_SETUP_MODE" in
+          install) test -z "$REQUESTED_RUNTIME" || exit 2; exit 0 ;;
+          qualified-existing) ;;
+          *) exit 2 ;;
+        esac
+        [[ "$REQUESTED_SDK" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 2
+        [[ "$REQUESTED_RUNTIME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 2
+        private_root="$(realpath "$DOTNET_ROOT")"
+        test "$private_root" = "$DOTNET_ROOT"
+        case "$private_root" in
+          "$(realpath "$RUNNER_TEMP")"/*) ;;
+          *) exit 1 ;;
+        esac
+        test "$(realpath "$(command -v dotnet)")" = "$private_root/dotnet"
+        test "$(dotnet --version)" = "$REQUESTED_SDK"
+        runtimes="$(dotnet --list-runtimes)"
+        test "$(printf '%s\n' "$runtimes" | wc -l)" = 2
+        test "$(printf '%s\n' "$runtimes" | awk '$1 == "Microsoft.NETCore.App" { print $2 }')" = "$REQUESTED_RUNTIME"
+        test "$(printf '%s\n' "$runtimes" | awk '$1 == "Microsoft.AspNetCore.App" { print $2 }')" = "$REQUESTED_RUNTIME"
+
     - name: Set up .NET
+      if: ${{ inputs.dotnet-setup-mode == 'install' }}
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
