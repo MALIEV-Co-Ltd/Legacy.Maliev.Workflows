@@ -68,7 +68,7 @@ public sealed class QualifiedSdkReuseTests
                     ;;
                   *) exit 3 ;;
                 esac
-                """ + "\n";
+                """.ReplaceLineEndings("\n") + "\n";
             string executable = Path.Combine(wrongExecutable ? other : installation, "dotnet");
             await File.WriteAllTextAsync(executable, stub, TestContext.Current.CancellationToken);
             ProcessStartInfo start = new(OperatingSystem.IsWindows() ? "C:/Program Files/Git/bin/bash.exe" : "bash");
@@ -91,7 +91,7 @@ public sealed class QualifiedSdkReuseTests
                 export DOTNET_ROOT="$(realpath "$TEST_INSTALLATION")"
                 chmod +x "$TEST_EXECUTABLE"
                 export PATH="$(dirname "$(realpath "$TEST_EXECUTABLE")"):$PATH"
-                """ + "\n";
+                """.ReplaceLineEndings("\n") + "\n";
             string guard = Scalar(Steps().Single(step => Scalar(step, "name") == "Qualify existing private .NET installation"), "run");
             OwnedTestProcess.Result result = await OwnedTestProcess.RunAsync(start,
                 input: prefix + guard, timeout: TimeSpan.FromSeconds(5), outputLimitCharacters: 16 * 1024,
