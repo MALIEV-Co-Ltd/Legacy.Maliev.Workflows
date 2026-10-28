@@ -655,7 +655,8 @@ jobs:
                   raise ValueError("Packaged source revision mismatch")
               manifest = {
                   "scripts": ["vendor.min.js", "app.min.js"],
-                  "routeScripts": ["route-inquiry.js", "route-error.js", "route-instant-quotation.js",
+                  "routeScripts": ["route-about.js", "route-home.js", "route-knowledge.js",
+                                   "route-inquiry.js", "route-error.js", "route-instant-quotation.js",
                                    "route-member-order.js", "route-service-finder.js", "route-service-cnc.js",
                                    "route-service-finishing.js", "route-service-printing.js",
                                    "route-service-scanning.js", "route-service-toc.js"],

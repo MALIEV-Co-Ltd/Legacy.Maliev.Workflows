@@ -1,4 +1,5 @@
 """Execute the actual publisher gate against owned scratch images, never start them."""
+import ast
 import json
 import os
 from pathlib import Path
@@ -10,10 +11,11 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
 REVISION = 'a' * 40
-# Independent inventory from Web007c manifest and consumer route selection.
+# Independent inventory from accepted Web2c7562fc manifest blob2363145c and route selection.
 MANIFEST = {
     'scripts': ['vendor.min.js', 'app.min.js'],
-    'routeScripts': ['route-inquiry.js', 'route-error.js', 'route-instant-quotation.js', 'route-member-order.js',
+    'routeScripts': ['route-about.js', 'route-home.js', 'route-knowledge.js',
+                     'route-inquiry.js', 'route-error.js', 'route-instant-quotation.js', 'route-member-order.js',
                      'route-service-finder.js', 'route-service-cnc.js', 'route-service-finishing.js',
                      'route-service-printing.js', 'route-service-scanning.js', 'route-service-toc.js'],
     'routeScopedModules': {'instantQuotationViewer': 'instant-quotation-viewer.mjs',
@@ -96,7 +98,7 @@ class WebImageTests(unittest.TestCase):
             self.assertEqual(0, result.returncode, result.stderr)
             receipt = json.loads(result.stdout)
             self.assertEqual('accepted', receipt['status'])
-            self.assertEqual(22, receipt['assetCount'])
+            self.assertEqual(25, receipt['assetCount'])
             self.assertEqual(12, receipt['fontCount'])
             self.assertEqual(REVISION, receipt['sourceRevision'])
         self.with_image(accepted)
@@ -115,7 +117,11 @@ class WebImageTests(unittest.TestCase):
 
     def test_manifest_omission_and_duplicate_keys_refused(self):
         missing = dict(MANIFEST, scripts=['vendor.min.js'])
-        for manifest in (json.dumps(missing), json.dumps(MANIFEST)[:-1] + ',"scripts":[]}'):
+        legacy = dict(MANIFEST, routeScripts=MANIFEST['routeScripts'][3:])
+        unknown = dict(MANIFEST, routeScripts=MANIFEST['routeScripts'] + ['route-unapproved.js'])
+        reordered = dict(MANIFEST, routeScripts=list(reversed(MANIFEST['routeScripts'])))
+        for manifest in (json.dumps(missing), json.dumps(legacy), json.dumps(unknown), json.dumps(reordered),
+                         json.dumps(MANIFEST)[:-1] + ',"scripts":[]}'):
             with self.subTest(manifest=manifest[:20]):
                 self.with_image(self.refused, manifest=manifest)
 
@@ -144,6 +150,13 @@ class WebImageTests(unittest.TestCase):
         self.assertEqual({'status': 'not-applicable'}, json.loads(result.stdout))
 
     def test_actual_workflow_labels_build_and_checks_before_scanning_publication(self):
+        inspected = next(node for node in ast.parse(gate_script()).body
+                         if isinstance(node, ast.FunctionDef) and node.name == 'inspect')
+        manifest = next(node.value for node in inspected.body if isinstance(node, ast.Assign)
+                        and any(isinstance(target, ast.Name) and target.id == 'manifest' for target in node.targets))
+        self.assertEqual(MANIFEST, ast.literal_eval(manifest))
+        self.assertEqual(25, len(ASSETS))
+        self.assertEqual(25, len(set(ASSETS)))
         workflow = (ROOT / '.github/workflows/publish-image.yml').read_text()
         self.assertIn('labels: org.opencontainers.image.revision=${{ github.sha }}', workflow)
         build = workflow.index('      - name: Build image once for scanning and publication\n')
