@@ -11,7 +11,7 @@ public sealed class RepositoryContractTests
         "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1";
 
     private const string Node24SetupDotnetReference =
-        "actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0";
+        "actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0";
 
     private const string Node24CacheReference =
         "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0";

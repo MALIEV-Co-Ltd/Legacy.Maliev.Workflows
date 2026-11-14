@@ -113,6 +113,16 @@ class QualificationControls(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(ValueError):
                 Q.compile_authenticated({**sources, name: sources[name]+b" "})
         with self.assertRaises(ValueError): Q.compile_authenticated({})
+        action_path = 'actions/dotnet-validate/action.yml'
+        action = sources[action_path]
+        self.assertEqual(1, action.count(Q.NEW_SETUP_PIN))
+        self.assertEqual(0, action.count(Q.OLD_SETUP_PIN))
+        predecessor = action.replace(Q.NEW_SETUP_PIN, Q.OLD_SETUP_PIN)
+        self.assertEqual(Q.SOURCE_PINS[action_path], hashlib.sha256(predecessor).hexdigest())
+        for changed in (predecessor, action.replace(Q.NEW_SETUP_PIN, Q.NEW_SETUP_PIN + Q.NEW_SETUP_PIN),
+                        action.replace(Q.NEW_SETUP_PIN, b'actions/setup-dotnet@' + b'0' * 40 + b' # v6.1.0')):
+            with self.subTest(action=hashlib.sha256(changed).hexdigest()), self.assertRaises(ValueError):
+                Q.compile_authenticated({**sources, action_path: changed})
 
     def test_valid_looking_unsigned_permit_never_grants_execution(self):
         # These strings match expected associations but prove no external grant.

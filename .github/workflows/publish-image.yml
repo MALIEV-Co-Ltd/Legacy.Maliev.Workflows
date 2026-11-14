@@ -294,7 +294,7 @@ jobs:
           service_account: ${{ inputs.service-account }}
 
       - name: Sign in to Artifact Registry
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ${{ env.IMAGE_REGISTRY }}
           username: oauth2accesstoken
@@ -620,12 +620,272 @@ jobs:
           import tarfile
           import tempfile
           import uuid
+          import signal
+          import math
+          import stat
+          from contextlib import contextmanager
+
+          """Bounded Docker CLI execution and Web inspection custody."""
+          import json
+          import os
+          import re
+          import signal
+          import selectors
+          import subprocess
+          import time
+
+
+          def open_receipt(environment):
+              """Open one exclusive receipt beneath the runner temp directory.
+
+              The caller creates its proof directory before invoking the producer.  The
+              direct reusable-workflow path writes at the root of RUNNER_TEMP instead.
+              """
+              run, attempt = environment.get('GITHUB_RUN_ID', ''), environment.get('GITHUB_RUN_ATTEMPT', '')
+              if not re.fullmatch(r'[1-9][0-9]{0,19}', run) or not re.fullmatch(r'[1-9][0-9]{0,9}', attempt):
+                  raise ValueError('run identity unavailable')
+              root = os.open(environment['RUNNER_TEMP'], os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+              directory = root
+              try:
+                  if environment.get('WEB_PRODUCER_CUSTODY') == 'caller':
+                      directory = os.open('web-packaged-proof', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                                          dir_fd=root)
+                      name = 'producer-custody.jsonl'
+                  else:
+                      name = f'web-producer-custody-{run}-{attempt}.jsonl'
+                  return os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                                 0o600, dir_fd=directory)
+              finally:
+                  if directory != root:
+                      os.close(directory)
+                  os.close(root)
+
+
+          def append_event(fd, event):
+              """Persist an event before or after a command; fail closed on partial writes."""
+              data = (json.dumps(event, sort_keys=True, separators=(',', ':')) + '\n').encode('ascii')
+              view = memoryview(data)
+              while view:
+                  written = os.write(fd, view)
+                  if written <= 0:
+                      raise OSError('custody receipt write failed')
+                  view = view[written:]
+              os.fsync(fd)
+
+
+          def child_identity(pid):
+              # A reaped or rapidly exiting child cannot be attributed; report uncertainty.
+              with open(f'/proc/{pid}/stat', encoding='ascii') as source:
+                  stat = source.read()
+              fields = stat[stat.rfind(')') + 2:].split()
+              ticks = int(fields[19])
+              with open('/proc/sys/kernel/random/boot_id', encoding='ascii') as source:
+                  boot_id = source.read().strip()
+              if not re.fullmatch(r'[0-9a-f-]{36}', boot_id):
+                  raise ValueError('host boot identity unavailable')
+              with open('/proc/stat', encoding='ascii') as source:
+                  boot_lines = [line for line in source if line.startswith('btime ')]
+              if len(boot_lines) != 1:
+                  raise ValueError('host boot time unavailable')
+              boot_seconds = int(boot_lines[0].split()[1])
+              ticks_per_second = os.sysconf('SC_CLK_TCK')
+              executable = os.readlink(f'/proc/{pid}/exe')
+              inode = os.stat(f'/proc/{pid}/exe')
+              return {'pid': pid, 'startTicks': ticks, 'bootId': boot_id, 'bootSeconds': boot_seconds,
+                      'ticksPerSecond': ticks_per_second, 'executable': executable,
+                      'device': inode.st_dev, 'inode': inode.st_ino}
+
+
+          def run_bounded(argv, phase, receipt_fd, timeout=120, maximum=131072):
+              """Draft: never infer daemon settlement from CLI termination or removal."""
+              if phase not in ('create', 'export', 'rm', 'observe'):
+                  raise ValueError('unknown custody phase')
+              append_event(receipt_fd, {'phase': phase, 'event': 'invocation-intent', 'arguments': argv,
+                                        'daemonSettlement': 'unproved'})
+              deadline = time.monotonic() + timeout
+              selector = selectors.DefaultSelector()
+              child = None
+              identity = {'pid': None, 'identity': 'unavailable'}
+              prior_handlers = {}
+              pending = []
+              def defer(signum, frame):
+                  if not pending:
+                      pending.append(signum)
+              def raise_pending():
+                  if pending:
+                      if pending[0] == signal.SIGALRM:
+                          raise TimeoutError('Web image inspection deadline expired')
+                      raise InterruptedError('Web image inspection was terminated')
+              output = {'stdout': bytearray(), 'stderr': bytearray()}
+              result = 'unproved'
+              primary = None
+              code = None
+              try:
+                  # No child exists until both handlers are deferred. Keep them deferred
+                  # until the exact returned Popen handle is reaped or custody is unproved.
+                  for signum in (signal.SIGTERM, signal.SIGALRM):
+                      prior_handlers[signum] = signal.getsignal(signum)
+                      signal.signal(signum, defer)
+                  raise_pending()
+                  child = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
+                  identity = {'pid': child.pid, 'identity': 'unavailable'}
+                  identity = child_identity(child.pid)
+                  append_event(receipt_fd, {'phase': phase, 'event': 'started', 'cli': identity,
+                                            'daemonSettlement': 'unproved'})
+                  raise_pending()
+                  for name, pipe in (('stdout', child.stdout), ('stderr', child.stderr)):
+                      os.set_blocking(pipe.fileno(), False)
+                      selector.register(pipe, selectors.EVENT_READ, name)
+                  total = 0
+                  while selector.get_map():
+                      raise_pending()
+                      remaining = deadline - time.monotonic()
+                      if remaining <= 0:
+                          raise subprocess.TimeoutExpired(argv, timeout)
+                      for key, _ in selector.select(min(remaining, .1)):
+                          try:
+                              chunk = os.read(key.fileobj.fileno(), min(65536, maximum - total + 1))
+                          except BlockingIOError:
+                              continue
+                          if not chunk:
+                              selector.unregister(key.fileobj)
+                              continue
+                          total += len(chunk)
+                          if total > maximum:
+                              raise ValueError('CLI output bound exceeded')
+                          output[key.data].extend(chunk)
+                          if key.data == 'stdout' and len(output['stdout']) > 65536:
+                              raise ValueError('CLI stdout bound exceeded')
+                  remaining = deadline - time.monotonic()
+                  if remaining <= 0:
+                      raise subprocess.TimeoutExpired(argv, timeout)
+                  while True:
+                      raise_pending()
+                      remaining = deadline - time.monotonic()
+                      if remaining <= 0:
+                          raise subprocess.TimeoutExpired(argv, timeout)
+                      try:
+                          code = child.wait(timeout=min(remaining, .1))
+                          break
+                      except subprocess.TimeoutExpired:
+                          continue
+                  if code:
+                      raise ValueError('CLI command failed')
+                  raise_pending()
+                  result = 'command-completed'
+              except BaseException as error:
+                  primary = error
+              finally:
+                  if pending and primary is None:
+                      try:
+                          raise_pending()
+                      except BaseException as interrupted:
+                          primary = interrupted
+                  try:
+                      if child is not None and child.poll() is None:
+                          try:
+                              child.terminate()
+                          except ProcessLookupError:
+                              pass
+                          try:
+                              child.wait(timeout=2)
+                          except subprocess.TimeoutExpired:
+                              try:
+                                  child.kill()
+                              except ProcessLookupError:
+                                  pass
+                              child.wait(timeout=3)
+                  except BaseException as cleanup:
+                      if primary is None:
+                          primary = cleanup
+                      else:
+                          primary.add_note('Exact CLI cleanup failed: ' + type(cleanup).__name__)
+                  try:
+                      append_event(receipt_fd, {'phase': phase, 'event': 'terminal', 'cli': identity,
+                                                'exitCode': child.poll() if child is not None else None, 'result': result,
+                                                'daemonSettlement': 'unproved' if primary else 'command-completed'})
+                  except BaseException as receipt_error:
+                      if primary is None:
+                          primary = receipt_error
+                      else:
+                          primary.add_note('Terminal receipt failed: ' + type(receipt_error).__name__)
+                  for resource in (selector, *((child.stdout, child.stderr) if child is not None else ())):
+                      try:
+                          resource.close()
+                      except BaseException as close_error:
+                          if primary is None:
+                              primary = close_error
+                          else:
+                              primary.add_note('CLI stream cleanup failed: ' + type(close_error).__name__)
+                  if pending and primary is None:
+                      try:
+                          raise_pending()
+                      except BaseException as interrupted:
+                          primary = interrupted
+                  for signum, handler in prior_handlers.items():
+                      try:
+                          signal.signal(signum, handler)
+                      except BaseException as restore_error:
+                          if primary is None:
+                              primary = restore_error
+                          else:
+                              primary.add_note('Signal handler restoration failed: ' + type(restore_error).__name__)
+              if pending and primary is None:
+                  raise_pending()
+              if primary is not None:
+                  raise primary
+              return bytes(output['stdout']).decode('ascii').strip()
+
+          receipt_fd = None
+          inspection_deadline = None
+          cleanup_deadline = None
+          in_cleanup = False
+
+          def on_termination(signum, frame):
+              signal.signal(signal.SIGTERM, signal.SIG_IGN)
+              raise InterruptedError('Web image inspection was terminated')
 
           def native(arguments):
-              result = subprocess.run(["docker", *arguments], capture_output=True, timeout=120)
-              if result.returncode != 0 or len(result.stdout) > 65536:
+              global receipt_fd
+              if receipt_fd is None:
+                  receipt_fd = open_receipt(os.environ)
+              deadline = cleanup_deadline if in_cleanup else inspection_deadline
+              if deadline is None:
+                  raise ValueError('Image inspection deadline unavailable')
+              remaining = deadline - time.monotonic() - 5
+              if remaining <= 0:
+                  raise TimeoutError('Image inspection deadline exhausted')
+              if arguments[0] == "create":
+                  phase = "create"
+              elif arguments[:2] == ["container", "export"]:
+                  phase = "export"
+              elif arguments[:2] == ["container", "rm"]:
+                  phase = "rm"
+              else:
+                  phase = "observe"
+              value = run_bounded(["docker", *arguments], phase, receipt_fd, timeout=min(120, remaining))
+              if len(value.encode("ascii")) > 65536:
                   raise ValueError("Image inspection unavailable")
-              return result.stdout.decode("ascii").strip()
+              return value
+
+          def verify_owned_container(container_id, name, image_id):
+              if not re.fullmatch(r"[0-9a-f]{64}", container_id):
+                  raise ValueError("Invalid owned container identity")
+              actual = native(["container", "inspect", "--format", "{{.Id}}|{{.Name}}|{{.Image}}|{{.State.Status}}", container_id])
+              if actual != f"{container_id}|/{name}|{image_id}|created":
+                  raise ValueError("Owned container identity differs")
+
+          def release_owned_container(container_id, name, image_id):
+              global in_cleanup
+              in_cleanup = True
+              verify_owned_container(container_id, name, image_id)
+              native(["container", "rm", "--force", container_id])
+              daemon_id = native(["info", "--format", "{{.ID}}"])
+              if not daemon_id:
+                  raise ValueError("Docker daemon identity unavailable")
+              remaining = native(["container", "ls", "--all", "--no-trunc", "--quiet", "--filter", "id=" + container_id])
+              if remaining:
+                  raise ValueError("Owned container removal is not confirmed")
 
           def unique_object(pairs):
               result = {}
@@ -635,9 +895,76 @@ jobs:
                   result[key] = value
               return result
 
+          def check_inspection_deadline():
+              if inspection_deadline is None or time.monotonic() >= inspection_deadline:
+                  raise TimeoutError('Image archive inspection deadline exhausted')
+
+          @contextmanager
+          def watchdog_until(deadline):
+              remaining = deadline - time.monotonic()
+              if remaining <= 0 or signal.getitimer(signal.ITIMER_REAL) != (0.0, 0.0):
+                  raise TimeoutError('Image archive watchdog unavailable')
+              previous = signal.getsignal(signal.SIGALRM)
+              def expired(signum, frame):
+                  raise TimeoutError('Image archive inspection deadline exhausted')
+              signal.signal(signal.SIGALRM, expired)
+              try:
+                  signal.setitimer(signal.ITIMER_REAL, remaining)
+                  yield
+              finally:
+                  signal.setitimer(signal.ITIMER_REAL, 0)
+                  signal.signal(signal.SIGALRM, previous)
+
+          def inspection_watchdog():
+              return watchdog_until(inspection_deadline)
+
+          def cleanup_watchdog():
+              return watchdog_until(cleanup_deadline)
+
+          @contextmanager
+          def owned_export_directory():
+              directory = tempfile.mkdtemp(prefix='legacy-web-assets-')
+              archive = os.path.join(directory, 'filesystem.tar')
+              state = {'exportSettled': False}
+              try:
+                  with inspection_watchdog():
+                      yield archive, state
+              finally:
+                  if state['exportSettled']:
+                      primary = sys.exc_info()[1]
+                      try:
+                          with cleanup_watchdog():
+                              append_event(receipt_fd, {'phase': 'archive-cleanup', 'event': 'invoked', 'archive': archive})
+                              try:
+                                  info = os.lstat(archive)
+                              except FileNotFoundError:
+                                  info = None
+                              if info is not None:
+                                  if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                                      raise ValueError('Owned archive identity unavailable')
+                                  os.unlink(archive)
+                              os.rmdir(directory)
+                              append_event(receipt_fd, {'phase': 'archive-cleanup', 'event': 'settled', 'archive': archive})
+                      except BaseException as error:
+                          if primary is None:
+                              raise
+                          primary.add_note('Owned archive cleanup unresolved: ' + type(error).__name__)
+                  else:
+                      print('[web-packaged-assets] export directory retained; daemon settlement unproved', file=sys.stderr)
+
           def inspect():
+              global inspection_deadline, cleanup_deadline
               if os.environ.get("CALLER_REPOSITORY") != "MALIEV-Co-Ltd/Legacy.Maliev.Web":
                   return {"status": "not-applicable"}
+              started = time.monotonic()
+              inspection_deadline = started + 205
+              cleanup_deadline = started + 275
+              if os.environ.get('WEB_PRODUCER_CUSTODY') == 'caller':
+                  outer_deadline = float(os.environ.get('WEB_PRODUCER_OUTER_DEADLINE', 'nan'))
+                  if not math.isfinite(outer_deadline) or not 0 < outer_deadline - started <= 300:
+                      raise ValueError('Caller deadline unavailable')
+                  inspection_deadline = min(inspection_deadline, outer_deadline - 95)
+                  cleanup_deadline = min(cleanup_deadline, outer_deadline - 25)
               if os.environ.get("SOURCE_DOCKERFILE") != "Legacy.Maliev.Web/Dockerfile":
                   raise ValueError("Unreviewed Web artifact identity")
               revision = os.environ.get("EXPECTED_SOURCE_REVISION", "")
@@ -673,18 +1000,28 @@ jobs:
               texts = required & {"app/wwwroot/dist/" + name for name in manifest["styles"] + manifest["routeStyles"]}
               texts.add(manifest_path)
               container = "legacy-web-assets-check-" + uuid.uuid4().hex
+              container_id = None
               try:
-                  native(["create", "--name", container, "--network", "none", "--read-only", "--cap-drop", "ALL",
-                          "--security-opt", "no-new-privileges", "--entrypoint", "/maliev-never-started", image_id])
-                  with tempfile.TemporaryDirectory(prefix="legacy-web-assets-") as temporary:
-                      archive = os.path.join(temporary, "filesystem.tar")
-                      native(["container", "export", "--output", archive, container])
-                      if os.path.getsize(archive) > 4 * 1024 ** 3:
+                  created = native(["create", "--name", container, "--network", "none", "--read-only", "--cap-drop", "ALL",
+                                    "--security-opt", "no-new-privileges", "--entrypoint", "/maliev-never-started", image_id])
+                  if not re.fullmatch(r"[0-9a-f]{64}", created):
+                      raise ValueError("Created container identity unavailable")
+                  container_id = created
+                  verify_owned_container(container_id, container, image_id)
+                  with owned_export_directory() as (archive, export_state):
+                      native(["container", "export", "--output", archive, container_id])
+                      export_state['exportSettled'] = True
+                      check_inspection_deadline()
+                      archive_info = os.lstat(archive)
+                      if not stat.S_ISREG(archive_info.st_mode) or archive_info.st_nlink != 1:
+                          raise ValueError('Owned archive identity unavailable')
+                      if archive_info.st_size > 4 * 1024 ** 3:
                           raise ValueError("Image inspection bound exceeded")
                       files = {}
                       contents = {}
                       with tarfile.open(archive, mode="r|") as filesystem:
                           for index, member in enumerate(filesystem):
+                              check_inspection_deadline()
                               if index >= 100000:
                                   raise ValueError("Image entry bound exceeded")
                               name = member.name.removeprefix("./")
@@ -697,12 +1034,14 @@ jobs:
                                   if not member.isfile() or not 0 < member.size <= 4 * 1024 ** 2:
                                       raise ValueError("Invalid packaged metadata")
                                   contents[name] = filesystem.extractfile(member).read().decode("utf-8")
+                                  check_inspection_deadline()
                       if any(files.get(name, 0) < 1 for name in required) or manifest_path not in contents:
                           raise ValueError("Packaged asset corpus incomplete")
                       if json.loads(contents[manifest_path], object_pairs_hook=unique_object) != manifest:
                           raise ValueError("Packaged manifest contract mismatch")
                       fonts = set()
                       for path in texts - {manifest_path}:
+                          check_inspection_deadline()
                           for reference in re.findall(r'url\(\s*["\']?([^\s)"\']+)', contents[path]):
                               if not re.search(r"\.(?:woff2?|ttf|otf)(?:[?#]|$)", reference):
                                   continue
@@ -721,13 +1060,41 @@ jobs:
                       if any(not any(os.path.basename(font).startswith(family) and font.endswith(".woff2")
                                      for font in fonts) for family in families):
                           raise ValueError("Packaged font family corpus incomplete")
-                  return {"status": "accepted", "assetCount": len(required), "fontCount": len(fonts),
-                          "imageId": image_id, "sourceRevision": revision}
-              finally:
-                  native(["container", "rm", "--force", container])
+                      check_inspection_deadline()
+                  result = {"status": "accepted", "assetCount": len(required), "fontCount": len(fonts),
+                            "imageId": image_id, "sourceRevision": revision}
+              except BaseException as error:
+                  if container_id is None:
+                      print(f"[web-packaged-assets] container custody unresolved name={container} image={image_id}", file=sys.stderr)
+                  else:
+                      try:
+                          release_owned_container(container_id, container, image_id)
+                      except BaseException as cleanup_error:
+                          error.add_note("Container cleanup is unresolved: " + type(cleanup_error).__name__)
+                          print(f"[web-packaged-assets] container custody unresolved id={container_id} name={container} image={image_id}", file=sys.stderr)
+                  raise
+              try:
+                  release_owned_container(container_id, container, image_id)
+              except BaseException:
+                  print(f"[web-packaged-assets] container custody unresolved id={container_id} name={container} image={image_id}", file=sys.stderr)
+                  raise
+              result.update(inspectionContainerId=container_id, inspectionContainerCleanup="settled")
+              return result
 
+          signal.signal(signal.SIGTERM, on_termination)
           try:
-              receipt = inspect()
+              try:
+                  receipt = inspect()
+              except BaseException as primary:
+                  try:
+                      if receipt_fd is not None:
+                          os.close(receipt_fd)
+                  except BaseException as close_error:
+                      primary.add_note('Custody receipt close failed: ' + type(close_error).__name__)
+                  raise
+              else:
+                  if receipt_fd is not None:
+                      os.close(receipt_fd)
           except Exception:
               print("[web-packaged-assets] FAILED: image inspection incomplete; details redacted", file=sys.stderr)
               sys.exit(2)
@@ -742,6 +1109,14 @@ jobs:
           ignore-unfixed: true
           vuln-type: os,library
           severity: HIGH,CRITICAL
+
+      - name: Retain Web image inspection custody
+        if: ${{ always() && github.repository == 'MALIEV-Co-Ltd/Legacy.Maliev.Web' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-producer-custody-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/web-producer-custody-${{ github.run_id }}-${{ github.run_attempt }}.jsonl
+          if-no-files-found: warn
 
       - *validation-gate
 

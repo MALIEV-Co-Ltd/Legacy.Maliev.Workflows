@@ -19,6 +19,9 @@ PRODUCER = "84b2516dfd8e4b48387a412767a52cd58b0b598b"
 ISSUER = "019fc21e-50f0-7112-834f-9fb3b35b9dfe"
 OWNER = "01a1009c-83f6-7010-9a59-df89ecbb1b1f"
 SOURCE_PINS = {'actions/dotnet-validate/action.yml': 'fcd91d7752f9b5df625f2eb9361a41b5aef5c1117d4ccf461c44b9eb58000228', 'scripts/normal_validation_custody.py': '03a9a7f0715d624acad1e6317e151cbb10ef931e193c132b91353e2270bf2acb', 'scripts/normal_validation_controller.py': 'aa59e1c2232d2405a98b87b9085692b58e7c0f225cf60009e181ed7873d082b3', 'scripts/normal_validation_exec_gate.py': 'c1771473003b2cc8f411493f4717c4b9e71461ef93b7906da69c22d24341fe03', 'scripts/normal_validation_lifecycle.py': '8c2000ffeeade09de62af69d3f09e4ecb9001bfab2f783244668f4dd98d6424b'}
+CURRENT_ACTION_SHA256 = '8d4b84678812952a1ace7350495059c7642fabff9f7bb7f203eb8e73fb324b77'
+OLD_SETUP_PIN = b'actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0'
+NEW_SETUP_PIN = b'actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0'
 RESERVE = 300
 PERMIT_KEYS = {"schema", "issuer", "owner", "kind", "leaseId", "issuedUtc",
                "expiresUtc", "producer", "run", "attempt", "job", "clockSha256"}
@@ -64,8 +67,13 @@ def compile_authenticated(sources):
     codes = {}
     for name, digest in SOURCE_PINS.items():
         raw = sources[name]
-        require(type(raw) is bytes and 0 < len(raw) <= 131072
-                and hashlib.sha256(raw).hexdigest() == digest, "Source digest mismatch")
+        require(type(raw) is bytes and 0 < len(raw) <= 131072, "Source digest mismatch")
+        if name == 'actions/dotnet-validate/action.yml':
+            require(hashlib.sha256(raw).hexdigest() == CURRENT_ACTION_SHA256
+                    and raw.count(NEW_SETUP_PIN) == 1 and raw.count(OLD_SETUP_PIN) == 0,
+                    "Current action digest or reviewed pin mismatch")
+            raw = raw.replace(NEW_SETUP_PIN, OLD_SETUP_PIN)
+        require(hashlib.sha256(raw).hexdigest() == digest, "Source digest mismatch")
         if name.endswith(".py"):
             codes[name] = compile(raw, name, "exec")
     return codes
