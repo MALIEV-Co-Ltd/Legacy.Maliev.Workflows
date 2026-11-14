@@ -82,6 +82,8 @@ jobs:
         run: |
           python3 -B -W error scripts/test-hosted-static.py -v
           python3 -B -W error scripts/test-hosted-native-profile.py -v
+          python3 -B -W error tests/test_web_producer_custody.py
+          python3 -B -W error tests/test_web_producer_native_custody.py
 
   service-wrapper-contracts:
     name: offline Service wrapper contracts

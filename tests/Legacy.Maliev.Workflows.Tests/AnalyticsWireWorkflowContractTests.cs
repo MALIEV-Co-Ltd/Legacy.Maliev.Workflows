@@ -30,7 +30,7 @@ public sealed class AnalyticsWireWorkflowContractTests
         YamlMappingNode[] actions = steps.Where(step => step.Children.ContainsKey(new YamlScalarNode("uses"))).ToArray();
         Assert.Equal(2, actions.Length);
         Assert.Equal("actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", Scalar(actions[0], "uses"));
-        Assert.Equal("actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68", Scalar(actions[1], "uses"));
+        Assert.Equal("actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73", Scalar(actions[1], "uses"));
         YamlMappingNode checkout = Assert.IsType<YamlMappingNode>(Node(actions[0], "with"));
         Assert.Equal("false", Scalar(checkout, "persist-credentials"));
         Assert.Single(checkout.Children);
